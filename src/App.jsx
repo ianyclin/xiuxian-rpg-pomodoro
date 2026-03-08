@@ -28,7 +28,6 @@ const database = getDatabase(app);
  * ========================================================
  */
 
-// V64: 恢復為 4 個選項，以利手機端 2x2 網格排版
 const FOCUS_OPTIONS = [
   { label: '15m', value: 15 * 60 },
   { label: '25m', value: 25 * 60 },
@@ -140,16 +139,17 @@ const RARITY_BASE_COST = { COMMON: 1000, UNCOMMON: 5000, RARE: 25000, EPIC: 1000
  */
 
 export default function App() {
+  // V65: Added hasAscended tracker
   const defaultPlayerState = { 
     realmIndex: 0, qi: 0, qiToNext: 250, vitality: 100, baseMaxVitality: 100, coins: 0, baseCombat: 150, 
     artifacts: [], artifactLvls: {}, basicSkills: {}, secretBooks: {}, arrays: { qi: 0, def: 0 }, 
-    streakCount: 0, streakShields: 0, luck: 1.0, totalFocusTime: 0, history: [], 
-    logs: ['【系統】天道印記已連結，UI排版已優化為V64版本。'] 
+    streakCount: 0, streakShields: 0, luck: 1.0, totalFocusTime: 0, history: [], hasAscended: false,
+    logs: ['【系統】天道印記已連結，飛升仙榜已啟動。'] 
   };
 
   const [player, setPlayer] = useState(() => {
     try {
-      const saved = localStorage.getItem('xianxia_master_v63');
+      const saved = localStorage.getItem('xianxia_master_v65');
       if (saved) return { ...defaultPlayerState, ...JSON.parse(saved) };
       return defaultPlayerState;
     } catch (e) { return defaultPlayerState; }
@@ -157,14 +157,18 @@ export default function App() {
 
   const [saveIndicator, setSaveIndicator] = useState(false);
   
-  const [globalFocusCount, setGlobalFocusCount] = useState(0);
+  // V65 Cloud State
+  const [globalStats, setGlobalStats] = useState({ focus: 0, ascensions: 0 });
 
   useEffect(() => {
-    const countRef = ref(database, 'globalStats/totalFocusCount');
-    const unsubscribe = onValue(countRef, (snapshot) => {
+    const statsRef = ref(database, 'globalStats');
+    const unsubscribe = onValue(statsRef, (snapshot) => {
       const data = snapshot.val();
       if (data !== null) {
-        setGlobalFocusCount(data);
+        setGlobalStats({
+          focus: data.totalFocusCount || 0,
+          ascensions: data.totalAscensions || 0
+        });
       }
     });
     return () => unsubscribe();
@@ -219,7 +223,7 @@ export default function App() {
   const [isHealing, setIsHealing] = useState(false); 
 
   useEffect(() => { 
-    localStorage.setItem('xianxia_master_v63', JSON.stringify(player)); 
+    localStorage.setItem('xianxia_master_v65', JSON.stringify(player)); 
     setSaveIndicator(true);
     const timer = setTimeout(() => setSaveIndicator(false), 2000);
     return () => clearTimeout(timer);
@@ -352,6 +356,7 @@ export default function App() {
     if (mode === 'focus') {
       setIsAttacking(true); setTimeout(() => setIsAttacking(false), 500);
 
+      // 每次成功專注，增加全球運轉次數
       try {
         const statsRef = ref(database, 'globalStats');
         update(statsRef, { totalFocusCount: increment(1) });
@@ -378,6 +383,7 @@ export default function App() {
       let nextQiToNext = player.qiToNext;
       let nextHistory = player.history;
       let newArtifacts = [...(player.artifacts || [])];
+      let nextHasAscended = player.hasAscended;
       
       let killLog = '';
 
@@ -397,7 +403,18 @@ export default function App() {
             }
         }
 
-        if (nextQi >= nextQiToNext && nextRealm < REALMS.length - 1) {
+        // 判斷是否為最終 Boss (九九重劫)
+        const isFinalBoss = monster.name === '【九九重劫】';
+
+        if (isFinalBoss && !player.hasAscended) {
+            try {
+                const statsRef = ref(database, 'globalStats');
+                update(statsRef, { totalAscensions: increment(1) });
+            } catch(e) { console.error(e) }
+            nextHasAscended = true;
+            killLog = `🌌 【破空飛升】度過九九重劫，位列仙班！ ` + killLog;
+            setCelebration({ name: '飛升仙界！成就真仙！' });
+        } else if (nextQi >= nextQiToNext && nextRealm < REALMS.length - 1) {
             nextRealm++;
             nextQi -= nextQiToNext;
             nextQiToNext = Math.floor(nextQiToNext * 1.35);
@@ -426,7 +443,8 @@ export default function App() {
           streakShields: maxStreakShields,
           totalFocusTime: (p.totalFocusTime || 0) + focusDuration,
           artifacts: newArtifacts,
-          history: nextHistory
+          history: nextHistory,
+          hasAscended: nextHasAscended
       }));
       setMode('break'); setTimeLeft(5 * 60);
 
@@ -536,11 +554,19 @@ export default function App() {
         isCritStrike ? 'bg-rose-900/40' : 'bg-[#020617]'}`}
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&q=80")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
       
-      <div className="fixed top-0 left-0 w-full bg-emerald-950/90 text-emerald-400 text-xs py-2 text-center font-black tracking-widest z-[600] border-b border-emerald-500/30 flex items-center justify-center gap-3 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-        <Network size={16} className="animate-pulse" />
-        <span>三千世界累計運轉周天：</span>
-        <span className="text-white font-mono text-sm">{globalFocusCount.toLocaleString()}</span>
-        <span>次</span>
+      {/* V65 雙軌跑馬燈：運轉周天與飛升仙人 */}
+      <div className="fixed top-0 left-0 w-full bg-emerald-950/90 text-[10px] sm:text-xs py-2 text-center font-black tracking-widest z-[600] border-b border-emerald-500/30 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+        <div className="flex items-center gap-1.5 text-emerald-400">
+          <Network size={14} className="animate-pulse" />
+          <span>三千世界運轉:</span>
+          <span className="text-white font-mono text-sm">{globalStats.focus.toLocaleString()}</span>
+        </div>
+        <div className="hidden sm:block text-emerald-700">|</div>
+        <div className="flex items-center gap-1.5 text-yellow-400">
+          <Crown size={14} className="animate-pulse drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]" />
+          <span>飛升仙人:</span>
+          <span className="text-white font-mono text-sm">{globalStats.ascensions.toLocaleString()}</span>
+        </div>
       </div>
 
       <div className="pointer-events-none fixed inset-0 z-[500] flex items-center justify-center overflow-hidden">
@@ -573,7 +599,7 @@ export default function App() {
         </div>
       )}
 
-      <div className={`fixed top-12 right-4 z-50 flex items-center gap-2 bg-emerald-900/80 text-emerald-300 px-4 py-2 rounded-full text-xs font-bold border border-emerald-500/30 transition-opacity duration-500 ${saveIndicator ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`fixed top-14 right-4 z-50 flex items-center gap-2 bg-emerald-900/80 text-emerald-300 px-4 py-2 rounded-full text-xs font-bold border border-emerald-500/30 transition-opacity duration-500 ${saveIndicator ? 'opacity-100' : 'opacity-0'}`}>
         <Save size={14} className="animate-pulse"/> 天道已同步
       </div>
 
@@ -687,7 +713,7 @@ export default function App() {
       {celebration && (
         <div className="fixed inset-0 z-[300] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-12 cursor-pointer font-bold mt-8" onClick={() => setCelebration(null)}>
           <Crown size={80} className="text-yellow-500/80 mb-6 animate-bounce" />
-          <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-widest">突破瓶頸</h2>
+          <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-widest">{celebration.name.includes('成就真仙') ? '渡劫成功' : '突破瓶頸'}</h2>
           <p className="text-xl text-emerald-400 font-light tracking-widest">【{celebration.name}】</p>
         </div>
       )}
@@ -708,7 +734,6 @@ export default function App() {
                </div>
             </div>
             
-            {/* V64 屬性面板重構：手機端為 2x2 網格，桌面端為單行 */}
             <div className="grid grid-cols-2 sm:flex sm:flex-row sm:flex-nowrap justify-start md:justify-end items-start md:items-end gap-x-4 gap-y-6 w-full md:w-auto mt-2 md:mt-0">
                <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-yellow-500 uppercase font-black flex items-center gap-1.5 mb-1"><Coins size={12}/> 靈石</span>
@@ -765,7 +790,6 @@ export default function App() {
 
       <div className={`w-full max-w-4xl bg-slate-900/40 backdrop-blur-3xl p-8 md:p-14 rounded-2xl border border-white/10 text-center mb-8 z-10 shadow-2xl transition-all duration-700 ${isActive ? 'scale-[1.02] shadow-[0_0_50px_rgba(16,185,129,0.15)] border-emerald-500/30' : ''}`}>
         
-        {/* V64 計時按鈕重構：手機端為嚴格的 2x2 網格，桌面端橫向排列 */}
         <div className="grid grid-cols-2 sm:flex sm:justify-center gap-4 md:gap-6 mb-12 font-bold max-w-[280px] sm:max-w-none mx-auto">
            {FOCUS_OPTIONS.map(opt => (
              <button key={opt.value} onClick={() => { if(!isActive) { setFocusDuration(opt.value); setTimeLeft(opt.value); }}} className={`w-full sm:w-auto px-6 py-3.5 rounded-full text-sm font-black border transition-all ${focusDuration === opt.value ? 'bg-white text-black border-white shadow-lg' : 'bg-black/40 text-white/50 border-white/20 hover:text-white/90 hover:bg-white/10'}`}>
@@ -880,7 +904,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* V64 頁尾重構：加入 sm:hidden 斷行機制 */}
         <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4">
           <p className="leading-relaxed">《凡人修仙傳》原著設定歸作者 忘語 所有</p>
           <p className="opacity-80 leading-loose">
@@ -895,4 +918,4 @@ export default function App() {
   );
 }
 
-const DEFAULT_PLAYER = { realmIndex: 0, qi: 0, qiToNext: 250, vitality: 100, baseMaxVitality: 100, coins: 0, baseCombat: 150, artifacts: [], artifactLvls: {}, basicSkills: {}, secretBooks: {}, arrays: { qi: 0, def: 0 }, streakCount: 0, streakShields: 0, luck: 1.0, totalFocusTime: 0, history: [] };
+const DEFAULT_PLAYER = { realmIndex: 0, qi: 0, qiToNext: 250, vitality: 100, baseMaxVitality: 100, coins: 0, baseCombat: 150, artifacts: [], artifactLvls: {}, basicSkills: {}, secretBooks: {}, arrays: { qi: 0, def: 0 }, streakCount: 0, streakShields: 0, luck: 1.0, totalFocusTime: 0, history: [], hasAscended: false };
