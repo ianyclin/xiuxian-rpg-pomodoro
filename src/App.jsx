@@ -76,7 +76,6 @@ const GUIDE_REALMS = [
   { name: '渡劫期', desc: '引動九九重雷劫，成則羽化登仙，敗則化為劫灰。', range: 'Tier 34' }
 ];
 
-// V69 Rebalanced & Thematic Artifact Pool
 const ARTIFACT_POOL = [
   { id: 'a01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (反噬減傷 +2%)', val: { def: 0.02 } },
   { id: 'a02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +4%)', val: { atk: 0.04 } },
@@ -100,7 +99,7 @@ const ARTIFACT_POOL = [
   { id: 'a43', rarity: 'LEGENDARY', name: '成熟體噬金蟲', desc: '無物不噬 (戰力+80%，爆傷+80%/級)', val: { atk: 0.80, crit_dmg: 0.80 } },
   { id: 'a50', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '法則破壞 (戰力+150%，爆傷+150%/級)', val: { atk: 1.50, crit_dmg: 1.50 }, tags: ['sword'] },
   { id: 'a51', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +80%/級)', val: { atk: 0.80, def: 0.80 } },
-  { id: 'a52', rarity: 'MYTHIC', name: '虛天大鼎', desc: '鼎鎮山河 (減傷+80%，折扣-40%，氣運保底+0.5)', val: { def: 0.80, forge_discount: 0.40, luck_floor: 0.5 } }, // Buffed
+  { id: 'a52', rarity: 'MYTHIC', name: '虛天大鼎', desc: '鼎鎮山河 (減傷+80%，折扣-40%，氣運保底+0.5)', val: { def: 0.80, forge_discount: 0.40, luck_floor: 0.5 } },
   { id: 'a53', rarity: 'MYTHIC', name: '玄天如意刃', desc: '斬裂虛空 (連擊上限+80%，爆傷+80%/級)', val: { streak_cap: 0.80, crit_dmg: 0.80 } },
   { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+300%，靈石+150%/級)', val: { qi: 3.00, stone: 1.50 } },
   { id: 'a61', rarity: 'DIVINE', name: '游天鯤鵬翎', desc: '跨越界域 (閃避+15%，連擊效率+100%/級)', val: { evade: 0.15, streak_eff: 1.00 } },
@@ -111,14 +110,14 @@ const ARTIFACT_POOL = [
 const SECRET_BOOKS = [
   { id: 's_01', rarity: 'UNCOMMON', name: '羅煙步', desc: '閃避靈壓。閃避率 +8%/級', val: { evade: 0.08 } },
   { id: 's_02', rarity: 'RARE', name: '血靈鑽', desc: '爆擊加成。爆擊傷害 +40%/級', val: { crit_dmg: 0.40 } },
-  { id: 's_03', rarity: 'RARE', name: '大衍決', desc: '神識預判。效率+15%，反噬基礎減傷+15%/級', val: { streak_eff: 0.15, sense_def: 0.15 } }, // Redefined
+  { id: 's_03', rarity: 'RARE', name: '大衍決', desc: '神識預判。效率+15%，反噬基礎減傷+15%/級', val: { streak_eff: 0.15, sense_def: 0.15 } },
   { id: 's_04', rarity: 'EPIC', name: '大庚劍陣', desc: '無堅不摧。戰力+30%，連擊上限+30%/級', val: { atk: 0.30, streak_cap: 0.30 } },
   { id: 's_05', rarity: 'LEGENDARY', name: '元磁神光', desc: '克制五行。戰力與減傷 +20%/級', val: { atk: 0.20, def: 0.20 } },
   { id: 's_06', rarity: 'MYTHIC', name: '梵聖真魔功', desc: '法相金身。戰力+50%，減傷+10%/級', val: { atk: 0.50, def: 0.10 } },
   { id: 's_07', rarity: 'RARE', name: '辟邪神雷', desc: '至陽之雷。爆擊率+10%，爆傷+30%/級', val: { crit: 0.10, crit_dmg: 0.30 } },
   { id: 's_08', rarity: 'EPIC', name: '搜魂術', desc: '抽取記憶。擊殺靈氣 +20%/級', val: { qi: 0.20 } },
   { id: 's_09', rarity: 'UNCOMMON', name: '枯木逢春訣', desc: '生生不息。休息回血比例 +5%/級', val: { heal_bonus: 0.05 } },
-  { id: 's_10', rarity: 'LEGENDARY', name: '驚蟄十二變', desc: '變身真靈。氣血+35%，爆擊有機率回血2%', val: { hp: 0.35, lifesteal: 0.02 } }, // Redefined
+  { id: 's_10', rarity: 'LEGENDARY', name: '驚蟄十二變', desc: '變身真靈。氣血+35%，爆擊有機率回血2%', val: { hp: 0.35, lifesteal: 0.02 } },
   { id: 's_11', rarity: 'DIVINE', name: '涅槃金身', desc: '不死不滅。復活機率 +8%/級', val: { revive: 0.08 } },
   { id: 's_12', rarity: 'RARE', name: '百脈煉寶訣', desc: '肉身融寶。洞府成本 -5%/級', val: { forge_discount: 0.05 } },
   { id: 's_13', rarity: 'EPIC', name: '明清靈目', desc: '看破虛妄。氣運保底 +0.1/級', val: { luck_floor: 0.10 } },
@@ -144,7 +143,7 @@ export default function App() {
     realmIndex: 0, qi: 0, qiToNext: 250, vitality: 100, baseMaxVitality: 100, coins: 0, baseCombat: 150, 
     artifacts: [], artifactLvls: {}, basicSkills: {}, secretBooks: {}, arrays: { qi: 0, def: 0 }, 
     streakCount: 0, streakShields: 0, luck: 1.0, totalFocusTime: 0, history: [], hasAscended: false,
-    logs: ['【系統】天道印記已連結，V69 登仙最終版載入。'] 
+    logs: ['【系統】天道印記已連結，V69.3 境界獎勵與祕籍消耗 SP 版載入。'] 
   };
 
   const [player, setPlayer] = useState(() => {
@@ -154,6 +153,29 @@ export default function App() {
       return defaultPlayerState;
     } catch (e) { return defaultPlayerState; }
   });
+
+  /**
+   * ========================================================
+   * V69.3 核心邏輯更動：SP 境界獲取機制
+   * ========================================================
+   */
+  const availableSP = useMemo(() => {
+    let totalEarned = 0;
+    // 遍歷當前已達成的所有境界來計算總獲得點數 (從凡人後的 index 1 開始)
+    for (let i = 1; i <= player.realmIndex; i++) {
+      if (REALMS[i]?.isMajor) {
+        totalEarned += 5; // 大境界
+      } else {
+        totalEarned += 3; // 小境界
+      }
+    }
+    // 統計基礎技能已消耗
+    const basicSpent = Object.values(player.basicSkills || {}).reduce((a, b) => a + b, 0);
+    // 統計機緣祕籍已消耗 (每級消耗 1 SP)
+    const secretSpent = Object.values(player.secretBooks || {}).reduce((a, b) => a + b, 0);
+    
+    return Math.max(0, totalEarned - (basicSpent + secretSpent));
+  }, [player.realmIndex, player.basicSkills, player.secretBooks]);
 
   const [saveIndicator, setSaveIndicator] = useState(false);
   const [globalStats, setGlobalStats] = useState({ focus: 0, ascensions: 0 });
@@ -175,17 +197,7 @@ export default function App() {
   const formatTime = (s) => `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
   
   const getMonsterName = (tier) => {
-    const monsters = [
-      '野狼幫眾', '墨大夫', '金光上人', '陸師兄',
-      '黑煞教徒', '越皇化身', '鬼靈門王蟬', '血線蛟',
-      '墨蛟', '土甲龍', '雙尾人面蠍', '溫天仁',
-      '鐵甲煉屍', '慕蘭法士', '極陰祖師', '裂風獸風希',
-      '六道極聖', '古魔血焰', '陰羅宗宗主', '化形毒蛟',
-      '夜叉族守衛', '角蚩族戰尊', '六翼霜蚣', '銀甲屍王',
-      '高階魔尊', '元剎聖祖化身', '噬金蟲王', '海王族大乘',
-      '六極聖祖', '降臨謫仙馬良', '始印神尊', '游天鯤鵬',
-      '真靈羅睺', '螟蟲之母'
-    ];
+    const monsters = ['野狼幫眾', '墨大夫', '金光上人', '陸師兄', '黑煞教徒', '越皇化身', '鬼靈門王蟬', '血線蛟', '墨蛟', '土甲龍', '雙尾人面蠍', '溫天仁', '鐵甲煉屍', '慕蘭法士', '極陰祖師', '裂風獸風希', '六道極聖', '古魔血焰', '陰羅宗宗主', '化形毒蛟', '夜叉族守衛', '角蚩族戰尊', '六翼霜蚣', '銀甲屍王', '高階魔尊', '元剎聖祖化身', '噬金蟲王', '海王族大乘', '六極聖祖', '降臨謫仙馬良', '始印神尊', '游天鯤鵬', '真靈羅睺', '螟蟲之母'];
     const index = Math.min(Math.max(1, tier), monsters.length) - 1;
     return `${monsters[index]}`;
   };
@@ -234,16 +246,15 @@ export default function App() {
     });
     
     const processItem = (item, lvl) => {
-       if (item?.val?.[type]) mult += item.val[type] * (1 + lvl * 0.5);
+        if (item?.val?.[type]) mult += item.val[type] * (1 + lvl * 0.5);
     };
     
     Object.entries(player.secretBooks || {}).forEach(([id, lvl]) => { processItem(SECRET_BOOKS.find(x => x.id === id), lvl); });
     (player.artifacts || []).forEach(id => { processItem(ARTIFACT_POOL.find(a => a.id === id), (player.artifactLvls?.[id] || 0)); });
     
-    // V69 Sword Synergy Logic
     if (type === 'atk' || type === 'streak_cap') {
       const swordCount = (player.artifacts || []).filter(id => ARTIFACT_POOL.find(a => a.id === id)?.tags?.includes('sword')).length;
-      if (swordCount >= 2) mult += 0.2 * swordCount; // 劍陣加成
+      if (swordCount >= 2) mult += 0.2 * swordCount; 
     }
 
     if (type === 'qi' && (player.arrays?.qi || 0)) mult += player.arrays.qi * 0.05;
@@ -252,22 +263,16 @@ export default function App() {
   };
 
   const currentRealmData = REALMS[player.realmIndex];
-  const themeColorClass = `text-${currentRealmData.color}-400`;
-  const themeBorderClass = `border-${currentRealmData.color}-500/20`;
-
   const rawEvade = getMultiplier('evade') - 1;
   const evadeRate = Math.min(0.75, rawEvade);
   const overflowEvade = Math.max(0, rawEvade - 0.75);
-
   const rawCrit = getMultiplier('crit') - 1;
   const critRate = Math.min(0.95, rawCrit);
   const overflowCrit = Math.max(0, rawCrit - 0.95);
-
   const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1) + (overflowEvade * 0.5)); 
   const streakEff = getMultiplier('streak_eff'); 
   const streakBonusMult = Math.min(streakCap, (player.streakCount || 0) * 0.05 * streakEff);
   const comboMultiplier = 1 + streakBonusMult;
-  
   const maxStreakShields = Math.floor(getMultiplier('streak_shield') - 1);
   const critDmg = Math.min(20.0, 1.5 + (getMultiplier('crit_dmg') - 1) + (overflowCrit * 3.0)); 
   const reviveRate = Math.min(0.65, getMultiplier('revive') - 1);   
@@ -318,8 +323,6 @@ export default function App() {
       addLog(`💨 【羅煙閃避】成功閃避反噬！連擊不墜！`); 
     } else {
       setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
-      
-      // V69: Spiritual Sensing Penalty Reduction
       const senseDef = getMultiplier('sense_def') - 1;
       const rawPenalty = Math.floor((maxVitality * 0.20 + monster.tier * 50 + monster.maxHp * 0.01) * (1 / defMultiplier) * (1 - senseDef));
       const penalty = Math.min(rawPenalty, player.vitality * 0.8);
@@ -377,8 +380,6 @@ export default function App() {
       const newHp = Math.max(0, monster.hp - actualDamage);
       const timeRatio = focusDuration / 1500;
       const currentLuck = getMultiplier('luck_floor');
-      
-      // V69: Operation completion bonus scaling
       const passiveQi = Math.floor(50 * Math.pow(1.18, player.realmIndex + 1) * getMultiplier('qi') * timeRatio);
       const passiveCoin = Math.floor(50 * Math.pow(1.15, player.realmIndex + 1) * getMultiplier('stone') * currentLuck * timeRatio);
 
@@ -391,7 +392,6 @@ export default function App() {
       let newArtifacts = [...(player.artifacts || [])];
       let nextHasAscended = player.hasAscended;
       
-      // V69 Lifesteal Logic
       if (isCrit && Math.random() < 0.20) {
         const lifesteal = Math.floor(maxVitality * (getMultiplier('lifesteal') - 1));
         if (lifesteal > 0) {
@@ -489,16 +489,17 @@ export default function App() {
       setCelebration({ name: candidates[0].name });
     } else { 
       setPlayer(p => ({ ...p, coins: p.coins - gachaCost, qi: p.qi + 100 })); 
-      addLog(`[萬寶樓] 獲補償修為。`); 
+      addLog(`[萬寶樓] 尋寶未果，獲補償修為 100 點。`); 
     }
   };
 
   const handleUpgradeSecret = (id) => {
     const lvl = player.secretBooks[id] || 0;
     const cost = Math.floor(10000 * Math.pow(2, lvl) * forgeDiscount);
-    if (player.coins >= cost && lvl < 5) {
+    // V69.3: 改為同時消耗 1 SP
+    if (player.coins >= cost && lvl < 5 && availableSP >= 1) {
       setPlayer(p => ({ ...p, coins: p.coins - cost, secretBooks: { ...p.secretBooks, [id]: lvl + 1 } }));
-      addLog(`[參悟] 【${SECRET_BOOKS.find(x=>x.id===id).name}】至 Lv.${lvl + 1}。`);
+      addLog(`[參悟] 耗費 1 SP，將【${SECRET_BOOKS.find(x=>x.id===id).name}】提昇至 Lv.${lvl + 1}。`);
     }
   };
 
@@ -538,7 +539,7 @@ export default function App() {
   const InsightsChart = () => {
     const data = player.history || [];
     if (data.length < 2) return <div className="h-full flex items-center justify-center text-white/10 uppercase tracking-widest font-bold text-xs">識海未成，尚無投影</div>;
-    const maxT = Math.max(...data.map(d => d.time || 0)) || 1;
+    const maxT = Math.max(1, ...data.map(d => d.time || 0));
     const points = data.map((d, i) => {
       const x = (i / (data.length - 1)) * 100;
       const y = 100 - ((d.time || 0) / maxT) * 100;
@@ -621,8 +622,8 @@ export default function App() {
             </div>
             <div className="w-full overflow-y-auto custom-scrollbar bg-black/40 rounded-xl border border-white/5 flex-1">
               <table className="w-full text-left border-collapse min-w-[600px]">
-                 <thead><tr className="text-xs text-white/30 uppercase tracking-widest border-b border-white/5"><th className="py-4 px-4">位階範圍</th><th className="py-4 px-4">境界名號</th><th className="py-4 px-4">神識導讀</th></tr></thead>
-                 <tbody>{GUIDE_REALMS.map((r, i) => (<tr key={i} className={`border-b border-white/5 transition-colors hover:bg-white/5`}><td className="py-4 px-4 font-mono text-xs text-white/30">{r.range}</td><td className={`py-4 px-4 font-black text-sm text-white/80`}>{r.name}</td><td className="py-4 px-4 text-xs text-white/50 leading-relaxed italic">{r.desc}</td></tr>))}</tbody>
+                  <thead><tr className="text-xs text-white/30 uppercase tracking-widest border-b border-white/5"><th className="py-4 px-4">位階範圍</th><th className="py-4 px-4">境界名號</th><th className="py-4 px-4">神識導讀</th></tr></thead>
+                  <tbody>{GUIDE_REALMS.map((r, i) => (<tr key={i} className={`border-b border-white/5 transition-colors hover:bg-white/5`}><td className="py-4 px-4 font-mono text-xs text-white/30">{r.range}</td><td className={`py-4 px-4 font-black text-sm text-white/80`}>{r.name}</td><td className="py-4 px-4 text-xs text-white/50 leading-relaxed italic">{r.desc}</td></tr>))}</tbody>
               </table>
             </div>
           </div>
@@ -838,16 +839,16 @@ export default function App() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                   {BASIC_SKILLS.map(s => { const lvl = player.basicSkills?.[s.id] || 0; return (
                     <div key={s.id} className="p-5 rounded-xl border border-white/20 bg-white/5 flex flex-col justify-between h-56 shadow-inner group">
-                       <div><h4 className="text-white font-bold text-sm tracking-widest uppercase">{s.name} <span className="opacity-50 float-right font-mono">Lv.{lvl}/{s.maxLvl}</span></h4><p className="text-xs text-white/60 mt-3 leading-relaxed italic">{s.desc}</p></div>
-                       <button onClick={() => { if(availableSP >= 1 && lvl < s.maxLvl) setPlayer(p => ({...p, basicSkills: {...p.basicSkills, [s.id]: lvl+1}})) }} disabled={availableSP < 1 || lvl >= s.maxLvl} className="mt-5 w-full py-4 bg-white/10 hover:bg-cyan-600 hover:border-cyan-400 text-white rounded-lg text-xs font-black border border-white/20 transition-all disabled:opacity-30 disabled:hover:bg-white/10">研習 (1 SP)</button>
+                        <div><h4 className="text-white font-bold text-sm tracking-widest uppercase">{s.name} <span className="opacity-50 float-right font-mono">Lv.{lvl}/{s.maxLvl}</span></h4><p className="text-xs text-white/60 mt-3 leading-relaxed italic">{s.desc}</p></div>
+                        <button onClick={() => { if(availableSP >= 1 && lvl < s.maxLvl) setPlayer(p => ({...p, basicSkills: {...p.basicSkills, [s.id]: lvl+1}})) }} disabled={availableSP < 1 || lvl >= s.maxLvl} className="mt-5 w-full py-4 bg-white/10 hover:bg-cyan-600 hover:border-cyan-400 text-white rounded-lg text-xs font-black border border-white/20 transition-all disabled:opacity-30 disabled:hover:bg-white/10">研習 (1 SP)</button>
                     </div>
                   );})}
                 </div></div>
                 <div><h3 className="text-white/60 text-sm font-black uppercase border-b border-white/20 pb-4 mb-8 tracking-widest">機緣祕籍 (13 種)</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                   {SECRET_BOOKS.map(book => { const lvl = player.secretBooks?.[book.id] || 0; const learned = lvl > 0; const upCost = Math.floor(10000 * Math.pow(2, lvl) * forgeDiscount); return (
                     <div key={book.id} className={`p-6 rounded-2xl border transition-all flex flex-col justify-between min-h-[16rem] ${learned ? 'bg-emerald-950/40 border-emerald-500/50 shadow-xl' : 'bg-black/60 border-white/10 opacity-60'}`}>
-                       <div className="flex items-start gap-5"><div className={`p-4 rounded-xl ${learned ? 'bg-emerald-500 text-black shadow-lg' : 'bg-slate-800'}`}><BookOpen size={24}/></div><div className="flex-1"><h4 className="font-black text-base tracking-widest text-white">{book.name} {learned && <span className="text-xs opacity-60 ml-2 font-mono">Lv.{lvl}</span>}</h4><p className="text-sm opacity-70 leading-relaxed mt-2 text-white">{learned ? book.desc : '擊殺強敵機率獲得。'}</p></div></div>
-                       {learned && lvl < 5 && <button onClick={() => { if(player.coins >= upCost) setPlayer(p => ({...p, coins: p.coins - upCost, secretBooks: {...p.secretBooks, [book.id]: lvl+1}})) }} disabled={player.coins < upCost} className="mt-6 w-full py-4 bg-white/10 hover:bg-emerald-600 text-white rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">參悟升級 ({upCost.toLocaleString()} 靈石)</button>}
+                        <div className="flex items-start gap-5"><div className={`p-4 rounded-xl ${learned ? 'bg-emerald-500 text-black shadow-lg' : 'bg-slate-800'}`}><BookOpen size={24}/></div><div className="flex-1"><h4 className="font-black text-base tracking-widest text-white">{book.name} {learned && <span className="text-xs opacity-60 ml-2 font-mono">Lv.{lvl}</span>}</h4><p className="text-sm opacity-70 leading-relaxed mt-2 text-white">{learned ? book.desc : '擊殺強敵機率獲得。'}</p></div></div>
+                        {learned && lvl < 5 && <button onClick={() => handleUpgradeSecret(book.id)} disabled={player.coins < upCost || availableSP < 1} className="mt-6 w-full py-4 bg-white/10 hover:bg-emerald-600 text-white rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">參悟升級 (${upCost.toLocaleString()} 靈石 + 1 SP)</button>}
                     </div>
                   );})}
                 </div></div>
