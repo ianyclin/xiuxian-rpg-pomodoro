@@ -55,6 +55,7 @@ const GUIDE_REALMS = [
   { name: '渡劫期', desc: '引動九九重雷劫，成則羽化登仙，敗則化為劫灰。', range: 'Tier 34' }
 ];
 
+// 法寶引擎：剔除仙界物品，完美對齊人界/靈界極限敘事
 const ARTIFACT_POOL = [
   { id: 'a01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (反噬減傷 +2%)', val: { def: 0.02 } },
   { id: 'a02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +2%)', val: { atk: 0.02 } },
@@ -62,7 +63,7 @@ const ARTIFACT_POOL = [
   { id: 'a04', rarity: 'COMMON', name: '粗糙靈石袋', desc: '聚財之陣 (靈石掉落 +5%)', val: { stone: 0.05 } },
   { id: 'a10', rarity: 'UNCOMMON', name: '神風舟', desc: '御風而行 (閃避率 +5%)', val: { evade: 0.05 } },
   { id: 'a11', rarity: 'UNCOMMON', name: '子母刃', desc: '奇門暗器 (戰力+5%，爆擊率+3%)', val: { atk: 0.05, crit: 0.03 } },
-  { id: 'a12', rarity: 'UNCOMMON', name: '飛針法器', desc: '穿透防線 (爆擊率 +3%)', val: { crit: 0.03 } },
+  { id: 'a12', rarity: 'UNCOMMON', name: '無形針', desc: '無影無蹤 (連擊效率+10%，爆擊+5%)', val: { streak_eff: 0.10, crit: 0.05 } },
   { id: 'a13', rarity: 'UNCOMMON', name: '血玉髓', desc: '氣血滋養 (休息回血比例 +5%)', val: { heal_bonus: 0.05 } },
   { id: 'a20', rarity: 'RARE', name: '青蛟旗', desc: '妖魂鎮壓 (戰力加成 +15%)', val: { atk: 0.15 } },
   { id: 'a21', rarity: 'RARE', name: '玄鐵飛天盾', desc: '堅不可摧 (反噬減傷 +15%)', val: { def: 0.15 } },
@@ -70,20 +71,20 @@ const ARTIFACT_POOL = [
   { id: 'a23', rarity: 'RARE', name: '金光磚', desc: '重擊崩碎 (爆擊傷害 +25%)', val: { crit_dmg: 0.25 } },
   { id: 'a30', rarity: 'EPIC', name: '虛天鼎 (仿)', desc: '鎮壓氣運 (減傷+15%，氣運保底+0.15/級)', val: { def: 0.15, luck_floor: 0.15 } },
   { id: 'a31', rarity: 'EPIC', name: '風雷翅', desc: '迅捷如雷 (連擊效率+30%，閃避+10%)', val: { streak_eff: 0.30, evade: 0.10 } },
-  { id: 'a32', rarity: 'EPIC', name: '天雷竹', desc: '辟邪神雷 (戰力+40%，爆擊率+5%/級)', val: { atk: 0.40, crit: 0.05 } },
-  { id: 'a33', rarity: 'EPIC', name: '血魔劍', desc: '飲血邪器 (戰力+20%，爆擊+10%，回血+10%/級)', val: { atk: 0.20, crit: 0.10, heal_bonus: 0.10 } },
-  { id: 'a40', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖 (閃避率+15%，連擊上限+50%/級)', val: { evade: 0.15, streak_cap: 0.50 } },
+  { id: 'a32', rarity: 'EPIC', name: '紫羅極火', desc: '極寒之焰 (戰力+30%，爆傷+50%/級)', val: { atk: 0.30, crit_dmg: 0.50 } },
+  { id: 'a33', rarity: 'EPIC', name: '嗜血幡', desc: '飲血古寶 (戰力+20%，爆擊+10%，回血+10%/級)', val: { atk: 0.20, crit: 0.10, heal_bonus: 0.10 } },
+  { id: 'a40', rarity: 'LEGENDARY', name: '黑風旗', desc: '空間隱匿 (閃避+20%，減傷+20%/級)', val: { evade: 0.20, def: 0.20 } },
   { id: 'a41', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣 (戰力+50%，連擊效率+50%，爆擊+5%/級)', val: { atk: 0.50, streak_eff: 0.50, crit: 0.05 } },
   { id: 'a42', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '替身擋災 (氣血+100%，免死+5%/級)', val: { hp: 1.00, revive: 0.05 } },
   { id: 'a43', rarity: 'LEGENDARY', name: '成熟體噬金蟲', desc: '無物不噬 (戰力+100%，爆傷+60%/級)', val: { atk: 1.00, crit_dmg: 0.60 } },
   { id: 'a50', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '法則破壞 (戰力+250%，爆傷+150%/級)', val: { atk: 2.50, crit_dmg: 1.50 } },
   { id: 'a51', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +80%/級)', val: { atk: 0.80, def: 0.80 } },
-  { id: 'a52', rarity: 'MYTHIC', name: '乾坤鼎', desc: '逆轉造化 (洞府成本 -40%)', val: { forge_discount: 0.40 } },
-  { id: 'a53', rarity: 'MYTHIC', name: '七彩珠', desc: '突破極限 (連擊上限提升 150%)', val: { streak_cap: 1.50 } },
+  { id: 'a52', rarity: 'MYTHIC', name: '虛天大鼎', desc: '第一至寶 (減傷+80%，洞府成本 -40%)', val: { def: 0.80, forge_discount: 0.40 } },
+  { id: 'a53', rarity: 'MYTHIC', name: '玄天仙藤', desc: '生生不息 (連擊上限+150%，回血+20%)', val: { streak_cap: 1.50, heal_bonus: 0.20 } },
   { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+200%，靈石+100%/級)', val: { qi: 2.00, stone: 1.00 } },
-  { id: 'a61', rarity: 'DIVINE', name: '歲月塔', desc: '時空凝滯 (閃避+30%，連擊效率+100%/級)', val: { evade: 0.30, streak_eff: 1.00 } },
-  { id: 'a62', rarity: 'DIVINE', name: '補天石', desc: '天道補缺 (氣運保底+1.0，免死+10%/級)', val: { luck_floor: 1.00, revive: 0.10 } },
-  { id: 'a63', rarity: 'DIVINE', name: '造化晶粒', desc: '天道結晶 (靈石獲取+400%，氣運+0.5/級)', val: { stone: 4.00, luck_floor: 0.50 } },
+  { id: 'a61', rarity: 'DIVINE', name: '游天鯤鵬翎', desc: '跨越界域 (閃避+30%，連擊效率+100%/級)', val: { evade: 0.30, streak_eff: 1.00 } },
+  { id: 'a62', rarity: 'DIVINE', name: '涅槃真血', desc: '真靈不死 (氣運保底+1.0，免死+10%/級)', val: { luck_floor: 1.00, revive: 0.10 } },
+  { id: 'a63', rarity: 'DIVINE', name: '金闕玉書', desc: '降界天書 (靈石獲取+400%，氣運+0.5/級)', val: { stone: 4.00, luck_floor: 0.50 } },
 ];
 
 const SECRET_BOOKS = [
@@ -102,7 +103,6 @@ const SECRET_BOOKS = [
   { id: 's_13', rarity: 'EPIC', name: '明清靈目', desc: '看破虛妄。氣運保底 +0.1/級', val: { luck_floor: 0.10 } },
 ];
 
-// SP 點數博弈：將上限解鎖至 20，讓玩家後期必須思考流派取捨
 const BASIC_SKILLS = [
   { id: 'b_qi', name: '長春功', desc: '基礎靈氣獲取提升 +10%/級', val: { qi: 0.1 }, maxLvl: 20 },
   { id: 'b_atk', name: '青元劍訣', desc: '基礎戰鬥力提升 +10%/級', val: { atk: 0.1 }, maxLvl: 20 },
@@ -123,7 +123,7 @@ export default function App() {
 
   const [player, setPlayer] = useState(() => {
     try {
-      const saved = localStorage.getItem('xianxia_master_v56_final');
+      const saved = localStorage.getItem('xianxia_master_v58_final');
       if (saved) return JSON.parse(saved);
       return defaultPlayerState;
     } catch (e) { return defaultPlayerState; }
@@ -180,7 +180,7 @@ export default function App() {
   const [isHealing, setIsHealing] = useState(false); 
 
   useEffect(() => { 
-    localStorage.setItem('xianxia_master_v56_final', JSON.stringify(player)); 
+    localStorage.setItem('xianxia_master_v58_final', JSON.stringify(player)); 
     setSaveIndicator(true);
     const timer = setTimeout(() => setSaveIndicator(false), 2000);
     return () => clearTimeout(timer);
@@ -231,8 +231,6 @@ export default function App() {
   const healCost = Math.floor(maxVitality * 1.5 * forgeDiscount);
   const arrayQiCost = Math.floor(5000 * Math.pow(1.8, (player.arrays?.qi || 0)) * forgeDiscount);
   const arrayDefCost = Math.floor(4000 * Math.pow(1.8, (player.arrays?.def || 0)) * forgeDiscount);
-  
-  // 尋寶經濟重構：降基數(1w->5k)，升通膨(1.15->1.18)
   const gachaCost = Math.floor(5000 * Math.pow(1.18, player.realmIndex) * forgeDiscount);
 
   const addLog = (text) => {
@@ -439,10 +437,16 @@ export default function App() {
   return (
     <div className={`min-h-screen text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-colors duration-300 
       ${isCollapsing ? 'bg-red-950/80 animate-shake' : 
-        isKilling ? 'bg-emerald-950/60 animate-pulse' :
-        isCritStrike ? 'bg-rose-900/40 animate-shake' : 'bg-[#020617]'}`}
+        isKilling ? 'bg-emerald-950/60' :
+        isCritStrike ? 'bg-rose-900/40' : 'bg-[#020617]'}`}
          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&q=80")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
       
+      {/* 視覺衝擊層 (Z-500) */}
+      <div className="pointer-events-none fixed inset-0 z-[500] flex items-center justify-center overflow-hidden">
+        {isCritStrike && <Flame size={350} className="text-amber-500/30 animate-ping absolute mix-blend-color-dodge" />}
+        {isKilling && <Sword size={450} className="text-emerald-500/40 animate-pulse absolute mix-blend-color-dodge -rotate-45" />}
+      </div>
+
       <div className="absolute inset-0 bg-[#020617]/85 backdrop-blur-[1px] z-0 transition-colors duration-300"></div>
       
       <style>{`
