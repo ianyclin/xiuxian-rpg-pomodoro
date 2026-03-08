@@ -60,7 +60,7 @@ const ARTIFACT_POOL = [
   { id: 'a02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +2%)', type: 'atk', val: 0.02 },
   { id: 'a03', rarity: 'COMMON', name: '凝神蒲團', desc: '固本培元 (休息回血比例 +2%)', type: 'heal_bonus', val: 0.02 },
   { id: 'a04', rarity: 'COMMON', name: '粗糙靈石袋', desc: '聚財之陣 (靈石掉落 +5%)', type: 'stone', val: 0.05 },
-  { id: 'a10', rarity: 'UNCOMMON', name: '神風舟', desc: '御風而行 (反噬減傷 +5%)', type: 'def', val: 0.05 },
+  { id: 'a10', rarity: 'UNCOMMON', name: '神風舟', desc: '御風而行 (閃避率 +5%)', type: 'evade', val: 0.05 },
   { id: 'a11', rarity: 'UNCOMMON', name: '子母刃', desc: '奇門兵器 (戰力加成 +8%)', type: 'atk', val: 0.08 },
   { id: 'a12', rarity: 'UNCOMMON', name: '飛針法器', desc: '穿透防線 (爆擊率 +3%)', type: 'crit', val: 0.03 },
   { id: 'a13', rarity: 'UNCOMMON', name: '血玉髓', desc: '氣血滋養 (休息回血比例 +5%)', type: 'heal_bonus', val: 0.05 },
@@ -68,38 +68,38 @@ const ARTIFACT_POOL = [
   { id: 'a21', rarity: 'RARE', name: '玄鐵飛天盾', desc: '堅不可摧 (反噬減傷 +15%)', type: 'def', val: 0.15 },
   { id: 'a22', rarity: 'RARE', name: '碧玉葫蘆', desc: '納寶空間 (靈石掉落 +30%)', type: 'stone', val: 0.30 },
   { id: 'a23', rarity: 'RARE', name: '金光磚', desc: '重擊崩碎 (爆擊傷害 +25%)', type: 'crit_dmg', val: 0.25 },
-  { id: 'a30', rarity: 'EPIC', name: '虛天鼎 (仿)', desc: '鎮壓氣運 (減傷+15%，氣運保底+0.2/級)', type: 'special', val: 0 },
+  { id: 'a30', rarity: 'EPIC', name: '虛天鼎 (仿)', desc: '鎮壓氣運 (減傷+15%，氣運保底+0.15/級)', type: 'special', val: 0 },
   { id: 'a31', rarity: 'EPIC', name: '風雷翅', desc: '迅捷如雷 (連擊疊加效率 +40%)', type: 'streak_eff', val: 0.40 },
   { id: 'a32', rarity: 'EPIC', name: '天雷竹', desc: '辟邪神雷 (戰力加成 +40%)', type: 'atk', val: 0.40 },
-  { id: 'a33', rarity: 'EPIC', name: '血魔劍', desc: '嗜血渴望 (爆擊率 +15%)', type: 'crit', val: 0.15 },
+  { id: 'a33', rarity: 'EPIC', name: '血魔劍', desc: '嗜血渴望 (爆擊率 +10%)', type: 'crit', val: 0.10 },
   { id: 'a40', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖 (反噬減傷 +50%)', type: 'def', val: 0.50 },
-  { id: 'a41', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣 (戰力+80%，爆擊率+10%/級)', type: 'special', val: 0 },
-  { id: 'a42', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '替身擋災 (氣血+100%，免死+10%/級)', type: 'special', val: 0 },
-  { id: 'a43', rarity: 'LEGENDARY', name: '成熟體噬金蟲', desc: '無物不噬 (戰力+100%，爆傷+100%/級)', type: 'special', val: 0 },
-  { id: 'a50', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '法則破壞 (戰力+250%，爆傷+200%/級)', type: 'special', val: 0 },
+  { id: 'a41', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣 (戰力+80%，爆擊率+8%/級)', type: 'special', val: 0 },
+  { id: 'a42', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '替身擋災 (氣血+100%，免死+5%/級)', type: 'special', val: 0 },
+  { id: 'a43', rarity: 'LEGENDARY', name: '成熟體噬金蟲', desc: '無物不噬 (戰力+100%，爆傷+60%/級)', type: 'special', val: 0 },
+  { id: 'a50', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '法則破壞 (戰力+250%，爆傷+150%/級)', type: 'special', val: 0 },
   { id: 'a51', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +80%/級)', type: 'special', val: 0 },
   { id: 'a52', rarity: 'MYTHIC', name: '乾坤鼎', desc: '逆轉造化 (洞府成本 -40%)', type: 'forge_discount', val: 0.40 },
   { id: 'a53', rarity: 'MYTHIC', name: '七彩珠', desc: '突破極限 (連擊上限提升 150%)', type: 'streak_cap', val: 1.50 },
-  { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+500%，回血比例+20%/級)', type: 'special', val: 0 },
+  { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+500%，回血+20%/級)', type: 'special', val: 0 },
   { id: 'a61', rarity: 'DIVINE', name: '混沌鐘', desc: '時空凝滯 (閃避+30%，連擊效率+100%/級)', type: 'special', val: 0 },
   { id: 'a62', rarity: 'DIVINE', name: '補天石', desc: '天道補缺 (氣運保底 +1.0)', type: 'luck_floor', val: 1.00 },
   { id: 'a63', rarity: 'DIVINE', name: '聚寶盆', desc: '容納萬物 (靈石獲取 +400%)', type: 'stone', val: 4.00 },
 ];
 
 const SECRET_BOOKS = [
-  { id: 's_01', rarity: 'UNCOMMON', name: '羅煙步', desc: '閃避靈壓。閃避率 +5%/級', type: 'evade', val: 0.05, hide: '【縹緲無跡】' },
-  { id: 's_02', rarity: 'RARE', name: '血靈鑽', desc: '爆擊加成。爆擊傷害 +40%/級', type: 'crit_dmg', val: 0.40, hide: '【血影遁術】' },
-  { id: 's_03', rarity: 'RARE', name: '大衍決', desc: '神識分化。連擊效率 +15%/級', type: 'streak_eff', val: 0.15, hide: '【神識分化】' },
-  { id: 's_04', rarity: 'EPIC', name: '大庚劍陣', desc: '連擊上限。連擊增傷上限 +20%/級', type: 'streak_cap', val: 0.20, hide: '【劍影分身】' },
-  { id: 's_05', rarity: 'LEGENDARY', name: '元磁神光', desc: '克制五行。戰力與減傷 +10%/級', type: 'special', val: 0, hide: '【五行破滅】' },
-  { id: 's_06', rarity: 'MYTHIC', name: '梵聖真魔功', desc: '三頭六臂。戰力加成 +60%/級', type: 'atk', val: 0.60, hide: '【涅槃再生】' },
-  { id: 's_07', rarity: 'RARE', name: '辟邪神雷', desc: '至陽之雷。爆擊率 +8%/級', type: 'crit', val: 0.08, hide: '【破魔金雷】' },
-  { id: 's_08', rarity: 'EPIC', name: '拘魂術', desc: '掠奪靈氣。擊殺靈氣 +20%/級', type: 'qi', val: 0.20, hide: '【役使鬼神】' },
-  { id: 's_09', rarity: 'UNCOMMON', name: '青木訣', desc: '生生不息。休息回血比例 +2%/級', type: 'heal_bonus', val: 0.02, hide: '【枯木逢春】' },
-  { id: 's_10', rarity: 'LEGENDARY', name: '驚蟄十二變', desc: '變身真靈。氣血上限 +35%/級', type: 'hp', val: 0.35, hide: '【真靈血脈】' },
-  { id: 's_11', rarity: 'DIVINE', name: '涅槃金身', desc: '不死不滅。復活機率 +10%/級', type: 'revive', val: 0.10, hide: '【金身永固】' },
-  { id: 's_12', rarity: 'RARE', name: '太乙煉器訣', desc: '器道真解。洞府成本 -8%/級', type: 'forge_discount', val: 0.08, hide: '【造化神工】' },
-  { id: 's_13', rarity: 'EPIC', name: '天機訣', desc: '窺探天道。氣運保底 +0.1/級', type: 'luck_floor', val: 0.10, hide: '【天機莫測】' },
+  { id: 's_01', rarity: 'UNCOMMON', name: '羅煙步', desc: '閃避靈壓。閃避率 +8%/級', type: 'evade', val: 0.08 },
+  { id: 's_02', rarity: 'RARE', name: '血靈鑽', desc: '爆擊加成。爆擊傷害 +40%/級', type: 'crit_dmg', val: 0.40 },
+  { id: 's_03', rarity: 'RARE', name: '大衍決', desc: '神識分化。連擊效率+15%，氣運+0.05/級', type: 'special', val: 0 },
+  { id: 's_04', rarity: 'EPIC', name: '大庚劍陣', desc: '連擊上限。連擊增傷上限 +20%/級', type: 'streak_cap', val: 0.20 },
+  { id: 's_05', rarity: 'LEGENDARY', name: '元磁神光', desc: '克制五行。戰力與減傷 +10%/級', type: 'special', val: 0 },
+  { id: 's_06', rarity: 'MYTHIC', name: '梵聖真魔功', desc: '三頭六臂。戰力加成 +60%/級', type: 'atk', val: 0.60 },
+  { id: 's_07', rarity: 'RARE', name: '辟邪神雷', desc: '至陽之雷。爆擊率 +6%/級', type: 'crit', val: 0.06 },
+  { id: 's_08', rarity: 'EPIC', name: '拘魂術', desc: '掠奪靈氣。擊殺靈氣 +20%/級', type: 'qi', val: 0.20 },
+  { id: 's_09', rarity: 'UNCOMMON', name: '青木訣', desc: '生生不息。休息回血比例 +2%/級', type: 'heal_bonus', val: 0.02 },
+  { id: 's_10', rarity: 'LEGENDARY', name: '驚蟄十二變', desc: '變身真靈。氣血上限+35%，爆傷+20%/級', type: 'special', val: 0 },
+  { id: 's_11', rarity: 'DIVINE', name: '涅槃金身', desc: '不死不滅。復活機率 +8%/級', type: 'revive', val: 0.08 },
+  { id: 's_12', rarity: 'RARE', name: '太乙煉器訣', desc: '器道真解。洞府成本 -8%/級', type: 'forge_discount', val: 0.08 },
+  { id: 's_13', rarity: 'EPIC', name: '天機訣', desc: '窺探天道。氣運保底 +0.1/級', type: 'luck_floor', val: 0.10 },
 ];
 
 const BASIC_SKILLS = [
@@ -183,21 +183,27 @@ const getMultiplier = (type) => {
     
     const processItem = (item, lvl) => {
        if (!item) return;
-       // 1. 單一常規屬性處理
+       // 常規屬性
        if (item.type === type) mult += item.val * lvl;
        
-       // 2. 原著因果律特例處理 (解鎖頂級法寶的複合效果)
+       // 因果律複合屬性 (精確避免溢出)
+       if (item.id === 's_03' && type === 'streak_eff') mult += 0.15 * lvl; // 大衍決
+       if (item.id === 's_03' && type === 'luck_floor') mult += 0.05 * lvl;
        if (item.id === 's_05' && ['atk', 'def'].includes(type)) mult += 0.10 * lvl; // 元磁神光
+       if (item.id === 's_10' && type === 'hp') mult += 0.35 * lvl; // 驚蟄
+       if (item.id === 's_10' && type === 'crit_dmg') mult += 0.20 * lvl;
+       
        if (item.id === 'a30' && type === 'def') mult += 0.15 * lvl; // 虛天鼎
-       if (item.id === 'a30' && type === 'luck_floor') mult += 0.20 * lvl; 
+       if (item.id === 'a30' && type === 'luck_floor') mult += 0.15 * lvl; 
        if (item.id === 'a41' && type === 'atk') mult += 0.80 * lvl; // 青竹蜂雲劍
-       if (item.id === 'a41' && type === 'crit') mult += 0.10 * lvl;
+       if (item.id === 'a41' && type === 'crit') mult += 0.08 * lvl;
        if (item.id === 'a42' && type === 'hp') mult += 1.00 * lvl; // 大衍神君傀儡
-       if (item.id === 'a42' && type === 'revive') mult += 0.10 * lvl;
+       if (item.id === 'a42' && type === 'def') mult += 0.30 * lvl;
+       if (item.id === 'a42' && type === 'revive') mult += 0.05 * lvl;
        if (item.id === 'a43' && type === 'atk') mult += 1.00 * lvl; // 噬金蟲
-       if (item.id === 'a43' && type === 'crit_dmg') mult += 1.00 * lvl;
+       if (item.id === 'a43' && type === 'crit_dmg') mult += 0.60 * lvl;
        if (item.id === 'a50' && type === 'atk') mult += 2.50 * lvl; // 玄天斬靈劍
-       if (item.id === 'a50' && type === 'crit_dmg') mult += 2.00 * lvl;
+       if (item.id === 'a50' && type === 'crit_dmg') mult += 1.50 * lvl;
        if (item.id === 'a51' && ['atk', 'def'].includes(type)) mult += 0.80 * lvl; // 元磁神山
        if (item.id === 'a60' && type === 'qi') mult += 5.00 * lvl; // 掌天瓶
        if (item.id === 'a60' && type === 'heal_bonus') mult += 0.20 * lvl;
@@ -217,15 +223,17 @@ const getMultiplier = (type) => {
   const themeColorClass = `text-${currentRealmData.color}-400`;
   const themeBorderClass = `border-${currentRealmData.color}-500/20`;
 
-  const streakCap = Math.min(3.0, 0.5 + (getMultiplier('streak_cap') - 1)); 
+const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連擊上限提升至 400%
   const streakEff = getMultiplier('streak_eff'); 
-  const comboMultiplier = 1 + Math.min(streakCap, (player.streakCount || 0) * 0.05 * streakEff);
+  const streakBonusMult = Math.min(streakCap, (player.streakCount || 0) * 0.05 * streakEff);
+  const comboMultiplier = 1 + streakBonusMult;
   
-  const critRate = Math.min(0.75, getMultiplier('crit') - 1); 
-  const critDmg = Math.min(5.0, 2.0 + (getMultiplier('crit_dmg') - 1)); 
-  const evadeRate = Math.min(0.60, getMultiplier('evade') - 1); 
-  const reviveRate = Math.min(0.50, getMultiplier('revive') - 1); 
-  const healPct = Math.min(0.50, 0.20 + (getMultiplier('heal_bonus') - 1));
+  // 天道法則硬上限突破
+  const critRate = Math.min(0.85, getMultiplier('crit') - 1);       // 極限 85%
+  const critDmg = Math.min(6.0, 2.0 + (getMultiplier('crit_dmg') - 1)); // 爆傷極限 6 倍
+  const evadeRate = Math.min(0.75, getMultiplier('evade') - 1);     // 極限 75%
+  const reviveRate = Math.min(0.65, getMultiplier('revive') - 1);   // 極限 65%
+  const healPct = Math.min(0.60, 0.20 + (getMultiplier('heal_bonus') - 1)); // 極限 60%
   const defMultiplier = getMultiplier('def');
   const dmgTakenPct = (1 / defMultiplier) * 100; 
 
