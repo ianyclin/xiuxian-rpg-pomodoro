@@ -143,7 +143,7 @@ export default function App() {
     realmIndex: 0, qi: 0, qiToNext: 250, vitality: 100, baseMaxVitality: 100, coins: 0, baseCombat: 150, 
     artifacts: [], artifactLvls: {}, basicSkills: {}, secretBooks: {}, arrays: { qi: 0, def: 0 }, 
     streakCount: 0, streakShields: 0, luck: 1.0, totalFocusTime: 0, history: [], hasAscended: false,
-    logs: ['【系統】天道印記已連結，境界 SP 與隨機氣運版載入。'] 
+    logs: ['【【天道印記】仙途漫漫，命數無常。境界造化與機緣奇遇法則已降臨，祝道友仙運隆昌。'] 
   };
 
   const [player, setPlayer] = useState(() => {
