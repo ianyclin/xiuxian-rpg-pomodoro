@@ -73,7 +73,6 @@ const ARTIFACT_POOL = [
   { id: 'a32', rarity: 'EPIC', name: '天雷竹', desc: '辟邪神雷 (戰力+40%，爆擊率+5%/級)', type: 'special', val: { atk: 0.40, crit: 0.05 } },
   { id: 'a33', rarity: 'EPIC', name: '血魔劍', desc: '嗜血渴望 (戰力+20%，爆擊率+10%/級)', type: 'special', val: { atk: 0.20, crit: 0.10 } },
   { id: 'a40', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖 (閃避率+15%，連擊上限+50%/級)', type: 'special', val: { evade: 0.15, streak_cap: 0.50 } },
-  // 青竹蜂雲劍：還原為連擊與爆發的劍陣機制
   { id: 'a41', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣 (戰力+50%，連擊效率+50%，爆擊+5%/級)', type: 'special', val: { atk: 0.50, streak_eff: 0.50, crit: 0.05 } },
   { id: 'a42', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '替身擋災 (氣血+100%，免死+5%/級)', type: 'special', val: { hp: 1.00, revive: 0.05 } },
   { id: 'a43', rarity: 'LEGENDARY', name: '成熟體噬金蟲', desc: '無物不噬 (戰力+100%，爆傷+60%/級)', type: 'special', val: { atk: 1.00, crit_dmg: 0.60 } },
@@ -82,10 +81,9 @@ const ARTIFACT_POOL = [
   { id: 'a52', rarity: 'MYTHIC', name: '乾坤鼎', desc: '逆轉造化 (洞府成本 -40%)', type: 'forge_discount', val: 0.40 },
   { id: 'a53', rarity: 'MYTHIC', name: '七彩珠', desc: '突破極限 (連擊上限提升 150%)', type: 'streak_cap', val: 1.50 },
   { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+200%，靈石+100%/級)', type: 'special', val: { qi: 2.00, stone: 1.00 } },
-  { id: 'a61', rarity: 'DIVINE', name: '混沌鐘', desc: '時空凝滯 (閃避+30%，連擊效率+100%/級)', type: 'special', val: { evade: 0.30, streak_eff: 1.00 } },
+  { id: 'a61', rarity: 'DIVINE', name: '歲月塔', desc: '時空凝滯 (閃避+30%，連擊效率+100%/級)', type: 'special', val: { evade: 0.30, streak_eff: 1.00 } },
   { id: 'a62', rarity: 'DIVINE', name: '補天石', desc: '天道補缺 (氣運保底 +1.0)', type: 'luck_floor', val: 1.00 },
-  // 聚寶盆修正為仙界原著向神物
-  { id: 'a63', rarity: 'DIVINE', name: '仙界靈晶', desc: '容納萬物 (靈石獲取+400%，氣運+0.5/級)', type: 'special', val: { stone: 4.00, luck_floor: 0.50 } },
+  { id: 'a63', rarity: 'DIVINE', name: '造化晶粒', desc: '天道結晶 (靈石獲取+400%，氣運+0.5/級)', type: 'special', val: { stone: 4.00, luck_floor: 0.50 } },
 ];
 
 const SECRET_BOOKS = [
@@ -107,8 +105,8 @@ const SECRET_BOOKS = [
 const BASIC_SKILLS = [
   { id: 'b_qi', name: '長春功', desc: '基礎靈氣獲取提升 +10%/級', type: 'qi', val: 0.1, maxLvl: 10 },
   { id: 'b_atk', name: '青元劍訣', desc: '基礎戰鬥力提升 +10%/級', type: 'atk', val: 0.1, maxLvl: 10 },
-  { id: 'b_hp', name: '象甲功', desc: '基礎氣血上限提升 +10%/級', type: 'hp', val: 0.1, maxLvl: 10 },
-  { id: 'b_stone', name: '尋靈術', desc: '任務靈石收益提升 +15%/級', type: 'stone', val: 0.15, maxLvl: 10 },
+  { id: 'b_hp', name: '明王訣', desc: '基礎氣血上限提升 +10%/級', type: 'hp', val: 0.1, maxLvl: 10 },
+  { id: 'b_stone', name: '天眼術', desc: '任務靈石收益提升 +15%/級', type: 'stone', val: 0.15, maxLvl: 10 },
 ];
 
 const RARITY_BASE_COST = { COMMON: 1000, UNCOMMON: 5000, RARE: 25000, EPIC: 100000, LEGENDARY: 500000, MYTHIC: 2500000, DIVINE: 10000000 };
@@ -124,7 +122,7 @@ export default function App() {
 
   const [player, setPlayer] = useState(() => {
     try {
-      const saved = localStorage.getItem('xianxia_master_v53_final');
+      const saved = localStorage.getItem('xianxia_master_v54_final');
       if (saved) return JSON.parse(saved);
       return defaultPlayerState;
     } catch (e) { return defaultPlayerState; }
@@ -146,13 +144,22 @@ export default function App() {
       '真靈羅睺', '螟蟲之母'
     ];
     const index = Math.min(Math.max(1, tier), monsters.length) - 1;
-    return `${monsters[index]} (Tier ${tier})`;
+    return `${monsters[index]}`;
   };
   
+  // 核心戰鬥重構：瓶頸機制與超指數血量
   const generateMonsterState = (realmIdx) => {
     const nTier = realmIdx + 1;
-    const nHp = Math.floor(150 * Math.pow(1.20, nTier - 1) * (realmIdx === REALMS.length - 1 ? 15 : 1));
-    return { name: realmIdx === REALMS.length - 1 ? '【九九重劫】' : getMonsterName(nTier), hp: nHp, maxHp: nHp, tier: nTier };
+    const isPeak = REALMS[realmIdx].name.includes('巔峰');
+    const isFinal = realmIdx === REALMS.length - 1;
+    
+    // 瓶頸放大倍率：大乘渡劫放大20倍，各境界巔峰放大4倍
+    const bossMult = isFinal ? 20 : (isPeak ? 4 : 1);
+    // 怪物基底血量指數從 1.20 提升至 1.30，防止後期戰力溢出秒殺
+    const nHp = Math.floor(150 * Math.pow(1.30, nTier - 1) * bossMult);
+    
+    const mName = isFinal ? '【九九重劫】' : (isPeak ? `${getMonsterName(nTier)} [大瓶頸]` : getMonsterName(nTier));
+    return { name: mName, hp: nHp, maxHp: nHp, tier: nTier };
   };
 
   const [monster, setMonster] = useState(() => generateMonsterState(player.realmIndex));
@@ -174,7 +181,7 @@ export default function App() {
   const [isHealing, setIsHealing] = useState(false); 
 
   useEffect(() => { 
-    localStorage.setItem('xianxia_master_v53_final', JSON.stringify(player)); 
+    localStorage.setItem('xianxia_master_v54_final', JSON.stringify(player)); 
     setSaveIndicator(true);
     const timer = setTimeout(() => setSaveIndicator(false), 2000);
     return () => clearTimeout(timer);
@@ -285,10 +292,9 @@ export default function App() {
       
       let killLog = '';
 
-      // 軌道 B：斬妖除魔戰利品 (大幅增強擊殺爽感)
       if (newHp === 0) {
-        const killQi = Math.floor(300 * Math.pow(1.18, monster.tier) * getMultiplier('qi')); // 基數從 100 -> 300
-        const killCoin = Math.floor(800 * Math.pow(1.15, monster.tier) * getMultiplier('stone') * currentLuck); // 基數從 200 -> 800
+        const killQi = Math.floor(300 * Math.pow(1.18, monster.tier) * getMultiplier('qi'));
+        const killCoin = Math.floor(800 * Math.pow(1.15, monster.tier) * getMultiplier('stone') * currentLuck);
         
         nextQi += killQi;
         nextCoins += killCoin;
@@ -304,12 +310,13 @@ export default function App() {
         if (nextQi >= nextQiToNext && nextRealm < REALMS.length - 1) {
             nextRealm++;
             nextQi -= nextQiToNext;
-            nextQiToNext = Math.floor(nextQiToNext * 1.28);
+            // 升級通膨修復：從 1.28 調回 1.35，防禦後期神器的超高溢出
+            nextQiToNext = Math.floor(nextQiToNext * 1.35);
             nextHistory = [...(player.history || []), { name: REALMS[nextRealm].name, time: (player.totalFocusTime || 0) + focusDuration }];
             setCelebration({ name: REALMS[nextRealm].name });
-            killLog = `☄️ 【突破】擊殺妖獸並晉升！獲額外修為 ${killQi}，靈石 ${killCoin}。` + killLog;
+            killLog = `☄️ 【突破】擊破瓶頸晉升！獲額外修為 ${killQi}，靈石 ${killCoin}。` + killLog;
         } else {
-            killLog = `⚔️ 【擊殺】斬殺妖獸！奪得額外修為 ${killQi}，靈石 ${killCoin}。` + killLog;
+            killLog = `⚔️ 【擊殺】斬殺阻礙！奪得額外修為 ${killQi}，靈石 ${killCoin}。` + killLog;
         }
         setMonster(generateMonsterState(nextRealm));
       } else {
@@ -429,11 +436,11 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-all duration-700 
-      ${isCollapsing ? 'bg-red-950/80 animate-shake' : isCritStrike ? 'bg-rose-950/60 animate-shake' : 'bg-[#020617]'}`}
+    <div className={`min-h-screen text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-colors duration-300 
+      ${isCollapsing ? 'bg-red-950/80 animate-shake' : isCritStrike ? 'bg-rose-900/40 animate-shake' : 'bg-[#020617]'}`}
          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&q=80")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
       
-      <div className="absolute inset-0 bg-[#020617]/85 backdrop-blur-[1px] z-0"></div>
+      <div className="absolute inset-0 bg-[#020617]/85 backdrop-blur-[1px] z-0 transition-colors duration-300"></div>
       
       <style>{`
         .glow-streak { box-shadow: 0 0 30px rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
@@ -498,7 +505,7 @@ export default function App() {
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
                      <h3 className="text-purple-400 text-base mb-2 flex items-center gap-2 font-black"><Skull size={16}/> 身死道消 (死亡懲罰)</h3>
-                     <p className="text-white/70">氣血歸零時若復活失敗，將失去大量修為與所有連擊，且氣血僅重置至 50%。請務必至洞府煉丹維持狀態。</p>
+                     <p className="text-white/70">氣血歸零時若復活失敗，將失去修為與所有連擊，且氣血僅重置至 50%。請務必至洞府煉丹維持狀態。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
                      <h3 className="text-yellow-400 text-base mb-2 flex items-center gap-2 font-black"><Pill size={16}/> 靈丹妙藥 (主動恢復)</h3>
@@ -509,11 +516,11 @@ export default function App() {
                 <div className="space-y-4 text-sm leading-relaxed animate-pop-in">
                    <section className="bg-white/5 p-4 rounded-lg border-l-2 border-yellow-500">
                      <h3 className="text-yellow-400 text-base mb-2 flex items-center gap-2 font-black"><Lightbulb size={16}/> 經濟通膨防禦</h3>
-                     <p className="text-white/70">洞府成本呈指數成長。請優先投資 <span className="text-emerald-300">《尋靈術》</span> 與 <span className="text-emerald-300">《太乙煉器訣》</span>。</p>
+                     <p className="text-white/70">洞府成本呈指數成長。請優先投資 <span className="text-emerald-300">《天眼術》</span> 與 <span className="text-emerald-300">《太乙煉器訣》</span>。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border-l-2 border-emerald-500">
-                     <h3 className="text-emerald-400 text-base mb-2 flex items-center gap-2 font-black"><Lightbulb size={16}/> 氣運尋寶時機</h3>
-                     <p className="text-white/70">萬寶樓爆率直接乘上氣運值。請在戰鬥結束氣運高漲時前往尋寶。</p>
+                     <h3 className="text-emerald-400 text-base mb-2 flex items-center gap-2 font-black"><Lightbulb size={16}/> 大瓶頸機制</h3>
+                     <p className="text-white/70">每個大境界的「巔峰」期都會遇到極強的瓶頸 Boss，血量會暴增 4 倍。請確保在這之前提升戰力與爆擊率。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border-l-2 border-rose-500">
                      <h3 className="text-rose-400 text-base mb-2 flex items-center gap-2 font-black"><Lightbulb size={16}/> 沉沒成本與極限容錯</h3>
@@ -654,7 +661,7 @@ export default function App() {
         <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-10 font-bold">
            {FOCUS_OPTIONS.map(opt => (<button key={opt.value} onClick={() => { if(!isActive) { setFocusDuration(opt.value); setTimeLeft(opt.value); }}} className={`px-4 py-1.5 rounded-full text-[10px] font-black border transition-all ${focusDuration === opt.value ? 'bg-white text-black border-white' : 'bg-black/40 text-white/40 border-white/10 hover:text-white/80'}`}>{opt.label}</button>))}
         </div>
-        <div className="flex justify-center items-center gap-4 mb-8 opacity-30 text-[10px] tracking-[0.6em] font-black uppercase"><Compass size={14}/> {monster.name}</div>
+        <div className={`flex justify-center items-center gap-4 mb-8 text-[10px] tracking-[0.6em] font-black uppercase transition-colors ${monster.name.includes('瓶頸') || monster.name.includes('劫') ? 'text-rose-500 animate-pulse' : 'opacity-30'}`}><Compass size={14}/> {monster.name}</div>
         <div className={`text-6xl sm:text-8xl md:text-[11rem] font-mono leading-none font-black tracking-tighter mb-12 transition-all duration-700 ${isActive ? 'text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]' : 'text-white/20'}`}>{formatTime(timeLeft)}</div>
         <div className="flex justify-center gap-4 md:gap-8 font-bold">
           {!isActive ? (
