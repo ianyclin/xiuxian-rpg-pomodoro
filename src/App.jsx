@@ -28,6 +28,7 @@ const database = getDatabase(app);
  * ========================================================
  */
 
+// V64: 恢復為 4 個選項，以利手機端 2x2 網格排版
 const FOCUS_OPTIONS = [
   { label: '15m', value: 15 * 60 },
   { label: '25m', value: 25 * 60 },
@@ -143,7 +144,7 @@ export default function App() {
     realmIndex: 0, qi: 0, qiToNext: 250, vitality: 100, baseMaxVitality: 100, coins: 0, baseCombat: 150, 
     artifacts: [], artifactLvls: {}, basicSkills: {}, secretBooks: {}, arrays: { qi: 0, def: 0 }, 
     streakCount: 0, streakShields: 0, luck: 1.0, totalFocusTime: 0, history: [], 
-    logs: ['【系統】天道印記已連結，V63 雲端總榜生效中。'] 
+    logs: ['【系統】天道印記已連結，UI排版已優化為V64版本。'] 
   };
 
   const [player, setPlayer] = useState(() => {
@@ -156,11 +157,9 @@ export default function App() {
 
   const [saveIndicator, setSaveIndicator] = useState(false);
   
-  // V63 Cloud State
   const [globalFocusCount, setGlobalFocusCount] = useState(0);
 
   useEffect(() => {
-    // 監聽 Firebase 上的全球專注次數
     const countRef = ref(database, 'globalStats/totalFocusCount');
     const unsubscribe = onValue(countRef, (snapshot) => {
       const data = snapshot.val();
@@ -353,7 +352,6 @@ export default function App() {
     if (mode === 'focus') {
       setIsAttacking(true); setTimeout(() => setIsAttacking(false), 500);
 
-      // V63 Cloud Update: Global Counter Increment
       try {
         const statsRef = ref(database, 'globalStats');
         update(statsRef, { totalFocusCount: increment(1) });
@@ -538,7 +536,6 @@ export default function App() {
         isCritStrike ? 'bg-rose-900/40' : 'bg-[#020617]'}`}
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&q=80")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
       
-      {/* V63 天道總榜跑馬燈 */}
       <div className="fixed top-0 left-0 w-full bg-emerald-950/90 text-emerald-400 text-xs py-2 text-center font-black tracking-widest z-[600] border-b border-emerald-500/30 flex items-center justify-center gap-3 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
         <Network size={16} className="animate-pulse" />
         <span>三千世界累計運轉周天：</span>
@@ -576,7 +573,6 @@ export default function App() {
         </div>
       )}
 
-      {/* 頂部同步狀態 */}
       <div className={`fixed top-12 right-4 z-50 flex items-center gap-2 bg-emerald-900/80 text-emerald-300 px-4 py-2 rounded-full text-xs font-bold border border-emerald-500/30 transition-opacity duration-500 ${saveIndicator ? 'opacity-100' : 'opacity-0'}`}>
         <Save size={14} className="animate-pulse"/> 天道已同步
       </div>
@@ -712,23 +708,24 @@ export default function App() {
                </div>
             </div>
             
-            <div className="flex flex-row flex-wrap md:flex-nowrap justify-start md:justify-end items-end gap-x-6 gap-y-4 w-full md:w-auto">
-               <div className="flex flex-col items-start md:items-end min-w-[70px]">
+            {/* V64 屬性面板重構：手機端為 2x2 網格，桌面端為單行 */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-row sm:flex-nowrap justify-start md:justify-end items-start md:items-end gap-x-4 gap-y-6 w-full md:w-auto mt-2 md:mt-0">
+               <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-yellow-500 uppercase font-black flex items-center gap-1.5 mb-1"><Coins size={12}/> 靈石</span>
                  <span className="text-base text-yellow-500 font-mono font-bold drop-shadow-md">{Math.floor(player.coins)}</span>
                </div>
-               <div className="flex flex-col items-start md:items-end min-w-[60px]">
+               <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-cyan-400 uppercase font-black flex items-center gap-1.5 mb-1"><Zap size={12}/> SP</span>
                  <span className="text-base text-cyan-400 font-mono font-bold drop-shadow-md">{availableSP}</span>
                </div>
-               <div className="flex flex-col items-start md:items-end min-w-[90px]">
+               <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-rose-500 uppercase font-black flex items-center gap-1.5 mb-1"><Sword size={12}/> 連擊</span>
                  <span className={`text-base text-rose-500 font-mono font-bold drop-shadow-md transition-all duration-500 flex items-center gap-1 ${comboMultiplier > 2.0 ? 'text-rose-300 scale-110 animate-pulse drop-shadow-[0_0_10px_rgba(244,63,94,0.8)]' : ''}`}>
                    x{comboMultiplier.toFixed(2)}
                    {maxStreakShields > 0 && <span className="text-cyan-400 text-xs ml-1 flex items-center">🛡️{player.streakShields}</span>}
                  </span>
                </div>
-               <div className="flex flex-col items-start md:items-end font-bold min-w-[80px]">
+               <div className="flex flex-col items-start md:items-end font-bold">
                  <span className="text-xs text-emerald-400 uppercase font-black flex items-center gap-1.5 mb-1"><Clover size={12}/> 氣運</span>
                  <span className={`text-base text-emerald-400 font-mono font-bold drop-shadow-md transition-all duration-500 ${getMultiplier('luck_floor') > 1.5 ? 'text-yellow-400 scale-110 animate-bounce drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : ''}`}>
                    x{getMultiplier('luck_floor').toFixed(2)}
@@ -767,9 +764,16 @@ export default function App() {
       </div>
 
       <div className={`w-full max-w-4xl bg-slate-900/40 backdrop-blur-3xl p-8 md:p-14 rounded-2xl border border-white/10 text-center mb-8 z-10 shadow-2xl transition-all duration-700 ${isActive ? 'scale-[1.02] shadow-[0_0_50px_rgba(16,185,129,0.15)] border-emerald-500/30' : ''}`}>
-        <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-12 font-bold">
-           {FOCUS_OPTIONS.map(opt => (<button key={opt.value} onClick={() => { if(!isActive) { setFocusDuration(opt.value); setTimeLeft(opt.value); }}} className={`px-6 py-3 rounded-full text-sm font-black border transition-all ${focusDuration === opt.value ? 'bg-white text-black border-white shadow-lg' : 'bg-black/40 text-white/50 border-white/20 hover:text-white/90 hover:bg-white/10'}`}>{opt.label}</button>))}
+        
+        {/* V64 計時按鈕重構：手機端為嚴格的 2x2 網格，桌面端橫向排列 */}
+        <div className="grid grid-cols-2 sm:flex sm:justify-center gap-4 md:gap-6 mb-12 font-bold max-w-[280px] sm:max-w-none mx-auto">
+           {FOCUS_OPTIONS.map(opt => (
+             <button key={opt.value} onClick={() => { if(!isActive) { setFocusDuration(opt.value); setTimeLeft(opt.value); }}} className={`w-full sm:w-auto px-6 py-3.5 rounded-full text-sm font-black border transition-all ${focusDuration === opt.value ? 'bg-white text-black border-white shadow-lg' : 'bg-black/40 text-white/50 border-white/20 hover:text-white/90 hover:bg-white/10'}`}>
+               {opt.label}
+             </button>
+           ))}
         </div>
+        
         <div className={`flex justify-center items-center gap-3 mb-8 text-sm md:text-base tracking-[0.6em] font-black uppercase transition-colors ${monster.name.includes('瓶頸') || monster.name.includes('劫') ? 'text-rose-500 animate-pulse' : 'text-white/50'}`}><Compass size={18}/> {monster.name}</div>
         <div className={`text-7xl sm:text-9xl md:text-[12rem] font-mono leading-none font-black tracking-tighter mb-14 transition-all duration-700 ${isActive ? 'text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]' : 'text-white/30'}`}>{formatTime(timeLeft)}</div>
         <div className="flex justify-center gap-6 md:gap-8 font-bold">
@@ -876,9 +880,14 @@ export default function App() {
           </div>
         </div>
 
-        <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10">
-          <p>《凡人修仙傳》原著設定歸作者 忘語 所有</p>
-          <p className="opacity-80">Created by <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 underline transition-all">fb/指數三寶飯</a> with Gemini</p>
+        {/* V64 頁尾重構：加入 sm:hidden 斷行機制 */}
+        <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4">
+          <p className="leading-relaxed">《凡人修仙傳》原著設定歸作者 忘語 所有</p>
+          <p className="opacity-80 leading-loose">
+            Created by <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 underline transition-all text-white">fb/指數三寶飯</a> 
+            <br className="block sm:hidden mt-2" />
+            <span className="sm:ml-3">with Gemini</span>
+          </p>
           <button onClick={()=>{if(window.confirm('確定重置修行？所有成果將遺失。')) { localStorage.clear(); window.location.reload(); }}} className="opacity-60 hover:opacity-100 transition-opacity border border-white/30 px-6 py-3 rounded-full text-xs tracking-widest hover:bg-rose-900/60 hover:border-rose-500/60 hover:text-rose-200 mt-4">散功重修</button>
         </footer>
       </div>
