@@ -55,11 +55,10 @@ const GUIDE_REALMS = [
   { name: '渡劫期', desc: '引動九九重雷劫，成則羽化登仙，敗則化為劫灰。', range: 'Tier 34' }
 ];
 
-// 引擎升級：全法寶皆使用 val: {} 嚴格映射，敘事完美還原
 const ARTIFACT_POOL = [
   { id: 'a01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (反噬減傷 +2%)', val: { def: 0.02 } },
   { id: 'a02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +2%)', val: { atk: 0.02 } },
-  { id: 'a03', rarity: 'COMMON', name: '凝神蒲團', desc: '固本培元 (休息回血比例 +2%)', val: { heal_bonus: 0.02 } },
+  { id: 'a03', rarity: 'COMMON', name: '凝神蒲團', desc: '固本培元 (回血+2%，修為+2%)', val: { heal_bonus: 0.02, qi: 0.02 } },
   { id: 'a04', rarity: 'COMMON', name: '粗糙靈石袋', desc: '聚財之陣 (靈石掉落 +5%)', val: { stone: 0.05 } },
   { id: 'a10', rarity: 'UNCOMMON', name: '神風舟', desc: '御風而行 (閃避率 +5%)', val: { evade: 0.05 } },
   { id: 'a11', rarity: 'UNCOMMON', name: '子母刃', desc: '奇門暗器 (戰力+5%，爆擊率+3%)', val: { atk: 0.05, crit: 0.03 } },
@@ -72,7 +71,7 @@ const ARTIFACT_POOL = [
   { id: 'a30', rarity: 'EPIC', name: '虛天鼎 (仿)', desc: '鎮壓氣運 (減傷+15%，氣運保底+0.15/級)', val: { def: 0.15, luck_floor: 0.15 } },
   { id: 'a31', rarity: 'EPIC', name: '風雷翅', desc: '迅捷如雷 (連擊效率+30%，閃避+10%)', val: { streak_eff: 0.30, evade: 0.10 } },
   { id: 'a32', rarity: 'EPIC', name: '天雷竹', desc: '辟邪神雷 (戰力+40%，爆擊率+5%/級)', val: { atk: 0.40, crit: 0.05 } },
-  { id: 'a33', rarity: 'EPIC', name: '血魔劍', desc: '嗜血渴望 (戰力+20%，爆擊率+10%/級)', val: { atk: 0.20, crit: 0.10 } },
+  { id: 'a33', rarity: 'EPIC', name: '血魔劍', desc: '飲血邪器 (戰力+20%，爆擊+10%，回血+10%/級)', val: { atk: 0.20, crit: 0.10, heal_bonus: 0.10 } },
   { id: 'a40', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖 (閃避率+15%，連擊上限+50%/級)', val: { evade: 0.15, streak_cap: 0.50 } },
   { id: 'a41', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣 (戰力+50%，連擊效率+50%，爆擊+5%/級)', val: { atk: 0.50, streak_eff: 0.50, crit: 0.05 } },
   { id: 'a42', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '替身擋災 (氣血+100%，免死+5%/級)', val: { hp: 1.00, revive: 0.05 } },
@@ -91,7 +90,7 @@ const SECRET_BOOKS = [
   { id: 's_01', rarity: 'UNCOMMON', name: '羅煙步', desc: '閃避靈壓。閃避率 +8%/級', val: { evade: 0.08 } },
   { id: 's_02', rarity: 'RARE', name: '血靈鑽', desc: '爆擊加成。爆擊傷害 +40%/級', val: { crit_dmg: 0.40 } },
   { id: 's_03', rarity: 'RARE', name: '大衍決', desc: '神識分化。連擊效率+15%，氣運+0.05/級', val: { streak_eff: 0.15, luck_floor: 0.05 } },
-  { id: 's_04', rarity: 'EPIC', name: '大庚劍陣', desc: '連擊上限。連擊增傷上限 +20%/級', val: { streak_cap: 0.20 } },
+  { id: 's_04', rarity: 'EPIC', name: '大庚劍陣', desc: '無堅不摧。戰力+30%，連擊上限+20%/級', val: { atk: 0.30, streak_cap: 0.20 } },
   { id: 's_05', rarity: 'LEGENDARY', name: '元磁神光', desc: '克制五行。戰力與減傷 +20%/級', val: { atk: 0.20, def: 0.20 } },
   { id: 's_06', rarity: 'MYTHIC', name: '梵聖真魔功', desc: '法相金身。戰力+50%，減傷+10%/級', val: { atk: 0.50, def: 0.10 } },
   { id: 's_07', rarity: 'RARE', name: '辟邪神雷', desc: '至陽之雷。爆擊率+5%，爆傷+30%/級', val: { crit: 0.05, crit_dmg: 0.30 } },
@@ -103,11 +102,12 @@ const SECRET_BOOKS = [
   { id: 's_13', rarity: 'EPIC', name: '明清靈目', desc: '看破虛妄。氣運保底 +0.1/級', val: { luck_floor: 0.10 } },
 ];
 
+// SP 點數博弈：將上限解鎖至 20，讓玩家後期必須思考流派取捨
 const BASIC_SKILLS = [
-  { id: 'b_qi', name: '長春功', desc: '基礎靈氣獲取提升 +10%/級', val: { qi: 0.1 }, maxLvl: 10 },
-  { id: 'b_atk', name: '青元劍訣', desc: '基礎戰鬥力提升 +10%/級', val: { atk: 0.1 }, maxLvl: 10 },
-  { id: 'b_hp', name: '明王訣', desc: '基礎氣血上限提升 +10%/級', val: { hp: 0.1 }, maxLvl: 10 },
-  { id: 'b_stone', name: '天眼術', desc: '任務靈石收益提升 +15%/級', val: { stone: 0.15 }, maxLvl: 10 },
+  { id: 'b_qi', name: '長春功', desc: '基礎靈氣獲取提升 +10%/級', val: { qi: 0.1 }, maxLvl: 20 },
+  { id: 'b_atk', name: '青元劍訣', desc: '基礎戰鬥力提升 +10%/級', val: { atk: 0.1 }, maxLvl: 20 },
+  { id: 'b_hp', name: '明王訣', desc: '基礎氣血上限提升 +10%/級', val: { hp: 0.1 }, maxLvl: 20 },
+  { id: 'b_stone', name: '天眼術', desc: '任務靈石收益提升 +15%/級', val: { stone: 0.15 }, maxLvl: 20 },
 ];
 
 const RARITY_BASE_COST = { COMMON: 1000, UNCOMMON: 5000, RARE: 25000, EPIC: 100000, LEGENDARY: 500000, MYTHIC: 2500000, DIVINE: 10000000 };
@@ -119,12 +119,11 @@ const RARITY_BASE_COST = { COMMON: 1000, UNCOMMON: 5000, RARE: 25000, EPIC: 1000
  */
 
 export default function App() {
-  // 修復：初始戰力調整為 150，確保玩家第一次專注必能擊殺野狼
   const defaultPlayerState = { realmIndex: 0, qi: 0, qiToNext: 250, vitality: 100, baseMaxVitality: 100, coins: 0, baseCombat: 150, artifacts: [], artifactLvls: {}, basicSkills: {}, secretBooks: {}, arrays: { qi: 0, def: 0 }, streakCount: 0, luck: 1.0, totalFocusTime: 0, history: [], logs: ['【系統】天道印記已連結，修行進度與日誌皆已自動保存。'] };
 
   const [player, setPlayer] = useState(() => {
     try {
-      const saved = localStorage.getItem('xianxia_master_v55_final');
+      const saved = localStorage.getItem('xianxia_master_v56_final');
       if (saved) return JSON.parse(saved);
       return defaultPlayerState;
     } catch (e) { return defaultPlayerState; }
@@ -177,17 +176,16 @@ export default function App() {
   const [isAttacking, setIsAttacking] = useState(false);
   const [isCollapsing, setIsCollapsing] = useState(false);
   const [isCritStrike, setIsCritStrike] = useState(false); 
-  const [isKilling, setIsKilling] = useState(false); // 新增：擊殺特效
+  const [isKilling, setIsKilling] = useState(false); 
   const [isHealing, setIsHealing] = useState(false); 
 
   useEffect(() => { 
-    localStorage.setItem('xianxia_master_v55_final', JSON.stringify(player)); 
+    localStorage.setItem('xianxia_master_v56_final', JSON.stringify(player)); 
     setSaveIndicator(true);
     const timer = setTimeout(() => setSaveIndicator(false), 2000);
     return () => clearTimeout(timer);
   }, [player]);
 
-  // 終極防彈引擎：只依賴 val 物件結構
   const getMultiplier = (type) => {
     let mult = 1.0;
     BASIC_SKILLS.forEach(s => { 
@@ -233,7 +231,9 @@ export default function App() {
   const healCost = Math.floor(maxVitality * 1.5 * forgeDiscount);
   const arrayQiCost = Math.floor(5000 * Math.pow(1.8, (player.arrays?.qi || 0)) * forgeDiscount);
   const arrayDefCost = Math.floor(4000 * Math.pow(1.8, (player.arrays?.def || 0)) * forgeDiscount);
-  const gachaCost = Math.floor(10000 * Math.pow(1.15, player.realmIndex) * forgeDiscount);
+  
+  // 尋寶經濟重構：降基數(1w->5k)，升通膨(1.15->1.18)
+  const gachaCost = Math.floor(5000 * Math.pow(1.18, player.realmIndex) * forgeDiscount);
 
   const addLog = (text) => {
     const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
@@ -294,7 +294,7 @@ export default function App() {
       let killLog = '';
 
       if (newHp === 0) {
-        setIsKilling(true); setTimeout(() => setIsKilling(false), 800); // 擊殺特效
+        setIsKilling(true); setTimeout(() => setIsKilling(false), 800); 
         const killQi = Math.floor(300 * Math.pow(1.18, monster.tier) * getMultiplier('qi'));
         const killCoin = Math.floor(800 * Math.pow(1.15, monster.tier) * getMultiplier('stone') * currentLuck);
         
@@ -440,7 +440,7 @@ export default function App() {
     <div className={`min-h-screen text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-colors duration-300 
       ${isCollapsing ? 'bg-red-950/80 animate-shake' : 
         isKilling ? 'bg-emerald-950/60 animate-pulse' :
-        isCritStrike ? 'bg-amber-900/40 animate-shake' : 'bg-[#020617]'}`}
+        isCritStrike ? 'bg-rose-900/40 animate-shake' : 'bg-[#020617]'}`}
          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&q=80")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
       
       <div className="absolute inset-0 bg-[#020617]/85 backdrop-blur-[1px] z-0 transition-colors duration-300"></div>
@@ -699,11 +699,11 @@ export default function App() {
           <div className="p-4 md:p-8 overflow-y-auto flex-1 custom-scrollbar">
             {activeTab === 'skills' && (
               <div className="space-y-12 animate-pop-in">
-                <div><h3 className="text-white/50 text-[10px] font-black uppercase border-b border-white/10 pb-4 mb-8 tracking-widest">凡俗根基 (SP 研習)</h3><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div><h3 className="text-white/50 text-[10px] font-black uppercase border-b border-white/10 pb-4 mb-8 tracking-widest flex justify-between"><span>凡俗根基 (SP 研習)</span><span className="text-cyan-400">可用 SP: {availableSP}</span></h3><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {BASIC_SKILLS.map(s => { const lvl = player.basicSkills?.[s.id] || 0; return (
                     <div key={s.id} className="p-4 rounded-xl border border-white/10 bg-white/5 flex flex-col justify-between h-48 shadow-inner group">
-                       <div><h4 className="text-white font-bold text-xs tracking-widest uppercase">{s.name} <span className="opacity-30 float-right font-mono">Lv.{lvl}</span></h4><p className="text-[9px] text-white/40 mt-2 leading-relaxed italic">{s.desc}</p></div>
-                       <button onClick={() => { if(availableSP >= 1 && lvl < 10) setPlayer(p => ({...p, basicSkills: {...p.basicSkills, [s.id]: lvl+1}})) }} disabled={availableSP < 1 || lvl >= 10} className="mt-4 w-full py-2 bg-white/10 hover:bg-white text-white hover:text-black rounded text-[9px] font-black border border-white/10 transition-all disabled:opacity-30">研習 (1 SP)</button>
+                       <div><h4 className="text-white font-bold text-xs tracking-widest uppercase">{s.name} <span className="opacity-30 float-right font-mono">Lv.{lvl}/{s.maxLvl}</span></h4><p className="text-[9px] text-white/40 mt-2 leading-relaxed italic">{s.desc}</p></div>
+                       <button onClick={() => { if(availableSP >= 1 && lvl < s.maxLvl) setPlayer(p => ({...p, basicSkills: {...p.basicSkills, [s.id]: lvl+1}})) }} disabled={availableSP < 1 || lvl >= s.maxLvl} className="mt-4 w-full py-2 bg-white/10 hover:bg-cyan-500 hover:border-cyan-400 text-white hover:text-black rounded text-[9px] font-black border border-white/10 transition-all disabled:opacity-30 disabled:hover:bg-white/10 disabled:hover:text-white">研習 (1 SP)</button>
                     </div>
                   );})}
                 </div></div>
@@ -735,11 +735,11 @@ export default function App() {
                    </div>
                 </div>
                 <div className="bg-gradient-to-br from-white/5 to-transparent p-6 md:p-12 rounded-xl border border-white/10 text-center relative overflow-hidden">
-                  <h3 className="text-white font-black text-2xl uppercase mb-6 tracking-widest">萬寶樓尋寶 (吃氣運)</h3>
+                  <h3 className="text-white font-black text-2xl uppercase mb-6 tracking-widest flex items-center justify-center gap-3"><Compass className="text-yellow-400"/> 萬寶樓尋寶</h3>
                   <div className="flex justify-center gap-4 mb-10 overflow-x-auto pb-4 custom-scrollbar">
                      {Object.entries(RARITY).map(([k, r]) => (<div key={k} className="flex flex-col items-center min-w-[70px] opacity-60"><span className={`text-[7px] font-black uppercase ${r.color} drop-shadow-md`}>{r.name}</span><span className="text-[10px] font-mono mt-1 text-white">{(r.weight*100*getMultiplier('luck_floor')).toFixed(1)}%</span></div>))}
                   </div>
-                  <button onClick={handleGacha} disabled={player.coins < gachaCost} className="px-6 md:px-16 py-6 md:py-8 bg-white/10 hover:bg-white text-white hover:text-black font-black rounded-xl shadow-2xl transition-all whitespace-nowrap border border-white/20 disabled:opacity-30">尋寶 ({Math.floor(gachaCost)} 靈石)</button>
+                  <button onClick={handleGacha} disabled={player.coins < gachaCost} className="px-6 md:px-16 py-6 md:py-8 bg-white/10 hover:bg-white text-white hover:text-black font-black rounded-xl shadow-2xl transition-all whitespace-nowrap border border-white/20 disabled:opacity-30 flex items-center justify-center gap-3 mx-auto"><Sparkles size={18}/> 尋寶 ({Math.floor(gachaCost)} 靈石)</button>
                 </div>
               </div>
             )}
