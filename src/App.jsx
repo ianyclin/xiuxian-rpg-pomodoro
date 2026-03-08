@@ -55,7 +55,6 @@ const GUIDE_REALMS = [
   { name: '渡劫期', desc: '引動九九重雷劫，成則羽化登仙，敗則化為劫灰。', range: 'Tier 34' }
 ];
 
-// 重構引擎：使用 val: {} 處理雙棲屬性 (已削峰微調掌天瓶)
 const ARTIFACT_POOL = [
   { id: 'a01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (反噬減傷 +2%)', type: 'def', val: 0.02 },
   { id: 'a02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +2%)', type: 'atk', val: 0.02 },
@@ -81,10 +80,10 @@ const ARTIFACT_POOL = [
   { id: 'a51', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +80%/級)', type: 'special', val: { atk: 0.80, def: 0.80 } },
   { id: 'a52', rarity: 'MYTHIC', name: '乾坤鼎', desc: '逆轉造化 (洞府成本 -40%)', type: 'forge_discount', val: 0.40 },
   { id: 'a53', rarity: 'MYTHIC', name: '七彩珠', desc: '突破極限 (連擊上限提升 150%)', type: 'streak_cap', val: 1.50 },
-  { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+200%，回血+50%/級)', type: 'special', val: { qi: 2.00, heal_bonus: 0.50 } },
+  { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+200%，靈石+100%/級)', type: 'special', val: { qi: 2.00, stone: 1.00 } },
   { id: 'a61', rarity: 'DIVINE', name: '混沌鐘', desc: '時空凝滯 (閃避+30%，連擊效率+100%/級)', type: 'special', val: { evade: 0.30, streak_eff: 1.00 } },
   { id: 'a62', rarity: 'DIVINE', name: '補天石', desc: '天道補缺 (氣運保底 +1.0)', type: 'luck_floor', val: 1.00 },
-  { id: 'a63', rarity: 'DIVINE', name: '聚寶盆', desc: '容納萬物 (靈石獲取 +400%)', type: 'stone', val: 4.00 },
+  { id: 'a63', rarity: 'DIVINE', name: '聚寶盆', desc: '容納萬物 (靈石獲取+400%，氣運+0.5/級)', type: 'special', val: { stone: 4.00, luck_floor: 0.50 } },
 ];
 
 const SECRET_BOOKS = [
@@ -123,7 +122,7 @@ export default function App() {
 
   const [player, setPlayer] = useState(() => {
     try {
-      const saved = localStorage.getItem('xianxia_master_v51_final');
+      const saved = localStorage.getItem('xianxia_master_v52_final');
       if (saved) return JSON.parse(saved);
       return defaultPlayerState;
     } catch (e) { return defaultPlayerState; }
@@ -173,7 +172,7 @@ export default function App() {
   const [isHealing, setIsHealing] = useState(false); 
 
   useEffect(() => { 
-    localStorage.setItem('xianxia_master_v51_final', JSON.stringify(player)); 
+    localStorage.setItem('xianxia_master_v52_final', JSON.stringify(player)); 
     setSaveIndicator(true);
     const timer = setTimeout(() => setSaveIndicator(false), 2000);
     return () => clearTimeout(timer);
@@ -256,10 +255,13 @@ export default function App() {
     setTimeLeft(focusDuration);
   };
 
+// 終極雙軌經濟引擎：保留打怪的絕對必要性，同時給予時間保底
   const handleComplete = () => {
     setIsActive(false); setTargetEndTime(null);
+    
     if (mode === 'focus') {
       setIsAttacking(true); setTimeout(() => setIsAttacking(false), 500);
+      
       const isCrit = Math.random() < critRate;
       const damageBase = Math.floor(currentCombatPower * (focusDuration / 1500));
       const actualDamage = isCrit ? Math.floor(damageBase * critDmg) : damageBase;
@@ -267,51 +269,83 @@ export default function App() {
       if (isCrit) { setIsCritStrike(true); setTimeout(() => setIsCritStrike(false), 600); }
 
       const newHp = Math.max(0, monster.hp - actualDamage);
-      if (newHp === 0) handleDefeat();
-      else { setMonster(prev => ({ ...prev, hp: newHp })); setMode('break'); setTimeLeft(5 * 60); }
-      addLog(isCrit ? `🔥 【爆擊】造成 ${actualDamage} 點毀滅傷害！` : `[運功] 造成 ${actualDamage} 點傷害。`);
+      
+      // 軌道 A：基礎吐納保底 (Time-based Passive Income)
+      // 解決後期卡怪幾小時沒收入的問題，但收益刻意壓低。
+      const timeRatio = focusDuration / 1500;
+      const currentLuck = getMultiplier('luck_floor');
+      const passiveQi = Math.floor(50 * Math.pow(1.18, player.realmIndex + 1) * getMultiplier('qi') * timeRatio);
+      const passiveCoin = Math.floor(50 * Math.pow(1.15, player.realmIndex + 1) * getMultiplier('stone') * currentLuck * timeRatio);
+
+      let nextQi = player.qi + passiveQi;
+      let nextCoins = player.coins + passiveCoin;
+      let nextRealm = player.realmIndex;
+      let nextQiToNext = player.qiToNext;
+      let nextHistory = player.history;
+      let newArtifacts = [...(player.artifacts || [])];
+      
+      let killLog = '';
+
+      // 軌道 B：斬妖除魔戰利品 (On-Kill Loot)
+      // 這是升級戰力/爆擊/連擊的唯一動力！大筆財富與法寶皆鎖定於此。
+      if (newHp === 0) {
+        const killQi = Math.floor(100 * Math.pow(1.18, monster.tier) * getMultiplier('qi'));
+        const killCoin = Math.floor(300 * Math.pow(1.15, monster.tier) * getMultiplier('stone') * currentLuck);
+        
+        nextQi += killQi;
+        nextCoins += killCoin;
+        
+        // 【核心修正】：法寶機緣只能透過「擊殺怪物」獲得！
+        if (Math.random() < (0.15 * currentLuck)) {
+            const potential = ARTIFACT_POOL.filter(a => !newArtifacts.includes(a.id));
+            if (potential.length > 0) {
+                newArtifacts.push(potential[0].id);
+                killLog += ` 🎁 斬獲異寶【${potential[0].name}】！`;
+            }
+        }
+
+        // 結算是否滿足突破條件
+        if (nextQi >= nextQiToNext && nextRealm < REALMS.length - 1) {
+            nextRealm++;
+            nextQi -= nextQiToNext;
+            nextQiToNext = Math.floor(nextQiToNext * 1.28);
+            nextHistory = [...(player.history || []), { name: REALMS[nextRealm].name, time: (player.totalFocusTime || 0) + focusDuration }];
+            setCelebration({ name: REALMS[nextRealm].name });
+            killLog = `☄️ 【突破】擊殺妖獸並晉升！獲額外修為 ${killQi}，靈石 ${killCoin}。` + killLog;
+        } else {
+            killLog = `⚔️ 【擊殺】斬殺妖獸！奪得額外修為 ${killQi}，靈石 ${killCoin}。` + killLog;
+        }
+        setMonster(generateMonsterState(nextRealm));
+      } else {
+        // 怪物未死，僅扣血
+        setMonster(prev => ({ ...prev, hp: newHp }));
+      }
+
+      // 日誌動態合併
+      const dmgLog = isCrit ? `🔥 【爆擊】造成 ${actualDamage} 傷害。` : `[運功] 造成 ${actualDamage} 傷害。`;
+      const baseLog = `獲基礎修為 ${passiveQi}，零碎靈石 ${passiveCoin}。`;
+      addLog(killLog !== '' ? `${dmgLog} ${killLog}` : `${dmgLog} ${baseLog}`);
+
+      setPlayer(p => ({
+          ...p,
+          realmIndex: nextRealm,
+          qi: nextQi,
+          qiToNext: nextQiToNext,
+          coins: nextCoins,
+          streakCount: p.streakCount + 1,
+          totalFocusTime: (p.totalFocusTime || 0) + focusDuration,
+          artifacts: newArtifacts,
+          history: nextHistory
+      }));
+      setMode('break'); setTimeLeft(5 * 60);
+
     } else { 
+      // 休息吐納模式不變
       setMode('focus'); setTimeLeft(focusDuration); 
       const heal = Math.floor(maxVitality * healPct);
       setPlayer(p => ({ ...p, vitality: Math.min(maxVitality, p.vitality + heal) }));
       addLog(`[吐納] 完成休息，恢復 ${heal} 氣血。`); 
     }
-  };
-
-  const handleDefeat = () => {
-    const currentLuck = getMultiplier('luck_floor');
-    // 移除 timeBonus，避免與基礎時長傷害雙重通膨
-    const baseQi = 100 * Math.pow(1.18, monster.tier); 
-    const baseCoin = Math.floor(200 * Math.pow(1.15, monster.tier) * currentLuck);
-    
-    let qiGain = Math.floor(baseQi * getMultiplier('qi'));
-    let coinGain = Math.floor(baseCoin * getMultiplier('stone'));
-    let nQi = player.qi + qiGain, nRealm = player.realmIndex, upgraded = false;
-    
-    if (nQi >= player.qiToNext && nRealm < REALMS.length - 1) { 
-      nRealm++; nQi -= player.qiToNext; upgraded = true; 
-    }
-    
-    let newArtifacts = [...(player.artifacts || [])];
-    if (Math.random() < (0.12 * currentLuck)) {
-        const potential = ARTIFACT_POOL.filter(a => !newArtifacts.includes(a.id));
-        if (potential.length > 0) { newArtifacts.push(potential[0].id); addLog(`🎁 【機緣】獲得異寶：【${potential[0].name}】！`); }
-    }
-    
-    setPlayer(p => ({ 
-      ...p, 
-      realmIndex: nRealm, 
-      qi: nQi, 
-      qiToNext: upgraded ? Math.floor(p.qiToNext * 1.28) : p.qiToNext, 
-      coins: p.coins + coinGain, 
-      streakCount: p.streakCount + 1, 
-      totalFocusTime: (p.totalFocusTime || 0) + focusDuration, 
-      artifacts: newArtifacts, 
-      history: upgraded ? [...(p.history || []), { name: REALMS[nRealm].name, time: (p.totalFocusTime || 0) + focusDuration }] : (p.history || [])
-    }));
-    
-    if (upgraded) setCelebration({ name: REALMS[nRealm].name });
-    setMonster(generateMonsterState(nRealm)); setMode('break'); setTimeLeft(5 * 60);
   };
 
   const handleGacha = () => {
@@ -460,7 +494,7 @@ export default function App() {
                 <div className="space-y-4 text-sm leading-relaxed animate-pop-in">
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
                      <h3 className="text-emerald-400 text-base mb-2 flex items-center gap-2 font-black"><Play size={16}/> 運轉周天 (專注計時)</h3>
-                     <p className="text-white/70">點擊開始計時。完成後獲取靈氣與靈石機緣。專注越久收穫越高。此版本支援「離線修行」，開始後可關閉螢幕自動補償進度。</p>
+                     <p className="text-white/70">點擊開始計時。每次完成專注皆會獲得靈氣與靈石機緣。專注越久收穫越高。此版本支援「離線修行」，開始後可關閉螢幕自動補償進度。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
                      <h3 className="text-cyan-400 text-base mb-2 flex items-center gap-2 font-black"><RefreshCw size={16}/> 吐納回血 (休息時間)</h3>
