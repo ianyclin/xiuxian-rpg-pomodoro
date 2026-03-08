@@ -55,6 +55,7 @@ const GUIDE_REALMS = [
   { name: '渡劫期', desc: '引動九九重雷劫，成則羽化登仙，敗則化為劫灰。', range: 'Tier 34' }
 ];
 
+// 重構引擎：使用 val: {} 處理雙棲屬性
 const ARTIFACT_POOL = [
   { id: 'a01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (反噬減傷 +2%)', type: 'def', val: 0.02 },
   { id: 'a02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +2%)', type: 'atk', val: 0.02 },
@@ -68,35 +69,35 @@ const ARTIFACT_POOL = [
   { id: 'a21', rarity: 'RARE', name: '玄鐵飛天盾', desc: '堅不可摧 (反噬減傷 +15%)', type: 'def', val: 0.15 },
   { id: 'a22', rarity: 'RARE', name: '碧玉葫蘆', desc: '納寶空間 (靈石掉落 +30%)', type: 'stone', val: 0.30 },
   { id: 'a23', rarity: 'RARE', name: '金光磚', desc: '重擊崩碎 (爆擊傷害 +25%)', type: 'crit_dmg', val: 0.25 },
-  { id: 'a30', rarity: 'EPIC', name: '虛天鼎 (仿)', desc: '鎮壓氣運 (減傷+15%，氣運保底+0.15/級)', type: 'special', val: 0 },
+  { id: 'a30', rarity: 'EPIC', name: '虛天鼎 (仿)', desc: '鎮壓氣運 (減傷+15%，氣運保底+0.15/級)', type: 'special', val: { def: 0.15, luck_floor: 0.15 } },
   { id: 'a31', rarity: 'EPIC', name: '風雷翅', desc: '迅捷如雷 (連擊疊加效率 +40%)', type: 'streak_eff', val: 0.40 },
-  { id: 'a32', rarity: 'EPIC', name: '天雷竹', desc: '辟邪神雷 (戰力加成 +40%)', type: 'atk', val: 0.40 },
-  { id: 'a33', rarity: 'EPIC', name: '血魔劍', desc: '嗜血渴望 (爆擊率 +10%)', type: 'crit', val: 0.10 },
-  { id: 'a40', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖 (反噬減傷 +50%)', type: 'def', val: 0.50 },
-  { id: 'a41', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣 (戰力+80%，爆擊率+8%/級)', type: 'special', val: 0 },
-  { id: 'a42', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '替身擋災 (氣血+100%，免死+5%/級)', type: 'special', val: 0 },
-  { id: 'a43', rarity: 'LEGENDARY', name: '成熟體噬金蟲', desc: '無物不噬 (戰力+100%，爆傷+60%/級)', type: 'special', val: 0 },
-  { id: 'a50', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '法則破壞 (戰力+250%，爆傷+150%/級)', type: 'special', val: 0 },
-  { id: 'a51', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +80%/級)', type: 'special', val: 0 },
+  { id: 'a32', rarity: 'EPIC', name: '天雷竹', desc: '辟邪神雷 (戰力+40%，爆擊率+5%/級)', type: 'special', val: { atk: 0.40, crit: 0.05 } },
+  { id: 'a33', rarity: 'EPIC', name: '血魔劍', desc: '嗜血渴望 (戰力+20%，爆擊率+10%/級)', type: 'special', val: { atk: 0.20, crit: 0.10 } },
+  { id: 'a40', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖 (減傷+50%，閃避率+10%/級)', type: 'special', val: { def: 0.50, evade: 0.10 } },
+  { id: 'a41', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣 (戰力+80%，爆擊率+8%/級)', type: 'special', val: { atk: 0.80, crit: 0.08 } },
+  { id: 'a42', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '替身擋災 (氣血+100%，免死+5%/級)', type: 'special', val: { hp: 1.00, revive: 0.05 } },
+  { id: 'a43', rarity: 'LEGENDARY', name: '成熟體噬金蟲', desc: '無物不噬 (戰力+100%，爆傷+60%/級)', type: 'special', val: { atk: 1.00, crit_dmg: 0.60 } },
+  { id: 'a50', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '法則破壞 (戰力+250%，爆傷+150%/級)', type: 'special', val: { atk: 2.50, crit_dmg: 1.50 } },
+  { id: 'a51', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +80%/級)', type: 'special', val: { atk: 0.80, def: 0.80 } },
   { id: 'a52', rarity: 'MYTHIC', name: '乾坤鼎', desc: '逆轉造化 (洞府成本 -40%)', type: 'forge_discount', val: 0.40 },
-  { id: 'a53', rarity: 'MYTHIC', name: '七彩珠', desc: '突破極限 (連擊上限提升 150%)', type: 'streak_cap', val: 1.50 },
-  { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+500%，回血+20%/級)', type: 'special', val: 0 },
-  { id: 'a61', rarity: 'DIVINE', name: '混沌鐘', desc: '時空凝滯 (閃避+30%，連擊效率+100%/級)', type: 'special', val: 0 },
-  { id: 'a62', rarity: 'DIVINE', name: '補天石', desc: '天道補缺 (氣運保底 +1.0)', type: 'luck_floor', val: 1.00 },
-  { id: 'a63', rarity: 'DIVINE', name: '聚寶盆', desc: '容納萬物 (靈石獲取 +400%)', type: 'stone', val: 4.00 },
+  { id: 'a53', rarity: 'MYTHIC', name: '七彩珠', desc: '突破極限 (連擊上限+150%，連擊效率+50%/級)', type: 'special', val: { streak_cap: 1.50, streak_eff: 0.50 } },
+  { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+500%，回血+20%/級)', type: 'special', val: { qi: 5.00, heal_bonus: 0.20 } },
+  { id: 'a61', rarity: 'DIVINE', name: '混沌鐘', desc: '時空凝滯 (閃避+15%，連擊效率+100%/級)', type: 'special', val: { evade: 0.15, streak_eff: 1.00 } },
+  { id: 'a62', rarity: 'DIVINE', name: '補天石', desc: '天道補缺 (氣運保底+1.0，免死+10%/級)', type: 'special', val: { luck_floor: 1.00, revive: 0.10 } },
+  { id: 'a63', rarity: 'DIVINE', name: '聚寶盆', desc: '容納萬物 (靈石獲取+400%，氣運+0.5/級)', type: 'special', val: { stone: 4.00, luck_floor: 0.50 } },
 ];
 
 const SECRET_BOOKS = [
   { id: 's_01', rarity: 'UNCOMMON', name: '羅煙步', desc: '閃避靈壓。閃避率 +8%/級', type: 'evade', val: 0.08 },
   { id: 's_02', rarity: 'RARE', name: '血靈鑽', desc: '爆擊加成。爆擊傷害 +40%/級', type: 'crit_dmg', val: 0.40 },
-  { id: 's_03', rarity: 'RARE', name: '大衍決', desc: '神識分化。連擊效率+15%，氣運+0.05/級', type: 'special', val: 0 },
+  { id: 's_03', rarity: 'RARE', name: '大衍決', desc: '神識分化。連擊效率+15%，氣運+0.05/級', type: 'special', val: { streak_eff: 0.15, luck_floor: 0.05 } },
   { id: 's_04', rarity: 'EPIC', name: '大庚劍陣', desc: '連擊上限。連擊增傷上限 +20%/級', type: 'streak_cap', val: 0.20 },
-  { id: 's_05', rarity: 'LEGENDARY', name: '元磁神光', desc: '克制五行。戰力與減傷 +10%/級', type: 'special', val: 0 },
+  { id: 's_05', rarity: 'LEGENDARY', name: '元磁神光', desc: '克制五行。戰力與減傷 +10%/級', type: 'special', val: { atk: 0.10, def: 0.10 } },
   { id: 's_06', rarity: 'MYTHIC', name: '梵聖真魔功', desc: '三頭六臂。戰力加成 +60%/級', type: 'atk', val: 0.60 },
   { id: 's_07', rarity: 'RARE', name: '辟邪神雷', desc: '至陽之雷。爆擊率 +6%/級', type: 'crit', val: 0.06 },
   { id: 's_08', rarity: 'EPIC', name: '拘魂術', desc: '掠奪靈氣。擊殺靈氣 +20%/級', type: 'qi', val: 0.20 },
   { id: 's_09', rarity: 'UNCOMMON', name: '青木訣', desc: '生生不息。休息回血比例 +2%/級', type: 'heal_bonus', val: 0.02 },
-  { id: 's_10', rarity: 'LEGENDARY', name: '驚蟄十二變', desc: '變身真靈。氣血上限+35%，爆傷+20%/級', type: 'special', val: 0 },
+  { id: 's_10', rarity: 'LEGENDARY', name: '驚蟄十二變', desc: '變身真靈。氣血上限+35%，爆傷+20%/級', type: 'special', val: { hp: 0.35, crit_dmg: 0.20 } },
   { id: 's_11', rarity: 'DIVINE', name: '涅槃金身', desc: '不死不滅。復活機率 +8%/級', type: 'revive', val: 0.08 },
   { id: 's_12', rarity: 'RARE', name: '太乙煉器訣', desc: '器道真解。洞府成本 -8%/級', type: 'forge_discount', val: 0.08 },
   { id: 's_13', rarity: 'EPIC', name: '天機訣', desc: '窺探天道。氣運保底 +0.1/級', type: 'luck_floor', val: 0.10 },
@@ -122,7 +123,7 @@ export default function App() {
 
   const [player, setPlayer] = useState(() => {
     try {
-      const saved = localStorage.getItem('xianxia_master_v49_final');
+      const saved = localStorage.getItem('xianxia_master_v50_final');
       if (saved) return JSON.parse(saved);
       return defaultPlayerState;
     } catch (e) { return defaultPlayerState; }
@@ -131,7 +132,6 @@ export default function App() {
   const [saveIndicator, setSaveIndicator] = useState(false);
   const formatTime = (s) => `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
   
-  // 34 階怪物清單 (完整涵蓋)
   const getMonsterName = (tier) => {
     const monsters = [
       '野狼幫眾', '墨大夫', '金光上人', '陸師兄',
@@ -171,44 +171,21 @@ export default function App() {
   const [isHealing, setIsHealing] = useState(false); 
 
   useEffect(() => { 
-    localStorage.setItem('xianxia_master_v49_final', JSON.stringify(player)); 
+    localStorage.setItem('xianxia_master_v50_final', JSON.stringify(player)); 
     setSaveIndicator(true);
     const timer = setTimeout(() => setSaveIndicator(false), 2000);
     return () => clearTimeout(timer);
   }, [player]);
 
-const getMultiplier = (type) => {
+  // 升級版引擎：完美支援 `special` 物件，避免手動寫死 if-else
+  const getMultiplier = (type) => {
     let mult = 1.0;
     BASIC_SKILLS.forEach(s => { if (player.basicSkills?.[s.id] > 0 && s.type === type) mult += s.val * player.basicSkills[s.id]; });
     
     const processItem = (item, lvl) => {
        if (!item) return;
-       // 常規屬性
        if (item.type === type) mult += item.val * lvl;
-       
-       // 因果律複合屬性 (精確避免溢出)
-       if (item.id === 's_03' && type === 'streak_eff') mult += 0.15 * lvl; // 大衍決
-       if (item.id === 's_03' && type === 'luck_floor') mult += 0.05 * lvl;
-       if (item.id === 's_05' && ['atk', 'def'].includes(type)) mult += 0.10 * lvl; // 元磁神光
-       if (item.id === 's_10' && type === 'hp') mult += 0.35 * lvl; // 驚蟄
-       if (item.id === 's_10' && type === 'crit_dmg') mult += 0.20 * lvl;
-       
-       if (item.id === 'a30' && type === 'def') mult += 0.15 * lvl; // 虛天鼎
-       if (item.id === 'a30' && type === 'luck_floor') mult += 0.15 * lvl; 
-       if (item.id === 'a41' && type === 'atk') mult += 0.80 * lvl; // 青竹蜂雲劍
-       if (item.id === 'a41' && type === 'crit') mult += 0.08 * lvl;
-       if (item.id === 'a42' && type === 'hp') mult += 1.00 * lvl; // 大衍神君傀儡
-       if (item.id === 'a42' && type === 'def') mult += 0.30 * lvl;
-       if (item.id === 'a42' && type === 'revive') mult += 0.05 * lvl;
-       if (item.id === 'a43' && type === 'atk') mult += 1.00 * lvl; // 噬金蟲
-       if (item.id === 'a43' && type === 'crit_dmg') mult += 0.60 * lvl;
-       if (item.id === 'a50' && type === 'atk') mult += 2.50 * lvl; // 玄天斬靈劍
-       if (item.id === 'a50' && type === 'crit_dmg') mult += 1.50 * lvl;
-       if (item.id === 'a51' && ['atk', 'def'].includes(type)) mult += 0.80 * lvl; // 元磁神山
-       if (item.id === 'a60' && type === 'qi') mult += 5.00 * lvl; // 掌天瓶
-       if (item.id === 'a60' && type === 'heal_bonus') mult += 0.20 * lvl;
-       if (item.id === 'a61' && type === 'evade') mult += 0.30 * lvl; // 混沌鐘
-       if (item.id === 'a61' && type === 'streak_eff') mult += 1.00 * lvl;
+       else if (item.type === 'special' && item.val[type] !== undefined) mult += item.val[type] * lvl;
     };
     
     Object.entries(player.secretBooks || {}).forEach(([id, lvl]) => { processItem(SECRET_BOOKS.find(x => x.id === id), lvl); });
@@ -223,17 +200,17 @@ const getMultiplier = (type) => {
   const themeColorClass = `text-${currentRealmData.color}-400`;
   const themeBorderClass = `border-${currentRealmData.color}-500/20`;
 
-const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連擊上限提升至 400%
+  const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連擊上限最大為 +400% (即 5.0x)
   const streakEff = getMultiplier('streak_eff'); 
   const streakBonusMult = Math.min(streakCap, (player.streakCount || 0) * 0.05 * streakEff);
   const comboMultiplier = 1 + streakBonusMult;
   
-  // 天道法則硬上限突破
-  const critRate = Math.min(0.85, getMultiplier('crit') - 1);       // 極限 85%
-  const critDmg = Math.min(6.0, 2.0 + (getMultiplier('crit_dmg') - 1)); // 爆傷極限 6 倍
-  const evadeRate = Math.min(0.75, getMultiplier('evade') - 1);     // 極限 75%
-  const reviveRate = Math.min(0.65, getMultiplier('revive') - 1);   // 極限 65%
-  const healPct = Math.min(0.60, 0.20 + (getMultiplier('heal_bonus') - 1)); // 極限 60%
+  // 天道法則硬上限解鎖
+  const critRate = Math.min(0.85, getMultiplier('crit') - 1);       // 爆擊極限 85%
+  const critDmg = Math.min(20.0, 2.0 + (getMultiplier('crit_dmg') - 1)); // 爆傷極限解鎖至 20 倍 (修仙者一劍破天)
+  const evadeRate = Math.min(0.75, getMultiplier('evade') - 1);     // 閃避極限 75%
+  const reviveRate = Math.min(0.65, getMultiplier('revive') - 1);   // 復活極限 65%
+  const healPct = Math.min(0.60, 0.20 + (getMultiplier('heal_bonus') - 1)); // 吐納極限 60%
   const defMultiplier = getMultiplier('def');
   const dmgTakenPct = (1 / defMultiplier) * 100; 
 
@@ -268,7 +245,8 @@ const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連
     if (Math.random() < evadeRate) { addLog(`💨 【羅煙閃避】成功閃避反噬！`); }
     else {
       setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
-      const penalty = Math.floor(monster.tier * 30 * (1 / defMultiplier));
+      // 死亡懲罰公式升級：絕對重創機制 (基礎平傷 + 境界成長)
+      const penalty = Math.floor((maxVitality * 0.20 + monster.tier * 50) * (1 / defMultiplier));
       let nextHp = player.vitality - penalty;
       if (nextHp <= 0) {
         if (Math.random() < reviveRate) { nextHp = maxVitality; addLog(`✨ 【涅槃重生】轉危為安！`); }
@@ -298,7 +276,6 @@ const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連
     }
   };
 
-  // 氣運修復：讀取 currentLuck 並保證歷史數據存檔完整
   const handleDefeat = () => {
     const currentLuck = getMultiplier('luck_floor');
     const timeBonus = focusDuration >= 3600 ? 1.25 : 1.0;
@@ -335,7 +312,6 @@ const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連
     setMonster(generateMonsterState(nRealm)); setMode('break'); setTimeLeft(5 * 60);
   };
 
-  // 氣運修復：套用 currentLuck
   const handleGacha = () => {
     if (player.coins < gachaCost) return;
     const currentLuck = getMultiplier('luck_floor');
@@ -401,7 +377,6 @@ const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連
     }
   }, [isActive, targetEndTime]);
 
-  // 圖表防崩潰修復
   const InsightsChart = () => {
     const data = player.history || [];
     if (data.length < 2) return <div className="h-full flex items-center justify-center text-white/10 uppercase tracking-widest font-bold">識海未成，尚無投影</div>;
@@ -485,7 +460,7 @@ const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
                      <h3 className="text-cyan-400 text-base mb-2 flex items-center gap-2 font-black"><RefreshCw size={16}/> 吐納回血 (休息時間)</h3>
-                     <p className="text-white/70">完成 5 分鐘休息即算吐納成功，自動恢復 20%~50% 氣血。</p>
+                     <p className="text-white/70">完成 5 分鐘休息即算吐納成功，自動恢復 20%~60% 氣血。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
                      <h3 className="text-rose-400 text-base mb-2 flex items-center gap-2 font-black"><Square size={16}/> 走火入魔 (強行出關)</h3>
@@ -516,7 +491,7 @@ const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border-l-2 border-purple-500">
                      <h3 className="text-purple-400 text-base mb-2 flex items-center gap-2 font-black"><Lightbulb size={16}/> 天道法則上限</h3>
-                     <p className="text-white/70">請注意屬性上限以避免浪費資源：閃避極限 <span className="text-white font-mono">60%</span>，復活極限 <span className="text-white font-mono">50%</span>，爆擊率極限 <span className="text-white font-mono">75%</span>。</p>
+                     <p className="text-white/70">請注意屬性上限以避免浪費資源：閃避極限 <span className="text-white font-mono">75%</span>，復活極限 <span className="text-white font-mono">65%</span>，爆擊率極限 <span className="text-white font-mono">85%</span>。爆擊傷害極限解鎖至 <span className="text-white font-mono">20倍</span>。</p>
                    </section>
                 </div>
               )}
@@ -544,11 +519,11 @@ const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連
                 </div>
                 <div className="space-y-4">
                   <h3 className="text-xs text-white/40 uppercase border-b border-white/5 pb-2">天道法則 (Hard Capped Stats)</h3>
-                  <div className="flex justify-between text-sm"><span className="text-slate-400">休息回血比例 <span className="text-[9px] opacity-50">(極限 50%)</span></span><span className="text-emerald-400 font-mono">{(healPct * 100).toFixed(1)}%</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-slate-400">爆擊率 <span className="text-[9px] opacity-50">(極限 75%)</span></span><span className="text-purple-400 font-mono">{(critRate * 100).toFixed(1)}%</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-slate-400">閃避免傷率 <span className="text-[9px] opacity-50">(極限 60%)</span></span><span className="text-emerald-400 font-mono">{(evadeRate * 100).toFixed(1)}%</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-slate-400">涅槃復活率 <span className="text-[9px] opacity-50">(極限 50%)</span></span><span className="text-emerald-400 font-mono">{(reviveRate * 100).toFixed(1)}%</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-slate-400">連擊增傷上限 <span className="text-[9px] opacity-50">(極限 +300%)</span></span><span className="text-rose-400 font-mono">+{((streakCap - 0.5) * 100).toFixed(0)}%</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-slate-400">休息回血比例 <span className="text-[9px] opacity-50">(極限 60%)</span></span><span className="text-emerald-400 font-mono">{(healPct * 100).toFixed(1)}%</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-slate-400">爆擊率 <span className="text-[9px] opacity-50">(極限 85%)</span></span><span className="text-purple-400 font-mono">{(critRate * 100).toFixed(1)}%</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-slate-400">閃避免傷率 <span className="text-[9px] opacity-50">(極限 75%)</span></span><span className="text-emerald-400 font-mono">{(evadeRate * 100).toFixed(1)}%</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-slate-400">涅槃復活率 <span className="text-[9px] opacity-50">(極限 65%)</span></span><span className="text-emerald-400 font-mono">{(reviveRate * 100).toFixed(1)}%</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-slate-400">連擊增傷上限 <span className="text-[9px] opacity-50">(極限 +400%)</span></span><span className="text-rose-400 font-mono">+{((streakCap - 0.5) * 100).toFixed(0)}%</span></div>
                 </div>
                 <div className="space-y-4 md:col-span-2 mt-2">
                   <h3 className="text-xs text-white/40 uppercase border-b border-white/5 pb-2">抗性與經濟 (Defense & Economy)</h3>
@@ -598,26 +573,20 @@ const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連
                  <span className="text-[7px] text-cyan-400 uppercase font-black flex items-center gap-1"><Zap size={8}/> SP</span>
                  <span className="text-sm text-cyan-400 font-mono font-bold drop-shadow-md">{availableSP}</span>
                </div>
-<div className="flex flex-col items-center md:items-end min-w-[70px]">
-  <span className="text-[7px] text-rose-500 uppercase font-black flex items-center gap-1"><Sword size={8}/> 連擊</span>
-  <span className={`text-sm text-rose-500 font-mono font-bold drop-shadow-md transition-all ${comboMultiplier > 2.0 ? 'text-rose-300 scale-125 animate-pulse drop-shadow-[0_0_8px_rgba(244,63,94,0.8)]' : ''}`}>
-    x{comboMultiplier.toFixed(2)}
-  </span>
-</div>
+               <div className="flex flex-col items-center md:items-end min-w-[70px]">
+                 <span className="text-[7px] text-rose-500 uppercase font-black flex items-center gap-1"><Sword size={8}/> 連擊</span>
+                 <span className={`text-sm text-rose-500 font-mono font-bold drop-shadow-md transition-all duration-500 ${comboMultiplier > 2.0 ? 'text-rose-300 scale-110 animate-pulse drop-shadow-[0_0_10px_rgba(244,63,94,0.8)]' : ''}`}>
+                   x{comboMultiplier.toFixed(2)}
+                 </span>
+               </div>
                <div className="flex flex-col items-center md:items-end font-bold min-w-[70px]">
-  <span className="text-[7px] text-emerald-400 uppercase font-black flex items-center gap-1 font-bold">
-    <Clover size={8}/> 氣運
-  </span>
-  <span 
-    className={`text-sm text-emerald-400 font-mono font-bold drop-shadow-md transition-all duration-500 ${
-      getMultiplier('luck_floor') > 1.5 
-        ? 'text-yellow-400 scale-110 animate-bounce' 
-        : ''
-    }`}
-  >
-    x{getMultiplier('luck_floor').toFixed(2)}
-  </span>
-</div>
+                 <span className="text-[7px] text-emerald-400 uppercase font-black flex items-center gap-1 font-bold">
+                   <Clover size={8}/> 氣運
+                 </span>
+                 <span className={`text-sm text-emerald-400 font-mono font-bold drop-shadow-md transition-all duration-500 ${getMultiplier('luck_floor') > 1.5 ? 'text-yellow-400 scale-110 animate-bounce drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : ''}`}>
+                   x{getMultiplier('luck_floor').toFixed(2)}
+                 </span>
+               </div>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 relative z-10">
@@ -651,12 +620,12 @@ const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連
       </div>
 
       {/* 計時器主區塊 */}
-      <div className={`w-full max-w-4xl bg-slate-900/30 backdrop-blur-3xl p-6 md:p-12 rounded-xl border border-white/5 text-center mb-8 z-10 shadow-2xl transition-all ${isActive ? 'scale-105 shadow-[0_0_30px_rgba(255,255,255,0.1)]' : ''}`}>
+      <div className={`w-full max-w-4xl bg-slate-900/30 backdrop-blur-3xl p-6 md:p-12 rounded-xl border border-white/5 text-center mb-8 z-10 shadow-2xl transition-all duration-700 ${isActive ? 'scale-[1.02] shadow-[0_0_40px_rgba(16,185,129,0.15)] border-emerald-500/20' : ''}`}>
         <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-10 font-bold">
            {FOCUS_OPTIONS.map(opt => (<button key={opt.value} onClick={() => { if(!isActive) { setFocusDuration(opt.value); setTimeLeft(opt.value); }}} className={`px-4 py-1.5 rounded-full text-[10px] font-black border transition-all ${focusDuration === opt.value ? 'bg-white text-black border-white' : 'bg-black/40 text-white/40 border-white/10 hover:text-white/80'}`}>{opt.label}</button>))}
         </div>
         <div className="flex justify-center items-center gap-4 mb-8 opacity-30 text-[10px] tracking-[0.6em] font-black uppercase"><Compass size={14}/> {monster.name}</div>
-        <div className={`text-6xl sm:text-8xl md:text-[11rem] font-mono leading-none font-black tracking-tighter mb-12 transition-all duration-700 ${isActive ? 'text-white drop-shadow-2xl' : 'text-white/20'}`}>{formatTime(timeLeft)}</div>
+        <div className={`text-6xl sm:text-8xl md:text-[11rem] font-mono leading-none font-black tracking-tighter mb-12 transition-all duration-700 ${isActive ? 'text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]' : 'text-white/20'}`}>{formatTime(timeLeft)}</div>
         <div className="flex justify-center gap-4 md:gap-8 font-bold">
           {!isActive ? (
             <button onClick={toggleTimer} className="flex items-center gap-3 px-8 md:px-14 py-4 md:py-6 bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 rounded-xl text-base md:text-lg font-black tracking-[0.5em] uppercase transition-all shadow-2xl backdrop-blur-md">
@@ -671,7 +640,7 @@ const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連
       </div>
 
       {/* 底部面板功能區 */}
-      <div className={`w-full max-w-4xl mt-4 transition-all z-10 font-bold ${isActive ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+      <div className={`w-full max-w-4xl mt-4 transition-all duration-500 z-10 font-bold ${isActive ? 'opacity-0 pointer-events-none translate-y-10' : 'opacity-100 translate-y-0'}`}>
         <div className="bg-slate-950/80 backdrop-blur-3xl rounded-xl border border-white/5 shadow-2xl flex flex-col h-[750px] overflow-hidden">
           <div className="flex bg-black/60 border-b border-white/5 p-1 gap-1 overflow-x-auto no-scrollbar flex-shrink-0">
             {[
@@ -694,7 +663,7 @@ const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連
                   {BASIC_SKILLS.map(s => { const lvl = player.basicSkills?.[s.id] || 0; return (
                     <div key={s.id} className="p-4 rounded-xl border border-white/10 bg-white/5 flex flex-col justify-between h-48 shadow-inner group">
                        <div><h4 className="text-white font-bold text-xs tracking-widest uppercase">{s.name} <span className="opacity-30 float-right font-mono">Lv.{lvl}</span></h4><p className="text-[9px] text-white/40 mt-2 leading-relaxed italic">{s.desc}</p></div>
-                       <button onClick={() => { if(availableSP >= 1 && lvl < 10) setPlayer(p => ({...p, basicSkills: {...p.basicSkills, [s.id]: lvl+1}})) }} disabled={availableSP < 1 || lvl >= 10} className="mt-4 w-full py-2 bg-white/10 hover:bg-white text-white hover:text-black rounded text-[9px] font-black border border-white/10 transition-all">研習 (1 SP)</button>
+                       <button onClick={() => { if(availableSP >= 1 && lvl < 10) setPlayer(p => ({...p, basicSkills: {...p.basicSkills, [s.id]: lvl+1}})) }} disabled={availableSP < 1 || lvl >= 10} className="mt-4 w-full py-2 bg-white/10 hover:bg-white text-white hover:text-black rounded text-[9px] font-black border border-white/10 transition-all disabled:opacity-30">研習 (1 SP)</button>
                     </div>
                   );})}
                 </div></div>
@@ -728,7 +697,6 @@ const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連
                 <div className="bg-gradient-to-br from-white/5 to-transparent p-6 md:p-12 rounded-xl border border-white/10 text-center relative overflow-hidden">
                   <h3 className="text-white font-black text-2xl uppercase mb-6 tracking-widest">萬寶樓尋寶 (吃氣運)</h3>
                   <div className="flex justify-center gap-4 mb-10 overflow-x-auto pb-4 custom-scrollbar">
-                     {/* 尋寶機率修復：即時讀取 getMultiplier('luck_floor') */}
                      {Object.entries(RARITY).map(([k, r]) => (<div key={k} className="flex flex-col items-center min-w-[70px] opacity-60"><span className={`text-[7px] font-black uppercase ${r.color} drop-shadow-md`}>{r.name}</span><span className="text-[10px] font-mono mt-1 text-white">{(r.weight*100*getMultiplier('luck_floor')).toFixed(1)}%</span></div>))}
                   </div>
                   <button onClick={handleGacha} disabled={player.coins < gachaCost} className="px-6 md:px-16 py-6 md:py-8 bg-white/10 hover:bg-white text-white hover:text-black font-black rounded-xl shadow-2xl transition-all whitespace-nowrap border border-white/20 disabled:opacity-30">尋寶 ({Math.floor(gachaCost)} 靈石)</button>
