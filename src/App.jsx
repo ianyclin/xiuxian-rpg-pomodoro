@@ -25,17 +25,17 @@ const RARITY = {
 };
 
 const MAJOR_REALMS_DATA = [
-  { name: '煉氣境', desc: '吸納天地靈氣，洗髓易經，初窺仙道門徑。', color: 'emerald' },
-  { name: '築基境', desc: '靈氣化液，凝結道基，壽元大增，辟除凡胎。', color: 'teal' },
-  { name: '結丹境', desc: '丹田結丹，靈力固化，可煉製本命法寶。', color: 'blue' },
-  { name: '元嬰境', desc: '碎丹成嬰，元嬰可瞬移離體，神魂不滅。', color: 'indigo' },
-  { name: '化神境', desc: '溝通天地，掌控天地元氣，具備飛升資格。', color: 'purple' },
-  { name: '煉虛境', desc: '五行合一，化實為虛，初步掌控空間之力。', color: 'violet' },
-  { name: '合體境', desc: '天人合一，法相實體化，成為靈界霸主。', color: 'amber' },
-  { name: '大乘境', desc: '掌握天地法則，道臻巔峰，萬法不侵。', color: 'orange' }
+  { name: '煉氣境', desc: '吸納天地靈氣，初窺仙道門徑。', color: 'emerald' },
+  { name: '築基境', desc: '靈氣化液，凝結道基，辟除凡胎。', color: 'teal' },
+  { name: '結丹境', desc: '丹田結丹，靈力固化，可煉本命法寶。', color: 'blue' },
+  { name: '元嬰境', desc: '碎丹成嬰，元嬰可瞬移離體。', color: 'indigo' },
+  { name: '化神境', desc: '溝通天地，具備飛升資格。', color: 'purple' },
+  { name: '煉虛境', desc: '化實為虛，初步掌控空間。', color: 'violet' },
+  { name: '合體境', desc: '法相實體化，成為靈界霸主。', color: 'amber' },
+  { name: '大乘境', desc: '掌握天地法則，道臻巔峰。', color: 'orange' }
 ];
 
-const REALMS = [{ name: '一介凡人', desc: '凡夫俗子，尚未引氣入體，壽元百載。', majorName: '凡人', color: 'slate', isMajor: true }];
+const REALMS = [{ name: '一介凡人', desc: '尚未引氣入體。', majorName: '凡人', color: 'slate', isMajor: true }];
 MAJOR_REALMS_DATA.forEach(major => {
   ['初期', '中期', '後期', '巔峰'].forEach((suffix, i) => {
     REALMS.push({ name: `${major.name.replace('境', '')}${suffix}`, desc: major.desc, isMajor: i === 0, majorName: major.name.replace('境', ''), color: major.color });
@@ -44,9 +44,9 @@ MAJOR_REALMS_DATA.forEach(major => {
 REALMS.push({ name: '渡劫', desc: '引動九九重雷劫，成則羽化登仙。', majorName: '渡劫', isMajor: true, color: 'rose' });
 
 const GUIDE_REALMS = [
-  { name: '一介凡人', desc: '凡夫俗子。', range: 'Tier 1' },
-  ...MAJOR_REALMS_DATA.map((r, i) => ({ name: r.name, desc: r.desc, range: `Tier ${i * 4 + 2} - ${i * 4 + 5}` })),
-  { name: '渡劫期', desc: '渡九九重劫。', range: 'Tier 34' }
+  { name: '一介凡人', range: 'Tier 1' },
+  ...MAJOR_REALMS_DATA.map((r, i) => ({ name: r.name, range: `Tier ${i * 4 + 2} - ${i * 4 + 5}` })),
+  { name: '渡劫期', range: 'Tier 34' }
 ];
 
 const ARTIFACT_POOL = [
@@ -54,7 +54,7 @@ const ARTIFACT_POOL = [
   { id: 'a02', rarity: 'COMMON', name: '青銅戈', desc: '基礎鋒利。戰力加成 +2%', val: { atk: 0.02 } },
   { id: 'a03', rarity: 'COMMON', name: '凝神蒲團', desc: '固本培元。回血+2%，修為獲取+2%', val: { heal_bonus: 0.02, qi: 0.02 } },
   { id: 'a04', rarity: 'COMMON', name: '粗糙靈石袋', desc: '聚財之陣。靈石掉落 +5%', val: { stone: 0.05 } },
-  { id: 'a10', rarity: 'UNCOMMON', name: '神風舟', desc: '御風而行。閃避率 +5%', val: { evade: 0.05 } },
+  { id: 'a10', rarity: 'UNCOMMON', name: '神風舟', desc: '御風飞行。閃避率 +5%', val: { evade: 0.05 } },
   { id: 'a11', rarity: 'UNCOMMON', name: '子母刃', desc: '暗器突襲。戰力+5%，爆擊+3%', val: { atk: 0.05, crit: 0.03 } },
   { id: 'a12', rarity: 'UNCOMMON', name: '無形針', desc: '無影無蹤。連擊效率+10%，爆擊+5%', val: { streak_eff: 0.10, crit: 0.05 } },
   { id: 'a13', rarity: 'UNCOMMON', name: '血玉髓', desc: '氣血滋養。休息回血比例 +5%', val: { heal_bonus: 0.05 } },
@@ -62,20 +62,20 @@ const ARTIFACT_POOL = [
   { id: 'a21', rarity: 'RARE', name: '玄鐵飛天盾', desc: '堅不可摧。反噬減傷 +15%', val: { def: 0.15 } },
   { id: 'a22', rarity: 'RARE', name: '碧玉葫蘆', desc: '納寶空間。靈石掉落 +30%', val: { stone: 0.30 } },
   { id: 'a23', rarity: 'RARE', name: '金光磚', desc: '勢大力沉。爆擊傷害 +25%', val: { crit_dmg: 0.25 } },
-  { id: 'a30', rarity: 'EPIC', name: '虛天鼎 (仿)', desc: '鼎鎮山河。減傷+15%，氣運+0.15/級', val: { def: 0.15, luck_floor: 0.15 } },
+  { id: 'a30', rarity: 'EPIC', name: '虛天鼎 (仿)', desc: '鎮壓氣運。減傷+15%，氣運保底+0.15/級', val: { def: 0.15, luck_floor: 0.15 } },
   { id: 'a31', rarity: 'EPIC', name: '風雷翅', desc: '風雷遁術。連擊效率+30%，閃避+8%', val: { streak_eff: 0.30, evade: 0.08 } },
   { id: 'a32', rarity: 'EPIC', name: '紫羅極火', desc: '極寒之焰。戰力+20%，爆傷+80%/級', val: { atk: 0.20, crit_dmg: 0.80 } },
   { id: 'a33', rarity: 'EPIC', name: '嗜血幡', desc: '以戰養戰。戰力+15%，擊殺回血+10%', val: { atk: 0.15, kill_heal: 0.10 } },
   { id: 'a40', rarity: 'LEGENDARY', name: '黑風旗', desc: '空間隱匿。閃避率+15%，減傷+15%/級', val: { evade: 0.15, def: 0.15 } },
   { id: 'a41', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣。戰力+50%，連擊效率+50%，爆擊+5%/級', val: { atk: 0.50, streak_eff: 0.50, crit: 0.05 } },
-  { id: 'a42', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '替身擋災。氣血上限+100%，免死+5%/級', val: { hp: 1.00, revive: 0.05 } },
+  { id: 'a42', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '替身擋災。氣血+100%，免死+5%/級', val: { hp: 1.00, revive: 0.05 } },
   { id: 'a43', rarity: 'LEGENDARY', name: '成熟體噬金蟲', desc: '無物不噬。戰力+100%，爆傷+60%/級', val: { atk: 1.00, crit_dmg: 0.60 } },
   { id: 'a50', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '法則破壞。戰力+250%，爆傷+250%/級', val: { atk: 2.50, crit_dmg: 2.50 } },
-  { id: 'a51', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力。戰力與減傷 +80%/級', val: { atk: 0.80, def: 0.80 } },
+  { id: 'a51', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場。戰力與減傷 +80%/級', val: { atk: 0.80, def: 0.80 } },
   { id: 'a52', rarity: 'MYTHIC', name: '虛天大鼎', desc: '第一至寶。減傷+80%，氣運+0.2，成本-40%', val: { def: 0.80, luck_floor: 0.20, forge_discount: 0.40 } },
   { id: 'a53', rarity: 'MYTHIC', name: '玄天如意刃', desc: '斬裂虛空。連擊上限+100%，爆傷+100%/級', val: { streak_cap: 1.00, crit_dmg: 1.00 } },
   { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化。靈氣+200%，靈石獲取+100%', val: { qi: 2.00, stone: 1.00 } },
-  { id: 'a61', rarity: 'DIVINE', name: '游天鯤鵬翎', desc: '跨越界域。閃避+20%，連擊效率+100%/級', val: { evade: 0.20, streak_eff: 1.00 } },
+  { id: 'a61', rarity: 'DIVINE', name: '游天鯤鵬翎', desc: '真靈遁術。閃避+20%，連擊效率+100%/級', val: { evade: 0.20, streak_eff: 1.00 } },
   { id: 'a62', rarity: 'DIVINE', name: '涅槃真血', desc: '真靈不死。氣運保底+1.0，免死+10%/級', val: { luck_floor: 1.00, revive: 0.10 } },
   { id: 'a63', rarity: 'DIVINE', name: '金闕玉書', desc: '降界天書。靈石+400%，氣運+0.5，成本-20%', val: { stone: 4.00, luck_floor: 0.50, forge_discount: 0.20 } },
 ];
@@ -93,7 +93,7 @@ const SECRET_BOOKS = [
   { id: 's_10', rarity: 'LEGENDARY', name: '驚蟄十二變', desc: '變身真靈。氣血上限+35%，爆傷+20%/級', val: { hp: 0.35, crit_dmg: 0.20 } },
   { id: 's_11', rarity: 'DIVINE', name: '涅槃金身', desc: '不死不滅。復活機率 +8%/級', val: { revive: 0.08 } },
   { id: 's_12', rarity: 'RARE', name: '百脈煉寶訣', desc: '肉身融寶。洞府成本 -8%/級', val: { forge_discount: 0.08 } },
-  { id: 's_13', rarity: 'EPIC', name: '明清靈目', desc: '看破虛妄。氣運保底+0.1，爆擊+5%/級', val: { luck_floor: 0.10, crit: 0.05 } },
+  { id: 's_13', rarity: 'EPIC', name: '明清靈目', desc: '看破虛妄。氣運保底+0.1，爆擊率+5%/級', val: { luck_floor: 0.10, crit: 0.05 } },
 ];
 
 const BASIC_SKILLS = [
@@ -116,7 +116,7 @@ export default function App() {
 
   const [player, setPlayer] = useState(() => {
     try {
-      const saved = localStorage.getItem('xianxia_master_v64_final');
+      const saved = localStorage.getItem('xianxia_master_v65_final');
       if (saved) return JSON.parse(saved);
       return defaultPlayerState;
     } catch (e) { return defaultPlayerState; }
@@ -160,7 +160,7 @@ export default function App() {
   const [isHealing, setIsHealing] = useState(false); 
 
   useEffect(() => { 
-    localStorage.setItem('xianxia_master_v64_final', JSON.stringify(player)); 
+    localStorage.setItem('xianxia_master_v65_final', JSON.stringify(player)); 
     setSaveIndicator(true);
     const timer = setTimeout(() => setSaveIndicator(false), 2000);
     return () => clearTimeout(timer);
@@ -182,7 +182,8 @@ export default function App() {
   const themeBorderClass = `border-${currentRealmData.color}-500/20`;
 
   const streakCap = Math.min(5.0, 0.5 + (getMultiplier('streak_cap') - 1)); 
-  const comboMultiplier = 1 + Math.min(streakCap, (player.streakCount || 0) * 0.05 * getMultiplier('streak_eff'));
+  const streakEff = getMultiplier('streak_eff'); 
+  const comboMultiplier = 1 + Math.min(streakCap, (player.streakCount || 0) * 0.05 * streakEff);
   
   const critRate = Math.min(0.85, getMultiplier('crit') - 1);       
   const critDmg = Math.min(20.0, 2.0 + (getMultiplier('crit_dmg') - 1)); 
@@ -273,7 +274,7 @@ export default function App() {
     } else { 
       setMode('focus'); setTimeLeft(focusDuration); 
       setPlayer(p => ({ ...p, vitality: Math.min(maxVitality, p.vitality + Math.floor(maxVitality * healPct)) }));
-      addLog(`[吐納] 感悟天地，氣血恢復。`); 
+      addLog(`[吐納] 完成休息，感悟天地。`); 
     }
   };
 
@@ -292,7 +293,7 @@ export default function App() {
     if (candidates.length > 0) {
       setPlayer(p => ({ ...p, coins: p.coins - gachaCost, artifacts: [...(p.artifacts || []), candidates[0].id] }));
       setCelebration({ name: candidates[0].name });
-    } else { setPlayer(p => ({ ...p, coins: p.coins - gachaCost, qi: p.qi + 100 })); addLog(`[萬寶樓] 尋寶未果。`); }
+    } else { setPlayer(p => ({ ...p, coins: p.coins - gachaCost, qi: p.qi + 100 })); addLog(`[萬寶樓] 尋寶未果，領取補償修為。`); }
   };
 
   const handleUpgradeArtifact = (artId, rarity) => {
@@ -300,7 +301,7 @@ export default function App() {
     const cost = Math.floor(RARITY_BASE_COST[rarity] * Math.pow(1.8, currentLvl) * forgeDiscount);
     if (player.coins >= cost && currentLvl < 5) { 
       setPlayer(p => ({ ...p, coins: p.coins - cost, artifactLvls: { ...p.artifactLvls, [artId]: currentLvl + 1 } })); 
-      addLog(`[血煉] 法寶升級 Lv.${currentLvl + 1}。`);
+      addLog(`[血煉] 法寶升級至 Lv.${currentLvl + 1}。`);
     }
   };
 
@@ -371,6 +372,7 @@ export default function App() {
         </div>
       </div>
 
+      {/* 計時器 */}
       <div className={`w-full max-w-4xl bg-slate-900/30 backdrop-blur-3xl p-6 md:p-12 rounded-xl border border-white/5 text-center mb-8 z-10 shadow-2xl transition-all duration-700 ${isActive ? 'scale-[1.02] shadow-[0_0_40px_rgba(16,185,129,0.15)] border-emerald-500/20' : ''}`}>
         <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-10 font-bold">{FOCUS_OPTIONS.map(opt => (<button key={opt.value} onClick={() => { if(!isActive) { setFocusDuration(opt.value); setTimeLeft(opt.value); }}} className={`px-4 py-1.5 rounded-full text-[10px] font-black border transition-all ${focusDuration === opt.value ? 'bg-white text-black border-white' : 'bg-black/40 text-white/40 border-white/10 hover:text-white/80'}`}>{opt.label}</button>))}</div>
         <div className={`flex justify-center items-center gap-4 mb-8 text-[10px] tracking-[0.6em] font-black uppercase transition-colors ${monster.name.includes('瓶頸') || monster.name.includes('劫') ? 'text-rose-500 animate-pulse' : 'opacity-30'}`}><Compass size={14}/> {monster.name}</div>
@@ -380,28 +382,29 @@ export default function App() {
         </div>
       </div>
 
+      {/* 底部面板 */}
       <div className={`w-full max-w-4xl mt-4 transition-all duration-500 z-10 font-bold ${isActive ? 'opacity-0 pointer-events-none translate-y-10' : 'opacity-100 translate-y-0'}`}>
         <div className="bg-slate-950/80 backdrop-blur-3xl rounded-xl border border-white/5 shadow-2xl flex flex-col h-[750px] overflow-hidden">
-          <div className="flex bg-black/60 border-b border-white/5 p-1 gap-1 flex-shrink-0 font-black">{[{ id: 'skills', label: '功法', icon: ScrollText }, { id: 'forge', label: '淬煉', icon: Hammer }, { id: 'artifacts', label: '法寶', icon: Box }, { id: 'insights', label: '識海', icon: Activity }, { id: 'log', label: '日誌', icon: History }].map(tab => (<button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 py-4 rounded-lg text-[9px] flex flex-col items-center justify-center gap-1 transition-all ${activeTab===tab.id ? 'bg-white/10 text-white shadow-inner' : 'text-white/30 hover:text-white/60'}`}><tab.icon size={16}/> <span>{tab.label}</span></button>))}</div>
+          <div className="flex bg-black/60 border-b border-white/5 p-1 gap-1 flex-shrink-0">{[{ id: 'skills', label: '功法', icon: ScrollText }, { id: 'forge', label: '淬煉', icon: Hammer }, { id: 'artifacts', label: '法寶', icon: Box }, { id: 'insights', label: '識海', icon: Activity }, { id: 'log', label: '日誌', icon: History }].map(tab => (<button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 py-4 rounded-lg text-[9px] font-black flex flex-col items-center justify-center gap-1 transition-all ${activeTab===tab.id ? 'bg-white/10 text-white shadow-inner' : 'text-white/30 hover:text-white/60'}`}><tab.icon size={16}/> <span>{tab.label}</span></button>))}</div>
           <div className="p-4 md:p-8 overflow-y-auto flex-1 custom-scrollbar">
             {activeTab === 'skills' && (
               <div className="space-y-12 animate-pop-in">
-                <div><h3 className="text-white/50 text-[10px] font-black uppercase border-b border-white/10 pb-4 mb-8 flex justify-between"><span>基礎根基 (SP 研習)</span><span className="text-cyan-400">可用 SP: {availableSP}</span></h3><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">{BASIC_SKILLS.map(s => { const lvl = player.basicSkills?.[s.id]||0; return (<div key={s.id} className="p-4 rounded-xl border border-white/10 bg-white/5 flex flex-col justify-between h-48 group"><div><h4 className="text-white font-bold text-xs uppercase">{s.name} <span className="opacity-30 float-right font-mono">Lv.{lvl}/20</span></h4><p className="text-[9px] text-white/40 mt-2 italic">{s.desc}</p></div><button onClick={() => { if(availableSP >= 1 && lvl < 20) setPlayer(p => ({...p, basicSkills: {...p.basicSkills, [s.id]: lvl+1}})) }} disabled={availableSP < 1 || lvl >= 20} className="mt-4 w-full py-2 bg-white/10 hover:bg-cyan-500 text-white hover:text-black rounded text-[9px] font-black border border-white/10 transition-all disabled:opacity-30">研習 (1 SP)</button></div>); })}</div></div>
-                <div><h3 className="text-white/50 text-[10px] font-black uppercase border-b border-white/10 pb-4 mb-8">機緣秘籍 (參悟)</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-6">{SECRET_BOOKS.map(book => { const lvl = player.secretBooks?.[book.id] || 0; return (<div key={book.id} className={`p-5 rounded-xl border transition-all flex flex-col justify-between h-56 ${lvl > 0 ? 'bg-emerald-950/30 border-emerald-500/40 shadow-lg' : 'bg-black/50 border-white/5 opacity-40'}`}><div className="flex items-center gap-4"><div className={`p-4 rounded-lg ${lvl > 0 ? 'bg-emerald-500 text-black' : 'bg-slate-800'}`}><BookOpen size={20}/></div><div><h4 className="font-black text-sm tracking-widest text-white">{book.name} {lvl > 0 && <span className="text-[9px] opacity-50 ml-2 font-mono">Lv.{lvl}</span>}</h4><p className="text-[10px] opacity-60 mt-1 text-white">{lvl > 0 ? book.desc : '尚未參透此法。'}</p></div></div>{lvl > 0 && lvl < 5 && <button onClick={() => { const cost = Math.floor(10000 * Math.pow(2, lvl) * forgeDiscount); if(player.coins >= cost) setPlayer(p => ({...p, coins: p.coins - cost, secretBooks: {...p.secretBooks, [book.id]: lvl+1}})) }} disabled={player.coins < Math.floor(10000 * Math.pow(2, lvl) * forgeDiscount)} className="mt-4 w-full py-2 bg-white/10 hover:bg-emerald-500 text-white hover:text-black rounded text-[9px] font-black border border-white/10 transition-all disabled:opacity-30">參悟升級</button>}</div>);})}</div></div>
+                <div><h3 className="text-white/50 text-[10px] font-black uppercase border-b border-white/10 pb-4 mb-8 tracking-widest flex justify-between"><span>基礎根基 (SP 研習)</span><span className="text-cyan-400 font-mono">Available: {availableSP}</span></h3><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">{BASIC_SKILLS.map(s => { const lvl = player.basicSkills?.[s.id]||0; return (<div key={s.id} className="p-4 rounded-xl border border-white/10 bg-white/5 flex flex-col justify-between h-48 group"><div><h4 className="text-white font-bold text-xs uppercase">{s.name} <span className="opacity-30 float-right font-mono">Lv.{lvl}/{s.maxLvl}</span></h4><p className="text-[9px] text-white/40 mt-2 italic">{s.desc}</p></div><button onClick={() => { if(availableSP >= 1 && lvl < s.maxLvl) setPlayer(p => ({...p, basicSkills: {...p.basicSkills, [s.id]: lvl+1}})) }} disabled={availableSP < 1 || lvl >= s.maxLvl} className="mt-4 w-full py-2 bg-white/10 hover:bg-cyan-500 text-white hover:text-black rounded text-[9px] font-black border border-white/10 transition-all disabled:opacity-30">研習 (1 SP)</button></div>); })}</div></div>
+                <div><h3 className="text-white/50 text-[10px] font-black uppercase border-b border-white/10 pb-4 mb-8 tracking-widest">機緣祕籍 (13 種)</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-6">{SECRET_BOOKS.map(book => { const lvl = player.secretBooks?.[book.id] || 0; const cost = Math.floor(10000 * Math.pow(2, lvl) * forgeDiscount); return (<div key={book.id} className={`p-5 rounded-xl border transition-all flex flex-col justify-between h-56 ${lvl > 0 ? 'bg-emerald-950/30 border-emerald-500/40 shadow-lg' : 'bg-black/50 border-white/5 opacity-40'}`}><div className="flex items-center gap-4"><div className={`p-4 rounded-lg ${lvl > 0 ? 'bg-emerald-500 text-black shadow-lg' : 'bg-slate-800'}`}><BookOpen size={20}/></div><div><h4 className="font-black text-sm tracking-widest text-white">{book.name} {lvl > 0 && <span className="text-[9px] opacity-50 ml-2 font-mono">Lv.{lvl}</span>}</h4><p className="text-[10px] opacity-60 mt-1 text-white">{lvl > 0 ? book.desc : '擊殺強敵機率獲得。'}</p></div></div>{lvl > 0 && lvl < 5 && <button onClick={() => { if(player.coins >= cost) setPlayer(p => ({...p, coins: p.coins - cost, secretBooks: {...p.secretBooks, [book.id]: lvl+1}})) }} disabled={player.coins < cost} className="mt-4 w-full py-2 bg-white/10 hover:bg-emerald-500 text-white hover:text-black rounded text-[9px] font-black border border-white/10 transition-all disabled:opacity-30">參悟升級</button>}</div>);})}</div></div>
               </div>
             )}
             {activeTab === 'forge' && (
               <div className="space-y-12 animate-pop-in pb-10">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="p-8 rounded-xl bg-emerald-950/30 border border-emerald-500/30 h-64 flex flex-col justify-between shadow-lg shadow-emerald-500/10"><div><h3 className="text-emerald-400 font-black text-xl flex items-center gap-2"><Pill size={20}/> 回春丹</h3><p className="text-white/60 text-[10px] mt-2 italic">恢復 50% 氣血。</p></div><button onClick={handleHeal} disabled={player.coins < healCost || player.vitality >= maxVitality} className="w-full py-5 bg-emerald-900/60 hover:bg-emerald-600 text-emerald-100 rounded font-black text-xs transition-all disabled:opacity-30 border border-emerald-500/50">煉丹 ({healCost} 靈石)</button></div>
-                  <div className="p-8 rounded-xl bg-white/5 border border-white/10 h-64 flex flex-col justify-between"><div><h3 className="text-white font-black text-xl">祭煉戰力</h3><p className="text-white/50 text-[10px] mt-2 italic">+100 基礎攻擊。</p></div><button onClick={() => { if(player.coins >= upgCostAtk) setPlayer(p => ({ ...p, coins: p.coins - upgCostAtk, baseCombat: p.baseCombat + 100 })) }} disabled={player.coins < upgCostAtk} className="w-full py-5 bg-white/10 hover:bg-white text-white hover:text-black rounded font-black text-xs shadow-xl transition-all disabled:opacity-30">祭煉 ({upgCostAtk} 靈石)</button></div>
-                  <div className="p-8 rounded-xl bg-white/5 border border-white/10 h-64 flex flex-col justify-between"><div><h3 className="text-white font-black text-xl">熬煉體魄</h3><p className="text-white/50 text-[10px] mt-2 italic">+100 基礎氣血。</p></div><button onClick={() => { if(player.coins >= upgCostHp) setPlayer(p => ({ ...p, coins: p.coins - upgCostHp, baseMaxVitality: p.baseMaxVitality + 100, vitality: p.vitality + 100 })) }} disabled={player.coins < upgCostHp} className="w-full py-5 bg-white/10 hover:bg-white text-white hover:text-black rounded font-black text-xs shadow-xl transition-all disabled:opacity-30">熬煉 ({upgCostHp} 靈石)</button></div>
+                  <div className="p-8 rounded-xl bg-emerald-950/30 border border-emerald-500/30 h-64 flex flex-col justify-between shadow-lg"><div><h3 className="text-emerald-400 font-black text-xl flex items-center gap-2"><Pill size={20}/> 煉製回春丹</h3><p className="text-white/60 text-[10px] mt-2 italic tracking-widest">瞬間恢復 50% 氣血。</p></div><button onClick={handleHeal} disabled={player.coins < healCost || player.vitality >= maxVitality} className="w-full py-5 bg-emerald-900/60 hover:bg-emerald-600 text-emerald-100 rounded font-black text-xs transition-all disabled:opacity-30 border border-emerald-500/50">{player.vitality >= maxVitality ? '氣血已滿' : `煉丹 (${healCost} 靈石)`}</button></div>
+                  <div className="p-8 rounded-xl bg-white/5 border border-white/10 h-64 flex flex-col justify-between"><div><h3 className="text-white font-black text-xl">凝練劍光</h3><p className="text-white/50 text-[10px] mt-2 italic">基礎戰力 +100。</p></div><button onClick={() => { if(player.coins >= upgCostAtk) setPlayer(p => ({ ...p, coins: p.coins - upgCostAtk, baseCombat: p.baseCombat + 100 })) }} disabled={player.coins < upgCostAtk} className="w-full py-5 bg-white/10 hover:bg-white text-white hover:text-black rounded font-black text-xs shadow-xl transition-all disabled:opacity-30">祭煉 ({upgCostAtk} 靈石)</button></div>
+                  <div className="p-8 rounded-xl bg-white/5 border border-white/10 h-64 flex flex-col justify-between"><div><h3 className="text-white font-black text-xl">熬煉肉身</h3><p className="text-white/50 text-[10px] mt-2 italic">氣血上限 +100。</p></div><button onClick={() => { if(player.coins >= upgCostHp) setPlayer(p => ({ ...p, coins: p.coins - upgCostHp, baseMaxVitality: p.baseMaxVitality + 100, vitality: p.vitality + 100 })) }} disabled={player.coins < upgCostHp} className="w-full py-5 bg-white/10 hover:bg-white text-white hover:text-black rounded font-black text-xs shadow-xl transition-all disabled:opacity-30">熬煉 ({upgCostHp} 靈石)</button></div>
                 </div>
                 <div className="space-y-6">
-                   <h3 className="text-white/40 text-[10px] font-black uppercase border-b border-white/10 pb-4 tracking-widest">陣法樞紐</h3>
+                   <h3 className="text-white/40 text-[10px] font-black uppercase border-b border-white/10 pb-4 tracking-widest">洞府大陣樞紐</h3>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-white/5 p-6 rounded-xl border border-white/10 h-48 flex flex-col justify-between shadow-inner"><div className="flex justify-between text-sm text-white font-bold">聚靈大陣 <span className="opacity-50 font-mono">Lv.{player.arrays?.qi||0}</span></div><p className="text-[10px] opacity-60 italic">修為獲取 +5%/級</p><button onClick={() => { if(player.coins >= arrayQiCost) setPlayer(p => ({ ...p, coins: p.coins - arrayQiCost, arrays: {...p.arrays, qi: (p.arrays?.qi||0)+1} })) }} disabled={player.coins < arrayQiCost} className="w-full py-3 bg-white/10 hover:bg-white text-white rounded text-[9px] font-black border border-white/10 transition-all">升級 ({arrayQiCost} 靈石)</button></div>
-                      <div className="bg-white/5 p-6 rounded-xl border border-white/10 h-48 flex flex-col justify-between shadow-inner"><div className="flex justify-between text-sm text-white font-bold">顛倒五行陣 <span className="opacity-50 font-mono">Lv.{player.arrays?.def||0}</span></div><p className="text-[10px] opacity-60 italic text-white">反噬減傷 +5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-3 bg-white/10 hover:bg-white text-white rounded text-[9px] font-black border border-white/10 transition-all">升級 ({arrayDefCost} 靈石)</button></div>
+                      <div className="bg-white/5 p-6 rounded-xl border border-white/10 h-48 flex flex-col justify-between shadow-inner"><div className="flex justify-between text-sm text-white font-bold">聚靈大陣 <span className="opacity-50 font-mono">Lv.{player.arrays?.qi||0}</span></div><p className="text-[10px] opacity-60 italic text-white">修為加成 +5%/級</p><button onClick={() => { if(player.coins >= arrayQiCost) setPlayer(p => ({ ...p, coins: p.coins - arrayQiCost, arrays: {...p.arrays, qi: (p.arrays?.qi||0)+1} })) }} disabled={player.coins < arrayQiCost} className="w-full py-3 bg-white/10 hover:bg-white text-white rounded text-[9px] font-black border border-white/10 transition-all disabled:opacity-30">升級 ({arrayQiCost} 靈石)</button></div>
+                      <div className="bg-white/5 p-6 rounded-xl border border-white/10 h-48 flex flex-col justify-between shadow-inner"><div className="flex justify-between text-sm text-white font-bold">顛倒五行陣 <span className="opacity-50 font-mono">Lv.{player.arrays?.def||0}</span></div><p className="text-[10px] opacity-60 italic text-white">反噬減傷 +5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-3 bg-white/10 hover:bg-white text-white rounded text-[9px] font-black border border-white/10 transition-all disabled:opacity-30">升級 ({arrayDefCost} 靈石)</button></div>
                    </div>
                 </div>
                 <div className="bg-gradient-to-br from-white/5 to-transparent p-6 md:p-12 rounded-xl border border-white/10 text-center relative overflow-hidden">
@@ -413,7 +416,7 @@ export default function App() {
             )}
             {activeTab === 'artifacts' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pop-in pb-10">
-                {ARTIFACT_POOL.map(art => { const unlocked = (player.artifacts || []).includes(art.id); const lvl = player.artifactLvls?.[art.id]||0; const upCost = Math.floor(RARITY_BASE_COST[art.rarity]*Math.pow(1.8,lvl)*forgeDiscount); return unlocked ? (<div key={art.id} className="p-6 rounded-xl border bg-black/50 border-white/10 flex flex-col justify-between shadow-inner"><div><h4 className={`font-black text-lg ${RARITY[art.rarity].color} tracking-tighter`}>{art.name} <span className="opacity-50 text-[9px] float-right font-mono text-white">Lv.{lvl}</span></h4><p className="text-[10px] text-white/60 mt-4 italic leading-relaxed">「{art.desc}」</p></div>{lvl < 5 && <button onClick={()=>handleUpgradeArtifact(art.id, art.rarity)} disabled={player.coins < upCost} className="mt-6 w-full py-3 bg-white/10 hover:bg-white text-white hover:text-black rounded text-[9px] font-black transition-all border border-white/10 disabled:opacity-30">血煉 ({upCost} 靈石)</button>}</div>) : (<div key={art.id} className="p-8 rounded-xl border border-dashed border-white/10 bg-black/40 flex flex-col items-center justify-center opacity-40"><EyeOff size={32} className="text-white/20 mb-4"/><p className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em]">尚未尋得：{RARITY[art.rarity].name}</p></div>); })}
+                {ARTIFACT_POOL.map(art => { const unlocked = (player.artifacts || []).includes(art.id); const lvl = player.artifactLvls?.[art.id]||0; const upCost = Math.floor(RARITY_BASE_COST[art.rarity]*Math.pow(1.8,lvl)*forgeDiscount); return unlocked ? (<div key={art.id} className="p-6 rounded-xl border bg-black/50 border-white/10 flex flex-col justify-between shadow-inner"><div><h4 className={`font-black text-lg ${RARITY[art.rarity].color} tracking-tighter`}>{art.name} <span className="opacity-50 text-[9px] float-right font-mono text-white">Lv.{lvl}</span></h4><p className="text-[10px] text-white/60 mt-4 italic leading-relaxed uppercase tracking-tighter">「{art.desc}」</p></div>{lvl < 5 && <button onClick={()=>handleUpgradeArtifact(art.id, art.rarity)} disabled={player.coins < upCost} className="mt-6 w-full py-3 bg-white/10 hover:bg-white text-white hover:text-black rounded text-[9px] font-black transition-all border border-white/10 disabled:opacity-30">血煉 ({upCost} 靈石)</button>}</div>) : (<div key={art.id} className="p-8 rounded-xl border border-dashed border-white/10 bg-black/40 flex flex-col items-center justify-center opacity-40"><EyeOff size={32} className="text-white/20 mb-4"/><p className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em]">尚未尋得：{RARITY[art.rarity].name}</p></div>); })}
               </div>
             )}
             {activeTab === 'insights' && (<div className="h-[400px] md:h-[500px] animate-pop-in bg-black/40 rounded-xl border border-white/10 shadow-inner p-4 md:p-10 flex flex-col"><div className="flex justify-between items-center mb-10 opacity-50 text-[9px] font-black uppercase tracking-[0.4em] text-white"><span>識海投影 (修煉進程)</span><span>累計時間: {Math.floor((player.totalFocusTime || 0)/60)}m</span></div><div className="flex-1 relative border-l border-b border-white/10"><InsightsChart /></div></div>)}
@@ -421,8 +424,8 @@ export default function App() {
           </div>
         </div>
         <footer className="pt-16 pb-24 text-center text-[9px] font-light text-white/40 tracking-[0.8em] uppercase flex flex-col items-center gap-4">
-          <p>《凡人修仙傳》原著設定歸作者 忘語 所有 | V64 封神最終版</p>
-          <button onClick={()=>{if(window.confirm('重置將遺失所有成果。確定？')) { localStorage.clear(); window.location.reload(); }}} className="opacity-50 hover:opacity-100 transition-opacity border border-white/20 px-4 py-1.5 rounded-full text-[8px] tracking-widest hover:bg-rose-900/50 hover:text-rose-200">散功重修</button>
+          <p>《凡人修仙傳》原著設定歸作者 忘語 所有 | V65 最終真確版</p>
+          <button onClick={()=>{if(window.confirm('確定重置修行？所有成果將遺失。')) { localStorage.clear(); window.location.reload(); }}} className="opacity-50 hover:opacity-100 transition-opacity border border-white/20 px-4 py-1.5 rounded-full text-[8px] tracking-widest hover:bg-rose-900/50 hover:text-rose-200">散功重修</button>
         </footer>
       </div>
     </div>
