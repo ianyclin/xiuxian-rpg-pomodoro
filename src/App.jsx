@@ -29,7 +29,6 @@ const database = getDatabase(app);
  */
 
 const FOCUS_OPTIONS = [
-  { label: '1m測試', value: 1 * 60 }, // 測試用，可自行刪除
   { label: '15m', value: 15 * 60 },
   { label: '25m', value: 25 * 60 },
   { label: '45m', value: 45 * 60 },
