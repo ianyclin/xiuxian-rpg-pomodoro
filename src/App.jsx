@@ -3,11 +3,33 @@ import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, Scro
 
 /**
  * ========================================================
+ * 0. 天道雲端初始化 (Firebase Setup)
+ * ========================================================
+ */
+import { initializeApp } from 'firebase/app';
+import { getDatabase, ref, onValue, update, increment } from 'firebase/database';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDamtpmaAYF0NSIGWbvcSzQ9EW3QkDI8-w",
+  authDomain: "xiuxian-rpg-pomodoro.firebaseapp.com",
+  projectId: "xiuxian-rpg-pomodoro",
+  storageBucket: "xiuxian-rpg-pomodoro.firebasestorage.app",
+  messagingSenderId: "14248923269",
+  appId: "1:14248923269:web:29c538b685b4ea401d99ec",
+  measurementId: "G-JCWLBL5D1N"
+};
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
+/**
+ * ========================================================
  * 1. 靜態數據定義 (Lore & Database)
  * ========================================================
  */
 
 const FOCUS_OPTIONS = [
+  { label: '1m測試', value: 1 * 60 }, // 測試用，可自行刪除
   { label: '15m', value: 15 * 60 },
   { label: '25m', value: 25 * 60 },
   { label: '45m', value: 45 * 60 },
@@ -55,7 +77,6 @@ const GUIDE_REALMS = [
   { name: '渡劫期', desc: '引動九九重雷劫，成則羽化登仙，敗則化為劫灰。', range: 'Tier 34' }
 ];
 
-// V62 Artifact Data Rebalance: Added `streak_shield` (連擊護盾)
 const ARTIFACT_POOL = [
   { id: 'a01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (反噬減傷 +2%)', val: { def: 0.02 } },
   { id: 'a02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +2%)', val: { atk: 0.02 } },
@@ -75,7 +96,7 @@ const ARTIFACT_POOL = [
   { id: 'a33', rarity: 'EPIC', name: '嗜血幡', desc: '吸血魔器 (戰力+15%，回血+10%/級)', val: { atk: 0.15, heal_bonus: 0.10 } },
   { id: 'a40', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖 (連擊上限+30%，閃避+10%/級)', val: { streak_cap: 0.30, evade: 0.10 } },
   { id: 'a41', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣 (戰力+50%，連擊效率+50%，爆擊+5%/級)', val: { atk: 0.50, streak_eff: 0.50, crit: 0.05 } },
-  { id: 'a42', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '替身擋災 (氣血+100%，連擊護盾+1/級)', val: { hp: 1.00, streak_shield: 1.0 } }, // V62: Revive changed to streak_shield
+  { id: 'a42', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '替身擋災 (氣血+100%，連擊護盾+1/級)', val: { hp: 1.00, streak_shield: 1.0 } }, 
   { id: 'a43', rarity: 'LEGENDARY', name: '成熟體噬金蟲', desc: '無物不噬 (戰力+100%，爆傷+60%/級)', val: { atk: 1.00, crit_dmg: 0.60 } },
   { id: 'a50', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '法則破壞 (戰力+250%，爆傷+250%/級)', val: { atk: 2.50, crit_dmg: 2.50 } },
   { id: 'a51', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +80%/級)', val: { atk: 0.80, def: 0.80 } },
@@ -83,7 +104,7 @@ const ARTIFACT_POOL = [
   { id: 'a53', rarity: 'MYTHIC', name: '玄天如意刃', desc: '斬裂虛空 (連擊上限+80%，爆傷+80%/級)', val: { streak_cap: 0.80, crit_dmg: 0.80 } },
   { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+200%，靈石+100%/級)', val: { qi: 2.00, stone: 1.00 } },
   { id: 'a61', rarity: 'DIVINE', name: '游天鯤鵬翎', desc: '跨越界域 (閃避+15%，連擊效率+100%/級)', val: { evade: 0.15, streak_eff: 1.00 } },
-  { id: 'a62', rarity: 'DIVINE', name: '涅槃真血', desc: '真靈不死 (免死+10%，連擊護盾+2/級)', val: { revive: 0.10, streak_shield: 2.0 } }, // V62: Added streak_shield
+  { id: 'a62', rarity: 'DIVINE', name: '涅槃真血', desc: '真靈不死 (免死+10%，連擊護盾+2/級)', val: { revive: 0.10, streak_shield: 2.0 } }, 
   { id: 'a63', rarity: 'DIVINE', name: '金闕玉書', desc: '降界天書 (靈石獲取+400%，氣運+0.5/級)', val: { stone: 4.00, luck_floor: 0.50 } },
 ];
 
@@ -123,18 +144,34 @@ export default function App() {
     realmIndex: 0, qi: 0, qiToNext: 250, vitality: 100, baseMaxVitality: 100, coins: 0, baseCombat: 150, 
     artifacts: [], artifactLvls: {}, basicSkills: {}, secretBooks: {}, arrays: { qi: 0, def: 0 }, 
     streakCount: 0, streakShields: 0, luck: 1.0, totalFocusTime: 0, history: [], 
-    logs: ['【系統】天道印記已連結，V62 法寶護盾法則生效中。'] 
+    logs: ['【系統】天道印記已連結，V63 雲端總榜生效中。'] 
   };
 
   const [player, setPlayer] = useState(() => {
     try {
-      const saved = localStorage.getItem('xianxia_master_v62');
+      const saved = localStorage.getItem('xianxia_master_v63');
       if (saved) return { ...defaultPlayerState, ...JSON.parse(saved) };
       return defaultPlayerState;
     } catch (e) { return defaultPlayerState; }
   });
 
   const [saveIndicator, setSaveIndicator] = useState(false);
+  
+  // V63 Cloud State
+  const [globalFocusCount, setGlobalFocusCount] = useState(0);
+
+  useEffect(() => {
+    // 監聽 Firebase 上的全球專注次數
+    const countRef = ref(database, 'globalStats/totalFocusCount');
+    const unsubscribe = onValue(countRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        setGlobalFocusCount(data);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   const formatTime = (s) => `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
   
   const getMonsterName = (tier) => {
@@ -175,8 +212,6 @@ export default function App() {
   const [showGuide, setShowGuide] = useState(false); 
   const [guideTab, setGuideTab] = useState('rules'); 
   const [celebration, setCelebration] = useState(null);
-  
-  // V62 Modal State
   const [showGiveUpWarning, setShowGiveUpWarning] = useState(false);
 
   const [isAttacking, setIsAttacking] = useState(false);
@@ -186,7 +221,7 @@ export default function App() {
   const [isHealing, setIsHealing] = useState(false); 
 
   useEffect(() => { 
-    localStorage.setItem('xianxia_master_v62', JSON.stringify(player)); 
+    localStorage.setItem('xianxia_master_v63', JSON.stringify(player)); 
     setSaveIndicator(true);
     const timer = setTimeout(() => setSaveIndicator(false), 2000);
     return () => clearTimeout(timer);
@@ -227,7 +262,6 @@ export default function App() {
   const streakBonusMult = Math.min(streakCap, (player.streakCount || 0) * 0.05 * streakEff);
   const comboMultiplier = 1 + streakBonusMult;
   
-  // V62: Calculate Max Streak Shields
   const maxStreakShields = Math.floor(getMultiplier('streak_shield') - 1);
 
   const critDmg = Math.min(20.0, 2.0 + (getMultiplier('crit_dmg') - 1) + (overflowCrit * 2.0)); 
@@ -296,7 +330,6 @@ export default function App() {
         addLog(`🚨 【靈力反噬】走火入魔，扣除 ${penalty} 氣血。`); 
       }
 
-      // V62 Artifact Streak Shielding
       let nextStreak = 0;
       let nextShields = player.streakShields;
       
@@ -320,6 +353,14 @@ export default function App() {
     
     if (mode === 'focus') {
       setIsAttacking(true); setTimeout(() => setIsAttacking(false), 500);
+
+      // V63 Cloud Update: Global Counter Increment
+      try {
+        const statsRef = ref(database, 'globalStats');
+        update(statsRef, { totalFocusCount: increment(1) });
+      } catch (e) {
+        console.error("天道同步失敗", e);
+      }
       
       const isCrit = Math.random() < critRate;
       const damageBase = Math.floor(currentCombatPower * (focusDuration / 1500));
@@ -385,7 +426,7 @@ export default function App() {
           qiToNext: nextQiToNext,
           coins: nextCoins,
           streakCount: p.streakCount + 1,
-          streakShields: maxStreakShields, // Recharge shields
+          streakShields: maxStreakShields,
           totalFocusTime: (p.totalFocusTime || 0) + focusDuration,
           artifacts: newArtifacts,
           history: nextHistory
@@ -398,7 +439,7 @@ export default function App() {
       setPlayer(p => ({ 
         ...p, 
         vitality: Math.min(maxVitality, p.vitality + heal),
-        streakShields: maxStreakShields // Recharge shields on rest too
+        streakShields: maxStreakShields 
       }));
       addLog(`[吐納] 完成休息，恢復 ${heal} 氣血。護盾已重置。`); 
     }
@@ -492,12 +533,20 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-colors duration-300 
+    <div className={`min-h-screen text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-colors duration-300 pt-10
       ${isCollapsing ? 'bg-red-950/80 animate-shake' : 
         isKilling ? 'bg-emerald-950/60' :
         isCritStrike ? 'bg-rose-900/40' : 'bg-[#020617]'}`}
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&q=80")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
       
+      {/* V63 天道總榜跑馬燈 */}
+      <div className="fixed top-0 left-0 w-full bg-emerald-950/90 text-emerald-400 text-xs py-2 text-center font-black tracking-widest z-[600] border-b border-emerald-500/30 flex items-center justify-center gap-3 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+        <Network size={16} className="animate-pulse" />
+        <span>三千世界累計運轉周天：</span>
+        <span className="text-white font-mono text-sm">{globalFocusCount.toLocaleString()}</span>
+        <span>次</span>
+      </div>
+
       <div className="pointer-events-none fixed inset-0 z-[500] flex items-center justify-center overflow-hidden">
         {isCritStrike && <Flame size={350} className="text-amber-500/30 animate-ping absolute mix-blend-color-dodge drop-shadow-[0_0_50px_rgba(245,158,11,0.8)]" />}
         {isKilling && <Sword size={450} className="text-emerald-500/40 animate-pulse absolute mix-blend-color-dodge -rotate-45 drop-shadow-[0_0_80px_rgba(16,185,129,0.8)]" />}
@@ -514,7 +563,6 @@ export default function App() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
 
-      {/* Give Up Warning Modal */}
       {showGiveUpWarning && (
         <div className="fixed inset-0 z-[600] bg-black/95 backdrop-blur-2xl p-6 flex flex-col items-center justify-center font-bold">
           <div className="w-full max-w-lg bg-rose-950/80 p-8 rounded-2xl border border-rose-500/50 shadow-[0_0_80px_rgba(244,63,94,0.3)] flex flex-col items-center text-center animate-pop-in">
@@ -530,13 +578,13 @@ export default function App() {
       )}
 
       {/* 頂部同步狀態 */}
-      <div className={`fixed top-4 right-4 z-50 flex items-center gap-2 bg-emerald-900/80 text-emerald-300 px-4 py-2 rounded-full text-xs font-bold border border-emerald-500/30 transition-opacity duration-500 ${saveIndicator ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`fixed top-12 right-4 z-50 flex items-center gap-2 bg-emerald-900/80 text-emerald-300 px-4 py-2 rounded-full text-xs font-bold border border-emerald-500/30 transition-opacity duration-500 ${saveIndicator ? 'opacity-100' : 'opacity-0'}`}>
         <Save size={14} className="animate-pulse"/> 天道已同步
       </div>
 
       {showRealmGuide && (
-        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 md:p-8 flex flex-col items-center justify-center font-bold">
-          <div className="w-full max-w-4xl flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
+          <div className="w-full max-w-4xl flex flex-col max-h-[80vh]">
             <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
                <h2 className="text-xl md:text-2xl font-black text-white tracking-widest uppercase flex items-center gap-3"><BookOpen className="text-emerald-500"/> 天道經緯 (境界全覽)</h2>
                <button onClick={() => setShowRealmGuide(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
@@ -552,8 +600,8 @@ export default function App() {
       )}
 
       {showGuide && (
-        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 flex flex-col items-center justify-center font-bold">
-          <div className="w-full max-w-2xl bg-slate-900/50 p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 flex flex-col items-center justify-center font-bold mt-8">
+          <div className="w-full max-w-2xl bg-slate-900/50 p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh]">
             <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
                <h2 className="text-lg md:text-xl font-black text-white tracking-widest uppercase flex items-center gap-3"><HelpCircle className="text-emerald-400"/> 修行指引與祕訣</h2>
                <button onClick={() => setShowGuide(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
@@ -598,8 +646,8 @@ export default function App() {
       )}
 
       {showStatsReport && (
-        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 flex flex-col items-center justify-center font-bold">
-          <div className="w-full max-w-2xl bg-slate-900/50 p-6 md:p-8 rounded-2xl border border-cyan-900/50 shadow-2xl flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 flex flex-col items-center justify-center font-bold mt-8">
+          <div className="w-full max-w-2xl bg-slate-900/50 p-6 md:p-8 rounded-2xl border border-cyan-900/50 shadow-2xl flex flex-col max-h-[80vh]">
             <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4 flex-shrink-0">
                <h2 className="text-lg md:text-xl font-black text-cyan-400 tracking-widest uppercase flex items-center gap-3"><BarChart3 size={24}/> 屬性極限與轉化報告</h2>
                <button onClick={() => setShowStatsReport(false)} className="p-4 hover:bg-white/10 rounded-full text-white/50"><X size={24}/></button>
@@ -642,14 +690,14 @@ export default function App() {
       )}
 
       {celebration && (
-        <div className="fixed inset-0 z-[300] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-12 cursor-pointer font-bold" onClick={() => setCelebration(null)}>
+        <div className="fixed inset-0 z-[300] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-12 cursor-pointer font-bold mt-8" onClick={() => setCelebration(null)}>
           <Crown size={80} className="text-yellow-500/80 mb-6 animate-bounce" />
           <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-widest">突破瓶頸</h2>
           <p className="text-xl text-emerald-400 font-light tracking-widest">【{celebration.name}】</p>
         </div>
       )}
 
-      <div className="w-full max-w-4xl mb-6 transition-focus z-10 font-bold px-2 md:px-0 mt-8">
+      <div className="w-full max-w-4xl mb-6 transition-focus z-10 font-bold px-2 md:px-0 mt-10">
         <div className="flex flex-col items-center mb-8 h-10 justify-center">
           <h1 className="text-lg md:text-xl font-extralight tracking-[1.2em] text-white/30 uppercase font-bold drop-shadow-md">凡人修仙專注</h1>
           <div className="h-px w-48 bg-gradient-to-r from-transparent via-white/20 to-transparent mt-4 opacity-50"></div>
