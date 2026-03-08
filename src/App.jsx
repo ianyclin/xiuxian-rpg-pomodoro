@@ -55,6 +55,7 @@ const GUIDE_REALMS = [
   { name: '渡劫期', desc: '引動九九重雷劫，成則羽化登仙，敗則化為劫灰。', range: 'Tier 34' }
 ];
 
+// 重構引擎：使用 val: {} 處理雙棲屬性 (已削峰微調掌天瓶)
 const ARTIFACT_POOL = [
   { id: 'a01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (反噬減傷 +2%)', type: 'def', val: 0.02 },
   { id: 'a02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +2%)', type: 'atk', val: 0.02 },
@@ -80,7 +81,7 @@ const ARTIFACT_POOL = [
   { id: 'a51', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +80%/級)', type: 'special', val: { atk: 0.80, def: 0.80 } },
   { id: 'a52', rarity: 'MYTHIC', name: '乾坤鼎', desc: '逆轉造化 (洞府成本 -40%)', type: 'forge_discount', val: 0.40 },
   { id: 'a53', rarity: 'MYTHIC', name: '七彩珠', desc: '突破極限 (連擊上限提升 150%)', type: 'streak_cap', val: 1.50 },
-  { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+400%，回血+50%/級)', type: 'special', val: { qi: 4.00, heal_bonus: 0.50 } },
+  { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+200%，回血+50%/級)', type: 'special', val: { qi: 2.00, heal_bonus: 0.50 } },
   { id: 'a61', rarity: 'DIVINE', name: '混沌鐘', desc: '時空凝滯 (閃避+30%，連擊效率+100%/級)', type: 'special', val: { evade: 0.30, streak_eff: 1.00 } },
   { id: 'a62', rarity: 'DIVINE', name: '補天石', desc: '天道補缺 (氣運保底 +1.0)', type: 'luck_floor', val: 1.00 },
   { id: 'a63', rarity: 'DIVINE', name: '聚寶盆', desc: '容納萬物 (靈石獲取 +400%)', type: 'stone', val: 4.00 },
@@ -149,7 +150,6 @@ export default function App() {
   
   const generateMonsterState = (realmIdx) => {
     const nTier = realmIdx + 1;
-    // 修正: 天劫 Boss 判斷應為 REALMS.length - 1 (Index 33)
     const nHp = Math.floor(150 * Math.pow(1.20, nTier - 1) * (realmIdx === REALMS.length - 1 ? 15 : 1));
     return { name: realmIdx === REALMS.length - 1 ? '【九九重劫】' : getMonsterName(nTier), hp: nHp, maxHp: nHp, tier: nTier };
   };
@@ -167,10 +167,9 @@ export default function App() {
   const [guideTab, setGuideTab] = useState('rules'); 
   const [celebration, setCelebration] = useState(null);
   
-  // 視覺震動狀態
   const [isAttacking, setIsAttacking] = useState(false);
   const [isCollapsing, setIsCollapsing] = useState(false);
-  const [isCritStrike, setIsCritStrike] = useState(false); // 新增：爆擊震動
+  const [isCritStrike, setIsCritStrike] = useState(false); 
   const [isHealing, setIsHealing] = useState(false); 
 
   useEffect(() => { 
@@ -202,16 +201,16 @@ export default function App() {
   const themeColorClass = `text-${currentRealmData.color}-400`;
   const themeBorderClass = `border-${currentRealmData.color}-500/20`;
 
-  const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連擊上限最大為 +400%
+  const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); 
   const streakEff = getMultiplier('streak_eff'); 
   const streakBonusMult = Math.min(streakCap, (player.streakCount || 0) * 0.05 * streakEff);
   const comboMultiplier = 1 + streakBonusMult;
   
-  const critRate = Math.min(0.85, getMultiplier('crit') - 1);
+  const critRate = Math.min(0.85, getMultiplier('crit') - 1);       
   const critDmg = Math.min(20.0, 2.0 + (getMultiplier('crit_dmg') - 1)); 
-  const evadeRate = Math.min(0.75, getMultiplier('evade') - 1);
-  const reviveRate = Math.min(0.65, getMultiplier('revive') - 1);
-  const healPct = Math.min(0.60, 0.20 + (getMultiplier('heal_bonus') - 1));
+  const evadeRate = Math.min(0.75, getMultiplier('evade') - 1);     
+  const reviveRate = Math.min(0.65, getMultiplier('revive') - 1);   
+  const healPct = Math.min(0.60, 0.20 + (getMultiplier('heal_bonus') - 1)); 
   const defMultiplier = getMultiplier('def');
   const dmgTakenPct = (1 / defMultiplier) * 100; 
 
@@ -265,7 +264,6 @@ export default function App() {
       const damageBase = Math.floor(currentCombatPower * (focusDuration / 1500));
       const actualDamage = isCrit ? Math.floor(damageBase * critDmg) : damageBase;
       
-      // 爆擊專屬視覺震動
       if (isCrit) { setIsCritStrike(true); setTimeout(() => setIsCritStrike(false), 600); }
 
       const newHp = Math.max(0, monster.hp - actualDamage);
@@ -282,19 +280,16 @@ export default function App() {
 
   const handleDefeat = () => {
     const currentLuck = getMultiplier('luck_floor');
-    const timeBonus = focusDuration >= 3600 ? 1.25 : 1.0;
-    // 修正: 修為基數調整為 1.18，使其追上後期需求
-    const baseQi = 100 * Math.pow(1.18, monster.tier);
+    // 移除 timeBonus，避免與基礎時長傷害雙重通膨
+    const baseQi = 100 * Math.pow(1.18, monster.tier); 
     const baseCoin = Math.floor(200 * Math.pow(1.15, monster.tier) * currentLuck);
     
-    let qiGain = Math.floor(baseQi * getMultiplier('qi') * timeBonus);
+    let qiGain = Math.floor(baseQi * getMultiplier('qi'));
     let coinGain = Math.floor(baseCoin * getMultiplier('stone'));
     let nQi = player.qi + qiGain, nRealm = player.realmIndex, upgraded = false;
     
     if (nQi >= player.qiToNext && nRealm < REALMS.length - 1) { 
-      nRealm++; 
-      // 修正: 需求膨脹率從 1.35 下調至 1.28，避免後期撞牆
-      nQi -= player.qiToNext; upgraded = true; 
+      nRealm++; nQi -= player.qiToNext; upgraded = true; 
     }
     
     let newArtifacts = [...(player.artifacts || [])];
