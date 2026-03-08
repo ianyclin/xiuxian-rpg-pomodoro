@@ -55,7 +55,6 @@ const GUIDE_REALMS = [
   { name: '渡劫期', desc: '引動九九重雷劫，成則羽化登仙，敗則化為劫灰。', range: 'Tier 34' }
 ];
 
-// 重構引擎：使用 val: {} 處理雙棲屬性
 const ARTIFACT_POOL = [
   { id: 'a01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (反噬減傷 +2%)', type: 'def', val: 0.02 },
   { id: 'a02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +2%)', type: 'atk', val: 0.02 },
@@ -73,18 +72,18 @@ const ARTIFACT_POOL = [
   { id: 'a31', rarity: 'EPIC', name: '風雷翅', desc: '迅捷如雷 (連擊疊加效率 +40%)', type: 'streak_eff', val: 0.40 },
   { id: 'a32', rarity: 'EPIC', name: '天雷竹', desc: '辟邪神雷 (戰力+40%，爆擊率+5%/級)', type: 'special', val: { atk: 0.40, crit: 0.05 } },
   { id: 'a33', rarity: 'EPIC', name: '血魔劍', desc: '嗜血渴望 (戰力+20%，爆擊率+10%/級)', type: 'special', val: { atk: 0.20, crit: 0.10 } },
-  { id: 'a40', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖 (減傷+50%，閃避率+10%/級)', type: 'special', val: { def: 0.50, evade: 0.10 } },
+  { id: 'a40', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖 (閃避率+15%，連擊上限+50%/級)', type: 'special', val: { evade: 0.15, streak_cap: 0.50 } },
   { id: 'a41', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣 (戰力+80%，爆擊率+8%/級)', type: 'special', val: { atk: 0.80, crit: 0.08 } },
   { id: 'a42', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '替身擋災 (氣血+100%，免死+5%/級)', type: 'special', val: { hp: 1.00, revive: 0.05 } },
   { id: 'a43', rarity: 'LEGENDARY', name: '成熟體噬金蟲', desc: '無物不噬 (戰力+100%，爆傷+60%/級)', type: 'special', val: { atk: 1.00, crit_dmg: 0.60 } },
   { id: 'a50', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '法則破壞 (戰力+250%，爆傷+150%/級)', type: 'special', val: { atk: 2.50, crit_dmg: 1.50 } },
   { id: 'a51', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +80%/級)', type: 'special', val: { atk: 0.80, def: 0.80 } },
   { id: 'a52', rarity: 'MYTHIC', name: '乾坤鼎', desc: '逆轉造化 (洞府成本 -40%)', type: 'forge_discount', val: 0.40 },
-  { id: 'a53', rarity: 'MYTHIC', name: '七彩珠', desc: '突破極限 (連擊上限+150%，連擊效率+50%/級)', type: 'special', val: { streak_cap: 1.50, streak_eff: 0.50 } },
-  { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+500%，回血+20%/級)', type: 'special', val: { qi: 5.00, heal_bonus: 0.20 } },
-  { id: 'a61', rarity: 'DIVINE', name: '混沌鐘', desc: '時空凝滯 (閃避+15%，連擊效率+100%/級)', type: 'special', val: { evade: 0.15, streak_eff: 1.00 } },
-  { id: 'a62', rarity: 'DIVINE', name: '補天石', desc: '天道補缺 (氣運保底+1.0，免死+10%/級)', type: 'special', val: { luck_floor: 1.00, revive: 0.10 } },
-  { id: 'a63', rarity: 'DIVINE', name: '聚寶盆', desc: '容納萬物 (靈石獲取+400%，氣運+0.5/級)', type: 'special', val: { stone: 4.00, luck_floor: 0.50 } },
+  { id: 'a53', rarity: 'MYTHIC', name: '七彩珠', desc: '突破極限 (連擊上限提升 150%)', type: 'streak_cap', val: 1.50 },
+  { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+400%，回血+50%/級)', type: 'special', val: { qi: 4.00, heal_bonus: 0.50 } },
+  { id: 'a61', rarity: 'DIVINE', name: '混沌鐘', desc: '時空凝滯 (閃避+30%，連擊效率+100%/級)', type: 'special', val: { evade: 0.30, streak_eff: 1.00 } },
+  { id: 'a62', rarity: 'DIVINE', name: '補天石', desc: '天道補缺 (氣運保底 +1.0)', type: 'luck_floor', val: 1.00 },
+  { id: 'a63', rarity: 'DIVINE', name: '聚寶盆', desc: '容納萬物 (靈石獲取 +400%)', type: 'stone', val: 4.00 },
 ];
 
 const SECRET_BOOKS = [
@@ -92,9 +91,9 @@ const SECRET_BOOKS = [
   { id: 's_02', rarity: 'RARE', name: '血靈鑽', desc: '爆擊加成。爆擊傷害 +40%/級', type: 'crit_dmg', val: 0.40 },
   { id: 's_03', rarity: 'RARE', name: '大衍決', desc: '神識分化。連擊效率+15%，氣運+0.05/級', type: 'special', val: { streak_eff: 0.15, luck_floor: 0.05 } },
   { id: 's_04', rarity: 'EPIC', name: '大庚劍陣', desc: '連擊上限。連擊增傷上限 +20%/級', type: 'streak_cap', val: 0.20 },
-  { id: 's_05', rarity: 'LEGENDARY', name: '元磁神光', desc: '克制五行。戰力與減傷 +10%/級', type: 'special', val: { atk: 0.10, def: 0.10 } },
+  { id: 's_05', rarity: 'LEGENDARY', name: '元磁神光', desc: '克制五行。戰力與減傷 +20%/級', type: 'special', val: { atk: 0.20, def: 0.20 } },
   { id: 's_06', rarity: 'MYTHIC', name: '梵聖真魔功', desc: '三頭六臂。戰力加成 +60%/級', type: 'atk', val: 0.60 },
-  { id: 's_07', rarity: 'RARE', name: '辟邪神雷', desc: '至陽之雷。爆擊率 +6%/級', type: 'crit', val: 0.06 },
+  { id: 's_07', rarity: 'RARE', name: '辟邪神雷', desc: '至陽之雷。爆擊率+5%，爆傷+30%/級', type: 'special', val: { crit: 0.05, crit_dmg: 0.30 } },
   { id: 's_08', rarity: 'EPIC', name: '拘魂術', desc: '掠奪靈氣。擊殺靈氣 +20%/級', type: 'qi', val: 0.20 },
   { id: 's_09', rarity: 'UNCOMMON', name: '青木訣', desc: '生生不息。休息回血比例 +2%/級', type: 'heal_bonus', val: 0.02 },
   { id: 's_10', rarity: 'LEGENDARY', name: '驚蟄十二變', desc: '變身真靈。氣血上限+35%，爆傷+20%/級', type: 'special', val: { hp: 0.35, crit_dmg: 0.20 } },
@@ -123,7 +122,7 @@ export default function App() {
 
   const [player, setPlayer] = useState(() => {
     try {
-      const saved = localStorage.getItem('xianxia_master_v50_final');
+      const saved = localStorage.getItem('xianxia_master_v51_final');
       if (saved) return JSON.parse(saved);
       return defaultPlayerState;
     } catch (e) { return defaultPlayerState; }
@@ -150,8 +149,9 @@ export default function App() {
   
   const generateMonsterState = (realmIdx) => {
     const nTier = realmIdx + 1;
-    const nHp = Math.floor(150 * Math.pow(1.20, nTier - 1) * (realmIdx === REALMS.length - 2 ? 15 : 1));
-    return { name: realmIdx === REALMS.length - 2 ? '【九九重劫】' : getMonsterName(nTier), hp: nHp, maxHp: nHp, tier: nTier };
+    // 修正: 天劫 Boss 判斷應為 REALMS.length - 1 (Index 33)
+    const nHp = Math.floor(150 * Math.pow(1.20, nTier - 1) * (realmIdx === REALMS.length - 1 ? 15 : 1));
+    return { name: realmIdx === REALMS.length - 1 ? '【九九重劫】' : getMonsterName(nTier), hp: nHp, maxHp: nHp, tier: nTier };
   };
 
   const [monster, setMonster] = useState(() => generateMonsterState(player.realmIndex));
@@ -166,18 +166,20 @@ export default function App() {
   const [showGuide, setShowGuide] = useState(false); 
   const [guideTab, setGuideTab] = useState('rules'); 
   const [celebration, setCelebration] = useState(null);
+  
+  // 視覺震動狀態
   const [isAttacking, setIsAttacking] = useState(false);
   const [isCollapsing, setIsCollapsing] = useState(false);
+  const [isCritStrike, setIsCritStrike] = useState(false); // 新增：爆擊震動
   const [isHealing, setIsHealing] = useState(false); 
 
   useEffect(() => { 
-    localStorage.setItem('xianxia_master_v50_final', JSON.stringify(player)); 
+    localStorage.setItem('xianxia_master_v51_final', JSON.stringify(player)); 
     setSaveIndicator(true);
     const timer = setTimeout(() => setSaveIndicator(false), 2000);
     return () => clearTimeout(timer);
   }, [player]);
 
-  // 升級版引擎：完美支援 `special` 物件，避免手動寫死 if-else
   const getMultiplier = (type) => {
     let mult = 1.0;
     BASIC_SKILLS.forEach(s => { if (player.basicSkills?.[s.id] > 0 && s.type === type) mult += s.val * player.basicSkills[s.id]; });
@@ -200,17 +202,16 @@ export default function App() {
   const themeColorClass = `text-${currentRealmData.color}-400`;
   const themeBorderClass = `border-${currentRealmData.color}-500/20`;
 
-  const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連擊上限最大為 +400% (即 5.0x)
+  const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連擊上限最大為 +400%
   const streakEff = getMultiplier('streak_eff'); 
   const streakBonusMult = Math.min(streakCap, (player.streakCount || 0) * 0.05 * streakEff);
   const comboMultiplier = 1 + streakBonusMult;
   
-  // 天道法則硬上限解鎖
-  const critRate = Math.min(0.85, getMultiplier('crit') - 1);       // 爆擊極限 85%
-  const critDmg = Math.min(20.0, 2.0 + (getMultiplier('crit_dmg') - 1)); // 爆傷極限解鎖至 20 倍 (修仙者一劍破天)
-  const evadeRate = Math.min(0.75, getMultiplier('evade') - 1);     // 閃避極限 75%
-  const reviveRate = Math.min(0.65, getMultiplier('revive') - 1);   // 復活極限 65%
-  const healPct = Math.min(0.60, 0.20 + (getMultiplier('heal_bonus') - 1)); // 吐納極限 60%
+  const critRate = Math.min(0.85, getMultiplier('crit') - 1);
+  const critDmg = Math.min(20.0, 2.0 + (getMultiplier('crit_dmg') - 1)); 
+  const evadeRate = Math.min(0.75, getMultiplier('evade') - 1);
+  const reviveRate = Math.min(0.65, getMultiplier('revive') - 1);
+  const healPct = Math.min(0.60, 0.20 + (getMultiplier('heal_bonus') - 1));
   const defMultiplier = getMultiplier('def');
   const dmgTakenPct = (1 / defMultiplier) * 100; 
 
@@ -245,7 +246,6 @@ export default function App() {
     if (Math.random() < evadeRate) { addLog(`💨 【羅煙閃避】成功閃避反噬！`); }
     else {
       setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
-      // 死亡懲罰公式升級：絕對重創機制 (基礎平傷 + 境界成長)
       const penalty = Math.floor((maxVitality * 0.20 + monster.tier * 50) * (1 / defMultiplier));
       let nextHp = player.vitality - penalty;
       if (nextHp <= 0) {
@@ -264,6 +264,10 @@ export default function App() {
       const isCrit = Math.random() < critRate;
       const damageBase = Math.floor(currentCombatPower * (focusDuration / 1500));
       const actualDamage = isCrit ? Math.floor(damageBase * critDmg) : damageBase;
+      
+      // 爆擊專屬視覺震動
+      if (isCrit) { setIsCritStrike(true); setTimeout(() => setIsCritStrike(false), 600); }
+
       const newHp = Math.max(0, monster.hp - actualDamage);
       if (newHp === 0) handleDefeat();
       else { setMonster(prev => ({ ...prev, hp: newHp })); setMode('break'); setTimeLeft(5 * 60); }
@@ -279,7 +283,8 @@ export default function App() {
   const handleDefeat = () => {
     const currentLuck = getMultiplier('luck_floor');
     const timeBonus = focusDuration >= 3600 ? 1.25 : 1.0;
-    const baseQi = 100 * Math.pow(1.12, monster.tier);
+    // 修正: 修為基數調整為 1.18，使其追上後期需求
+    const baseQi = 100 * Math.pow(1.18, monster.tier);
     const baseCoin = Math.floor(200 * Math.pow(1.15, monster.tier) * currentLuck);
     
     let qiGain = Math.floor(baseQi * getMultiplier('qi') * timeBonus);
@@ -287,7 +292,9 @@ export default function App() {
     let nQi = player.qi + qiGain, nRealm = player.realmIndex, upgraded = false;
     
     if (nQi >= player.qiToNext && nRealm < REALMS.length - 1) { 
-      nRealm++; nQi -= player.qiToNext; upgraded = true; 
+      nRealm++; 
+      // 修正: 需求膨脹率從 1.35 下調至 1.28，避免後期撞牆
+      nQi -= player.qiToNext; upgraded = true; 
     }
     
     let newArtifacts = [...(player.artifacts || [])];
@@ -300,7 +307,7 @@ export default function App() {
       ...p, 
       realmIndex: nRealm, 
       qi: nQi, 
-      qiToNext: upgraded ? Math.floor(p.qiToNext * 1.35) : p.qiToNext, 
+      qiToNext: upgraded ? Math.floor(p.qiToNext * 1.28) : p.qiToNext, 
       coins: p.coins + coinGain, 
       streakCount: p.streakCount + 1, 
       totalFocusTime: (p.totalFocusTime || 0) + focusDuration, 
@@ -400,7 +407,9 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen bg-[#020617] text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-all duration-700 ${isCollapsing ? 'bg-red-950/80 animate-shake' : ''}`}
+    <div className={`min-h-screen bg-[#020617] text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-all duration-700 
+      ${isCollapsing ? 'bg-red-950/80 animate-shake' : ''} 
+      ${isCritStrike ? 'bg-amber-900/40 animate-pulse' : ''}`}
          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&q=80")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
       
       <div className="absolute inset-0 bg-[#020617]/85 backdrop-blur-[1px] z-0"></div>
@@ -468,11 +477,11 @@ export default function App() {
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
                      <h3 className="text-purple-400 text-base mb-2 flex items-center gap-2 font-black"><Skull size={16}/> 身死道消 (死亡懲罰)</h3>
-                     <p className="text-white/70">氣血歸零時若復活失敗，將失去 20% 當前修為與所有連擊，且氣血僅重置至 50%。請務必至洞府煉丹維持狀態。</p>
+                     <p className="text-white/70">氣血歸零時若復活失敗，將失去修為與所有連擊，且氣血僅重置至 50%。請務必至洞府煉丹維持狀態。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
                      <h3 className="text-yellow-400 text-base mb-2 flex items-center gap-2 font-black"><Pill size={16}/> 靈丹妙藥 (主動恢復)</h3>
-                     <p className="text-white/70">在「洞府淬煉」分頁可煉製回春丹。消耗靈石即可瞬間拉回 50% 血線，是應對現實頻繁干擾的最佳備選。</p>
+                     <p className="text-white/70">在「洞府淬煉」分頁可煉製回春丹。消耗靈石即可瞬間拉回血線，是應對現實頻繁干擾的最佳備選。</p>
                    </section>
                 </div>
               ) : (
