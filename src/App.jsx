@@ -129,7 +129,23 @@ export default function App() {
 
   const [saveIndicator, setSaveIndicator] = useState(false);
   const formatTime = (s) => `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
-  const getMonsterName = (tier) => ['野狼幫眾', '黑煞教徒', '墨蛟', '血線蛟', '啼魂獸', '六道傳人', '裂風獸', '陰羅宗長老', '真靈羅睺', '螟蟲之母'][Math.min(Math.floor((tier-1)/3), 9)] + ` (Tier ${tier})`;
+  
+  // 核心：34 階怪物清單完整還原
+  const getMonsterName = (tier) => {
+    const monsters = [
+      '野狼幫眾', '墨大夫', '金光上人', '陸師兄', 
+      '黑煞教徒', '越皇化身', '鬼靈門王蟬', '血線蛟', 
+      '墨蛟', '土甲龍', '雙尾人面蠍', '溫天仁', 
+      '鐵甲煉屍', '慕蘭法士', '極陰祖師', '裂風獸風希', 
+      '六道極聖', '古魔血焰', '陰羅宗宗主', '化形毒蛟', 
+      '夜叉族守衛', '角蚩族戰尊', '六翼霜蚣', '銀甲屍王', 
+      '高階魔尊', '元剎聖祖化身', '噬金蟲王', '海王族大乘', 
+      '六極聖祖', '降臨謫仙馬良', '始印神尊', '游天鯤鵬', 
+      '真靈羅睺', '螟蟲之母' 
+    ];
+    const index = Math.min(Math.max(1, tier), monsters.length) - 1;
+    return `${monsters[index]} (Tier ${tier})`;
+  };
   
   const generateMonsterState = (realmIdx) => {
     const nTier = realmIdx + 1;
@@ -226,7 +242,7 @@ export default function App() {
       let nextHp = player.vitality - penalty;
       if (nextHp <= 0) {
         if (Math.random() < reviveRate) { nextHp = maxVitality; addLog(`✨ 【涅槃重生】轉危為安！`); }
-        else { nextHp = Math.floor(maxVitality * 0.5); setPlayer(p => ({ ...p, qi: Math.floor(p.qi * 0.8) })); addLog(`💀 【身死道消】損失修為。`); }
+        else { nextHp = Math.floor(maxVitality * 0.5); setPlayer(p => ({ ...p, qi: Math.floor(p.qi * 0.8) })); addLog(`💀 【身死道消】損失修為，連擊盡失。`); }
       } else { addLog(`🚨 【靈力反噬】扣除 ${penalty} 氣血。`); }
       setPlayer(p => ({ ...p, vitality: nextHp, streakCount: 0 }));
     }
@@ -237,11 +253,13 @@ export default function App() {
     setIsActive(false); setTargetEndTime(null);
     if (mode === 'focus') {
       setIsAttacking(true); setTimeout(() => setIsAttacking(false), 500);
-      const damage = Math.floor(currentCombatPower * (focusDuration / 1500));
-      const newHp = Math.max(0, monster.hp - damage);
+      const isCrit = Math.random() < critRate;
+      const damageBase = Math.floor(currentCombatPower * (focusDuration / 1500));
+      const actualDamage = isCrit ? Math.floor(damageBase * critDmg) : damageBase;
+      const newHp = Math.max(0, monster.hp - actualDamage);
       if (newHp === 0) handleDefeat();
       else { setMonster(prev => ({ ...prev, hp: newHp })); setMode('break'); setTimeLeft(5 * 60); }
-      addLog(`[運功] 造成 ${damage} 點傷害。`);
+      addLog(isCrit ? `🔥 【爆擊】造成 ${actualDamage} 點毀滅傷害！` : `[運功] 造成 ${actualDamage} 點傷害。`);
     } else { 
       setMode('focus'); setTimeLeft(focusDuration); 
       const heal = Math.floor(maxVitality * healPct);
@@ -251,11 +269,13 @@ export default function App() {
   };
 
   const handleDefeat = () => {
+    const timeBonus = focusDuration >= 3600 ? 1.25 : 1.0;
     const baseQi = 100 * Math.pow(1.12, monster.tier);
     const baseCoin = Math.floor(200 * Math.pow(1.15, monster.tier) * player.luck);
-    let nQi = player.qi + Math.floor(baseQi * getMultiplier('qi')), nRealm = player.realmIndex, upgraded = false;
+    let nQi = player.qi + Math.floor(baseQi * getMultiplier('qi') * timeBonus);
+    let upgraded = false, nRealm = player.realmIndex;
     if (nQi >= player.qiToNext && nRealm < REALMS.length - 1) { nRealm++; nQi -= player.qiToNext; upgraded = true; }
-    setPlayer(p => ({ ...p, realmIndex: nRealm, qi: nQi, qiToNext: upgraded ? Math.floor(p.qiToNext * 1.35) : p.qiToNext, coins: p.coins + Math.floor(baseCoin * getMultiplier('stone')), streakCount: p.streakCount + 1 }));
+    setPlayer(p => ({ ...p, realmIndex: nRealm, qi: nQi, qiToNext: upgraded ? Math.floor(p.qiToNext * 1.35) : p.qiToNext, coins: p.coins + Math.floor(baseCoin * getMultiplier('stone')), streakCount: p.streakCount + 1, totalFocusTime: p.totalFocusTime + focusDuration }));
     if (upgraded) setCelebration({ name: REALMS[nRealm].name });
     setMonster(generateMonsterState(nRealm)); setMode('break'); setTimeLeft(5 * 60);
   };
@@ -269,7 +289,14 @@ export default function App() {
     }
   };
 
-  const toggleTimer = () => { if (!isActive) { const endTime = Date.now() + (timeLeft * 1000); setIsActive(true); setTargetEndTime(endTime); addLog(`[運轉] 靈壓激發。`); } };
+  const toggleTimer = () => { 
+    if (!isActive) { 
+      const endTime = Date.now() + (timeLeft * 1000);
+      setIsActive(true); 
+      setTargetEndTime(endTime);
+      addLog(`[運轉] 靈壓激發。`); 
+    } 
+  };
 
   useEffect(() => {
     const syncTime = () => {
@@ -284,19 +311,6 @@ export default function App() {
       return () => { clearInterval(interval); document.removeEventListener('visibilitychange', syncTime); };
     }
   }, [isActive, targetEndTime]);
-
-  const InsightsChart = () => {
-    const data = player.history || [];
-    if (data.length < 2) return <div className="h-full flex items-center justify-center text-white/10 uppercase font-bold">識海未成，尚無投影</div>;
-    const maxT = Math.max(...data.map(d => d.time)) || 1;
-    const points = data.map((d, i) => `${(i / (data.length - 1)) * 100},${100 - (d.time / maxT) * 100}`).join(' ');
-    return (
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
-        <polyline fill="none" stroke="rgba(16, 185, 129, 0.4)" strokeWidth="1.5" points={points} />
-        {data.map((d, i) => (<circle key={i} cx={(i / (data.length - 1)) * 100} cy={100 - (d.time / maxT) * 100} r="1.5" fill="#fff" className="animate-pulse" />))}
-      </svg>
-    );
-  };
 
   return (
     <div className={`min-h-screen bg-[#020617] text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-all duration-700 ${isCollapsing ? 'bg-red-950/80 animate-shake' : ''}`}
@@ -313,66 +327,64 @@ export default function App() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
 
-      {/* 頂部同步狀態 */}
+      {/* 狀態同步標籤 */}
       <div className={`fixed top-4 right-4 z-50 flex items-center gap-2 bg-emerald-900/80 text-emerald-300 px-3 py-1.5 rounded-full text-[10px] font-bold border border-emerald-500/30 transition-opacity duration-500 ${saveIndicator ? 'opacity-100' : 'opacity-0'}`}>
-        <Save size={12} className="animate-pulse"/> 天道已同步
+        <Save size={12} className="animate-pulse"/> 天道同步
       </div>
 
-      {/* 修行指引 Modal (完整還原原始內容 + 修正滾動) */}
+      {/* 修行指引 Modal (完整還原 + 滑動修正) */}
       {showGuide && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 flex flex-col items-center justify-center">
           <div className="w-full max-w-2xl bg-slate-900/50 p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[85vh]">
             <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
                <h2 className="text-xl font-black text-white tracking-widest uppercase flex items-center gap-3"><HelpCircle className="text-emerald-400"/> 修行指引與祕訣</h2>
-               <button onClick={() => setShowGuide(false)} className="p-2 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
+               <button onClick={() => setShowGuide(false)} className="p-2 hover:bg-white/10 rounded-full text-white/50"><X size={24}/></button>
             </div>
-            
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-6">
               <div className="flex gap-2 bg-black/40 p-1 rounded-lg border border-white/5 flex-shrink-0">
                 <button onClick={() => setGuideTab('rules')} className={`flex-1 py-2 text-xs font-bold rounded uppercase tracking-widest transition-all ${guideTab === 'rules' ? 'bg-white/10 text-white shadow-inner' : 'text-white/40 hover:text-white/80'}`}>基礎法則</button>
                 <button onClick={() => setGuideTab('tips')} className={`flex-1 py-2 text-xs font-bold rounded uppercase tracking-widest transition-all ${guideTab === 'tips' ? 'bg-amber-500/20 text-amber-400 shadow-inner' : 'text-amber-400/40 hover:text-amber-400/80'}`}>修行祕訣 (Tips)</button>
               </div>
-
               {guideTab === 'rules' ? (
                 <div className="space-y-4 text-sm leading-relaxed animate-pop-in">
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
-                     <h3 className="text-emerald-400 text-base mb-2 flex items-center gap-2 font-bold font-black"><Play size={16}/> 運轉周天 (專注計時)</h3>
-                     <p className="text-white/70">點擊開始計時。完成後獲取靈氣與靈石機緣。專注越久收穫越高。</p>
+                     <h3 className="text-emerald-400 text-base mb-2 flex items-center gap-2 font-black font-bold"><Play size={16}/> 運轉周天 (專注計時)</h3>
+                     <p className="text-white/70">點擊開始計時。完成後獲取靈氣與靈石機緣。專注越久收穫越高。此版本支援螢幕關閉後自動補償進度。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
-                     <h3 className="text-cyan-400 text-base mb-2 flex items-center gap-2 font-bold font-black"><RefreshCw size={16}/> 吐納回血 (休息時間)</h3>
+                     <h3 className="text-cyan-400 text-base mb-2 flex items-center gap-2 font-black font-bold"><RefreshCw size={16}/> 吐納回血 (休息時間)</h3>
                      <p className="text-white/70">完成 5 分鐘休息即算吐納成功，自動恢復 20%~50% 氣血。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
-                     <h3 className="text-rose-400 text-base mb-2 flex items-center gap-2 font-bold font-black"><Square size={16}/> 走火入魔 (強行出關)</h3>
+                     <h3 className="text-rose-400 text-base mb-2 flex items-center gap-2 font-black font-bold"><Square size={16}/> 走火入魔 (強行出關)</h3>
                      <p className="text-white/70">計時中途放棄會遭受反噬扣血，頻繁中斷將導致身死道消。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
-                     <h3 className="text-purple-400 text-base mb-2 flex items-center gap-2 font-bold font-black"><Skull size={16}/> 身死道消 (死亡懲罰)</h3>
-                     <p className="text-white/70">氣血歸零時若復活失敗，將失去 20% 當前修為 與所有連擊，且氣血僅重置至 50%。請務必至洞府煉丹維持狀態。</p>
+                     <h3 className="text-purple-400 text-base mb-2 flex items-center gap-2 font-black font-bold"><Skull size={16}/> 身死道消 (死亡懲罰)</h3>
+                     <p className="text-white/70">氣血歸零時若復活失敗，將失去 20% 當前修為與所有連擊，且氣血僅重置至 50%。請務必至洞府煉丹維持狀態。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
-                     <h3 className="text-yellow-400 text-base mb-2 flex items-center gap-2 font-bold font-black"><Pill size={16}/> 靈丹妙藥 (主動恢復)</h3>
+                     <h3 className="text-yellow-400 text-base mb-2 flex items-center gap-2 font-black font-bold"><Pill size={16}/> 靈丹妙藥 (主動恢復)</h3>
                      <p className="text-white/70">在「洞府淬煉」分頁可煉製回春丹。消耗靈石即可瞬間拉回 50% 血線，是應對現實頻繁干擾的最佳備選。</p>
                    </section>
                 </div>
               ) : (
                 <div className="space-y-4 text-sm leading-relaxed animate-pop-in">
                    <section className="bg-white/5 p-4 rounded-lg border-l-2 border-yellow-500">
-                     <h3 className="text-yellow-400 text-base mb-2 flex items-center gap-2 font-bold font-black font-bold"><Lightbulb size={16}/> 經濟通膨防禦</h3>
+                     <h3 className="text-yellow-400 text-base mb-2 flex items-center gap-2 font-black font-bold font-bold"><Lightbulb size={16}/> 經濟通膨防禦</h3>
                      <p className="text-white/70">洞府成本呈指數成長。請優先投資 <span className="text-emerald-300">《尋靈術》</span> 與 <span className="text-emerald-300">《太乙煉器訣》</span>。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border-l-2 border-emerald-500">
-                     <h3 className="text-emerald-400 text-base mb-2 flex items-center gap-2 font-bold font-black font-bold"><Lightbulb size={16}/> 氣運尋寶時機</h3>
+                     <h3 className="text-emerald-400 text-base mb-2 flex items-center gap-2 font-black font-bold font-bold"><Lightbulb size={16}/> 氣運尋寶時機</h3>
                      <p className="text-white/70">萬寶樓爆率直接乘上氣運值。請在戰鬥結束氣運高漲時前往尋寶。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border-l-2 border-rose-500">
-                     <h3 className="text-rose-400 text-base mb-2 flex items-center gap-2 font-bold font-black font-bold"><Lightbulb size={16}/> 沉沒成本與極限容錯</h3>
-                     <p className="text-white/70">若現實中頻繁被打斷，請善用 <span className="text-emerald-300">《羅煙步》</span> 的閃避機率。此外，每次成功完成「5分鐘休息」可免費恢復大量氣血。</p>
+                     <h3 className="text-rose-400 text-base mb-2 flex items-center gap-2 font-black font-bold font-bold"><Lightbulb size={16}/> 沉沒成本與極限容錯</h3>
+                     <p className="text-white/70">若現實中頻繁被打斷（例如孩子哭鬧），請善用 <span className="text-emerald-300">《羅煙步》</span> 的閃避機率。此外，每次成功完成「5分鐘休息」可免費恢復大量氣血。打坐與煉丹並行，方能度過九九重劫。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border-l-2 border-purple-500">
-                     <h3 className="text-purple-400 text-base mb-2 flex items-center gap-2 font-bold font-black font-bold"><Lightbulb size={16}/> 天道法則上限</h3>
-                     <p className="text-white/70">請注意屬性上限以避免浪費資源：閃避極限 <span className="text-white font-mono">60%</span>，復活極限 <span className="text-white font-mono">50%</span>，爆擊率極限 <span className="text-white font-mono">75%</span>。</p>
+                     <h3 className="text-purple-400 text-base mb-2 flex items-center gap-2 font-black font-bold font-bold"><Lightbulb size={16}/> 天道法則上限</h3>
+                     <p className="text-white/70">請注意屬性上限以避免浪費資源：閃避極限 <span className="text-white font-mono">60%</span>，復活極限 <span className="text-white font-mono">50%</span>，爆擊率極限 <span className="text-white font-mono">75%</span>。可在「屬性加成報告」中實時監控。</p>
                    </section>
                 </div>
               )}
@@ -382,9 +394,9 @@ export default function App() {
         </div>
       )}
 
-      {/* 屬性報告 Modal (修正標籤與折扣排列) */}
+      {/* 屬性報告 Modal (修正標籤方向) */}
       {showStatsReport && (
-        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 flex flex-col items-center justify-center">
+        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 flex flex-col items-center justify-center font-bold">
           <div className="w-full max-w-2xl bg-slate-900/50 p-6 md:p-8 rounded-2xl border border-cyan-900/50 shadow-2xl overflow-y-auto max-h-[85vh] mb-10">
             <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
                <h2 className="text-xl font-black text-cyan-400 tracking-widest uppercase flex items-center gap-3"><BarChart3 size={24}/> 屬性極限報告</h2>
@@ -408,10 +420,9 @@ export default function App() {
               <div className="space-y-4 md:col-span-2 mt-2 pt-4 border-t border-white/5">
                 <h3 className="text-xs text-white/40 uppercase pb-2">抗性與經濟</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4">
-                  <div className="flex justify-between text-sm"><span className="text-slate-400">反噬承傷比例</span><span className="text-amber-400 font-mono font-bold">{dmgTakenPct.toFixed(1)}%</span></div>
-                  {/* 修正：方向對調 */}
-                  <div className="flex justify-between text-sm"><span className="text-slate-400">洞府成本折扣</span><span className="text-yellow-500 font-mono font-bold">{(forgeDiscount * 100).toFixed(0)}%</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-slate-400">氣運保底</span><span className="text-emerald-400 font-mono font-bold">{getMultiplier('luck_floor').toFixed(2)}</span></div>
+                  <div className="flex justify-between text-sm font-bold"><span className="text-slate-400">反噬承傷比例</span><span className="text-amber-400 font-mono font-bold">{dmgTakenPct.toFixed(1)}%</span></div>
+                  <div className="flex justify-between text-sm font-bold"><span className="text-slate-400">洞府成本折扣</span><span className="text-yellow-500 font-mono font-bold">{(forgeDiscount * 100).toFixed(0)}%</span></div>
+                  <div className="flex justify-between text-sm font-bold"><span className="text-slate-400">氣運保底</span><span className="text-emerald-400 font-mono font-bold">{getMultiplier('luck_floor').toFixed(2)}</span></div>
                 </div>
               </div>
             </div>
@@ -419,7 +430,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 境界資訊與電腦版排列修正 */}
+      {/* 頂部玩家資訊區 (修正電腦版橫向整齊排列) */}
       <div className="w-full max-w-4xl mb-6 z-10 font-bold px-2 md:px-0">
         <div className="flex flex-col items-center mb-10 h-10 justify-center">
           <h1 className="text-lg md:text-xl font-extralight tracking-[1.2em] text-white/20 uppercase font-bold drop-shadow-md">凡人修仙專注</h1>
@@ -432,12 +443,11 @@ export default function App() {
                <Shield size={28} className={`${themeColorClass} flex-shrink-0`}/>
                <div className="flex flex-col flex-1 min-w-0">
                   <h2 className="text-xl md:text-2xl font-black tracking-widest text-white truncate drop-shadow-lg">{currentRealmData.name}</h2>
-                  <p className={`text-[11px] md:text-[12.5px] ${themeColorClass} font-bold opacity-90 truncate italic`}>{currentRealmData.desc}</p>
+                  <p className={`text-[11px] md:text-[12.5px] ${themeColorClass} font-bold opacity-90 truncate italic drop-shadow-md`}>{currentRealmData.desc}</p>
                </div>
             </div>
 
-            {/* 核心修正：電腦版一列橫排對齊 */}
-            <div className="flex flex-row flex-wrap md:flex-nowrap justify-center md:justify-end items-center gap-x-6 md:gap-x-10 gap-y-3 w-full md:w-auto">
+            <div className="flex flex-row flex-wrap md:flex-nowrap justify-center md:justify-end items-end gap-x-6 md:gap-x-10 gap-y-3 w-full md:w-auto font-bold">
                <div className="flex flex-col items-center md:items-end min-w-[70px]">
                  <span className="text-[7px] text-yellow-500 uppercase flex items-center gap-1 font-black"><Coins size={8}/> 靈石</span>
                  <span className="text-sm text-yellow-500 font-mono font-bold drop-shadow-md">{Math.floor(player.coins)}</span>
@@ -456,103 +466,140 @@ export default function App() {
                </div>
             </div>
           </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 relative z-10">
-            <div className="space-y-2">
-                <div className="flex justify-between text-[10px] uppercase font-black opacity-40 tracking-widest">
-                    <span>氣血真元 {player.vitality < maxVitality && <span className="text-emerald-400 animate-pulse">(可煉丹)</span>}</span>
+            <div className="space-y-3">
+                <div className="flex justify-between text-[10px] uppercase font-black opacity-40 tracking-widest font-bold">
+                    <span className="flex items-center gap-2">氣血真元 {player.vitality < maxVitality && <span className="text-emerald-400 animate-pulse">(可煉丹)</span>}</span>
                     <span>{Math.floor(player.vitality)} / {maxVitality}</span>
                 </div>
                 <div className="h-1.5 bg-black/60 rounded-full overflow-hidden shadow-inner">
                     <div className="h-full bg-rose-500 transition-all duration-1000 shadow-[0_0_10px_#f43f5e]" style={{ width: `${(player.vitality/maxVitality)*100}%` }}></div>
                 </div>
             </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-[10px] uppercase font-black opacity-40 tracking-widest"><span>修為進度</span><span>{Math.floor(player.qi)} / {player.qiToNext}</span></div>
+            <div className="space-y-3">
+              <div className="flex justify-between text-[10px] uppercase font-black opacity-40 tracking-widest font-bold"><span>修為進度</span><span>{Math.floor(player.qi)} / {player.qiToNext}</span></div>
               <div className="h-1.5 bg-black/60 rounded-full overflow-hidden shadow-inner">
                 <div className={`h-full bg-${currentRealmData.color}-500 transition-all duration-1000`} style={{ width: `${(player.qi/player.qiToNext)*100}%` }}></div>
               </div>
             </div>
           </div>
         </div>
-
-        <div className="mt-6 flex flex-col gap-4">
-           <div className="flex overflow-x-auto py-4 px-4 gap-6 bg-black/30 rounded-xl border border-white/5 no-scrollbar">
-             {REALMS.map((r, i) => (<div key={i} className={`flex flex-col items-center min-w-[80px] transition-all ${i===player.realmIndex?'scale-110 opacity-100':'opacity-30'}`}><div className={`w-8 h-8 rounded border flex items-center justify-center font-black text-[10px] rotate-45 ${i===player.realmIndex?'bg-white text-black rotate-0 shadow-2xl':'border-white/10 text-white'}`}><span>{i}</span></div><span className="text-[8px] font-black mt-6 whitespace-nowrap uppercase tracking-tighter">{r.name}</span></div>))}
-           </div>
-           <div className="flex flex-wrap justify-center md:justify-end gap-3 mt-2">
-             <button onClick={() => setShowGuide(true)} className="flex items-center gap-2 text-[10px] font-black text-emerald-400/50 hover:text-emerald-400 transition-all bg-white/5 px-4 py-2 rounded-full border border-white/10 backdrop-blur-md font-bold font-black"><HelpCircle size={14}/> 修行指引</button>
-             <button onClick={() => setShowStatsReport(true)} className="flex items-center gap-2 text-[10px] font-black text-cyan-400/50 hover:text-cyan-400 transition-all bg-white/5 px-4 py-2 rounded-full border border-white/10 backdrop-blur-md font-bold font-black"><BarChart3 size={14}/> 屬性加成</button>
-             <button onClick={() => setShowRealmGuide(true)} className="flex items-center gap-2 text-[10px] font-black text-white/30 hover:text-white transition-all bg-white/5 px-4 py-2 rounded-full border border-white/10 backdrop-blur-md font-bold font-black"><BookOpen size={14}/> 境界全覽</button>
-           </div>
-        </div>
       </div>
 
-      {/* 計時器主體 */}
+      {/* 計時器主區塊 */}
       <div className={`w-full max-w-4xl bg-slate-900/30 backdrop-blur-3xl p-6 md:p-12 rounded-xl border border-white/5 text-center mb-8 z-10 shadow-2xl`}>
         <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-10 font-bold">
            {FOCUS_OPTIONS.map(opt => (<button key={opt.value} onClick={() => { if(!isActive) { setFocusDuration(opt.value); setTimeLeft(opt.value); }}} className={`px-4 py-1.5 rounded-full text-[10px] font-black border transition-all font-bold ${focusDuration === opt.value ? 'bg-white text-black border-white' : 'bg-black/40 text-white/40 border-white/10 hover:text-white/80'}`}>{opt.label}</button>))}
         </div>
-        <div className="flex justify-center items-center gap-4 mb-8 opacity-30 text-[10px] tracking-[0.6em] font-black uppercase font-black"><Compass size={14}/> {monster.name}</div>
+        <div className="flex justify-center items-center gap-4 mb-8 opacity-30 text-[10px] tracking-[0.6em] font-black uppercase font-bold"><Compass size={14}/> {monster.name}</div>
+        
         <div className={`text-6xl sm:text-8xl md:text-[11rem] font-mono leading-none font-black tracking-tighter mb-12 transition-all duration-700 ${isActive ? 'text-white drop-shadow-2xl' : 'text-white/20'}`}>{formatTime(timeLeft)}</div>
+        
         <div className="flex justify-center gap-4 md:gap-8 font-bold">
           {!isActive ? (
-            <button onClick={toggleTimer} className="flex items-center gap-2 px-8 md:px-14 py-4 md:py-6 bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 rounded-xl text-base md:text-lg font-black tracking-[0.5em] uppercase transition-all shadow-2xl backdrop-blur-md">運轉周天</button>
+            <button onClick={toggleTimer} className="flex items-center gap-3 px-8 md:px-14 py-4 md:py-6 bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 rounded-xl text-base md:text-lg font-black tracking-[0.5em] uppercase transition-all shadow-2xl backdrop-blur-md">
+              <Sparkles size={20} className="fill-current animate-pulse"/> 運轉周天
+            </button>
           ) : (
-            <button onClick={handleGiveUp} className="flex items-center gap-2 px-8 md:px-14 py-4 md:py-6 bg-rose-950/40 text-rose-400 border border-rose-500/30 rounded-xl text-base md:text-lg font-black uppercase active:scale-95 transition-all shadow-2xl backdrop-blur-md">強行出關</button>
+            <button onClick={handleGiveUp} className="flex items-center gap-3 px-8 md:px-14 py-4 md:py-6 bg-rose-950/40 text-rose-400 border border-rose-500/30 rounded-xl text-base md:text-lg font-black uppercase active:scale-95 transition-all shadow-2xl backdrop-blur-md">
+              <Skull size={20} className="fill-current"/> 強行出關
+            </button>
           )}
         </div>
       </div>
 
-      {/* 底部功能區 */}
+      {/* 底部面板 100% 完整還原 (功法、洞府、法寶、識海、日誌) */}
       <div className={`w-full max-w-4xl mt-4 transition-all z-10 font-bold ${isActive ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <div className="bg-slate-950/80 backdrop-blur-3xl rounded-xl border border-white/5 shadow-2xl flex flex-col h-[750px] overflow-hidden">
-          <div className="flex bg-black/60 border-b border-white/5 p-1 gap-1 overflow-x-auto no-scrollbar">
-            {[{ id: 'skills', label: '功法', icon: ScrollText }, { id: 'forge', label: '洞府', icon: Hammer }, { id: 'artifacts', label: '法寶', icon: Box }, { id: 'insights', label: '識海', icon: Activity }, { id: 'log', label: '日誌', icon: History }].map(tab => (
+          <div className="flex bg-black/60 border-b border-white/5 p-1 gap-1 overflow-x-auto no-scrollbar flex-shrink-0">
+            {[
+              { id: 'skills', label: '功法祕籍', icon: ScrollText },
+              { id: 'forge', label: '洞府淬煉', icon: Hammer },
+              { id: 'artifacts', label: '法寶庫', icon: Box },
+              { id: 'insights', label: '識海投影', icon: Activity },
+              { id: 'log', label: '修行日誌', icon: History }
+            ].map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 py-3 md:py-4 rounded-lg text-[8px] md:text-[9px] font-black uppercase flex flex-col items-center justify-center gap-1 transition-all ${activeTab===tab.id ? 'bg-white/10 text-white shadow-inner border border-white/10' : 'text-white/30 hover:text-white/60'}`}>
                 <tab.icon size={14} className="md:size-[16px]"/> <span>{tab.label}</span>
               </button>
             ))}
           </div>
-          <div className="p-4 md:p-8 overflow-y-auto flex-1 custom-scrollbar">
+
+          <div className="p-4 md:p-8 overflow-y-auto flex-1 custom-scrollbar font-bold">
             {activeTab === 'skills' && (
-              <div className="space-y-12 animate-pop-in">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-12 animate-pop-in font-bold">
+                <div><h3 className="text-white/50 text-[10px] font-black uppercase border-b border-white/10 pb-4 mb-8 tracking-widest font-bold">凡俗根基 (SP 研習)</h3><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-bold">
                   {BASIC_SKILLS.map(s => { const lvl = player.basicSkills?.[s.id] || 0; return (
-                    <div key={s.id} className="p-4 rounded-xl border border-white/10 bg-white/5 flex flex-col justify-between h-48 shadow-inner">
-                       <div><h4 className="text-white font-bold text-xs uppercase font-black">{s.name} <span className="opacity-30 float-right font-mono font-bold">Lv.{lvl}</span></h4><p className="text-[9px] text-white/40 mt-2 leading-relaxed italic">{s.desc}</p></div>
-                       <button onClick={() => { if(availableSP >= 1 && lvl < 10) setPlayer(p => ({...p, basicSkills: {...p.basicSkills, [s.id]: lvl+1}})) }} disabled={availableSP < 1 || lvl >= 10} className="mt-4 w-full py-2 bg-white/10 hover:bg-white text-white hover:text-black rounded text-[9px] font-black border border-white/10 transition-all">研習 (1 SP)</button>
+                    <div key={s.id} className="p-4 rounded-xl border border-white/10 bg-white/5 flex flex-col justify-between h-48 shadow-inner group">
+                       <div><h4 className="text-white font-bold text-xs tracking-widest uppercase">{s.name} <span className="opacity-30 float-right font-mono font-bold">Lv.{lvl}</span></h4><p className="text-[9px] text-white/40 mt-2 leading-relaxed italic">{s.desc}</p></div>
+                       <button onClick={() => { if(availableSP >= 1 && lvl < 10) setPlayer(p => ({...p, basicSkills: {...p.basicSkills, [s.id]: lvl+1}})) }} disabled={availableSP < 1 || lvl >= 10} className="mt-4 w-full py-2 bg-white/10 hover:bg-white text-white hover:text-black rounded text-[9px] font-black border border-white/10 transition-all font-bold">研習 (1 SP)</button>
                     </div>
                   );})}
-                </div>
+                </div></div>
+                <div><h3 className="text-white/50 text-[10px] font-black uppercase border-b border-white/10 pb-4 mb-8 tracking-widest font-bold">機緣祕籍 (12 種)</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-6 font-bold">
+                  {SECRET_BOOKS.map(book => { const lvl = player.secretBooks?.[book.id] || 0; const learned = lvl > 0; const upCost = Math.floor(10000 * Math.pow(2, lvl) * forgeDiscount); return (
+                    <div key={book.id} className={`p-5 rounded-xl border transition-all flex flex-col justify-between h-56 ${learned ? 'bg-emerald-950/30 border-emerald-500/40 shadow-lg' : 'bg-black/50 border-white/5 opacity-40'}`}>
+                       <div className="flex items-center gap-4 font-bold"><div className={`p-4 rounded-lg ${learned ? 'bg-emerald-500 text-black shadow-lg' : 'bg-slate-800'}`}><BookOpen size={20}/></div><div><h4 className="font-black text-sm tracking-widest font-bold text-white">{book.name} {learned && <span className="text-[9px] opacity-50 ml-2 font-mono font-bold">Lv.{lvl}</span>}</h4><p className="text-[10px] opacity-60 leading-relaxed mt-1 font-bold text-white">{learned ? book.desc : '擊殺強敵機率獲得。'}</p></div></div>
+                       {learned && lvl < 5 && <button onClick={() => { if(player.coins >= upCost) setPlayer(p => ({...p, coins: p.coins - upCost, secretBooks: {...p.secretBooks, [book.id]: lvl+1}})) }} disabled={player.coins < upCost} className="mt-4 w-full py-2 bg-white/10 hover:bg-emerald-500 text-white hover:text-black rounded text-[9px] font-black border border-white/10 transition-all disabled:opacity-30 font-bold">參悟升級 ({upCost} 靈石)</button>}
+                    </div>
+                  );})}
+                </div></div>
               </div>
             )}
             {activeTab === 'forge' && (
-              <div className="space-y-12 animate-pop-in pb-10">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="p-6 md:p-8 rounded-xl bg-emerald-950/30 border border-emerald-500/30 h-64 flex flex-col justify-between shadow-lg">
-                    <div><h3 className="text-emerald-400 font-black text-xl flex items-center gap-2"><Pill size={20}/> 煉製回春丹</h3><p className="text-white/60 text-[10px] mt-2 italic">恢復 50% 真元氣血。</p></div>
-                    <button onClick={handleHeal} disabled={player.coins < healCost || player.vitality >= maxVitality} className="w-full py-5 bg-emerald-900/60 hover:bg-emerald-600 text-emerald-100 rounded font-black uppercase text-xs border border-emerald-500/50 font-black">{player.vitality >= maxVitality ? '氣血已滿' : `煉丹 (${healCost})`}</button>
+              <div className="space-y-12 animate-pop-in pb-10 font-bold">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-bold">
+                  <div className="p-8 rounded-xl bg-emerald-950/30 border border-emerald-500/30 h-64 flex flex-col justify-between group font-bold shadow-lg shadow-emerald-900/20">
+                    <div><h3 className="text-emerald-400 font-black text-xl tracking-tighter uppercase font-bold flex items-center gap-2"><Pill size={20}/> 煉製回春丹</h3><p className="text-white/60 text-[10px] mt-2 italic tracking-widest">恢復 50% 最大氣血。</p></div>
+                    <button onClick={handleHeal} disabled={player.coins < healCost || player.vitality >= maxVitality} className="w-full py-5 bg-emerald-900/60 hover:bg-emerald-600 text-emerald-100 rounded font-black uppercase text-xs transition-all disabled:opacity-30 border border-emerald-500/50 font-bold">{player.vitality >= maxVitality ? '氣血已滿' : `煉丹 (${healCost} 靈石)`}</button>
                   </div>
-                  <div className="p-6 md:p-8 rounded-xl bg-white/5 border border-white/10 h-64 flex flex-col justify-between"><div><h3 className="text-white font-black text-xl font-black">凝練劍光</h3><p className="text-white/50 text-[10px] mt-2 italic font-black">基礎戰力 +100。</p></div><button onClick={() => { if(player.coins >= upgCostAtk) setPlayer(p => ({ ...p, coins: p.coins - upgCostAtk, baseCombat: p.baseCombat + 100 })) }} disabled={player.coins < upgCostAtk} className="w-full py-5 bg-white/10 hover:bg-white text-white hover:text-black rounded font-black uppercase text-xs transition-all font-black">祭煉 ({upgCostAtk})</button></div>
-                  <div className="p-6 md:p-8 rounded-xl bg-white/5 border border-white/10 h-64 flex flex-col justify-between"><div><h3 className="text-white font-black text-xl font-black">熬煉肉身</h3><p className="text-white/50 text-[10px] mt-2 italic font-black">氣血上限 +100。</p></div><button onClick={() => { if(player.coins >= upgCostHp) setPlayer(p => ({ ...p, coins: p.coins - upgCostHp, baseMaxVitality: p.baseMaxVitality + 100, vitality: p.vitality + 100 })) }} disabled={player.coins < upgCostHp} className="w-full py-5 bg-white/10 hover:bg-white text-white hover:text-black rounded font-black uppercase text-xs transition-all font-black">熬煉 ({upgCostHp})</button></div>
+                  <div className="p-8 rounded-xl bg-white/5 border border-white/10 h-64 flex flex-col justify-between group font-bold"><div><h3 className="text-white font-black text-xl tracking-tighter uppercase font-bold">凝練劍光</h3><p className="text-white/50 text-[10px] mt-2 italic tracking-widest">基礎戰力 +100。</p></div><button onClick={() => { if(player.coins >= upgCostAtk) setPlayer(p => ({ ...p, coins: p.coins - upgCostAtk, baseCombat: p.baseCombat + 100 })) }} disabled={player.coins < upgCostAtk} className="w-full py-5 bg-white/10 hover:bg-white text-white hover:text-black rounded font-black uppercase text-xs transition-all font-bold">祭煉 ({upgCostAtk} 靈石)</button></div>
+                  <div className="p-8 rounded-xl bg-white/5 border border-white/10 h-64 flex flex-col justify-between group font-bold"><div><h3 className="text-white font-black text-xl tracking-tighter uppercase font-bold">熬煉肉身</h3><p className="text-white/50 text-[10px] mt-2 italic tracking-widest">氣血上限 +100。</p></div><button onClick={() => { if(player.coins >= upgCostHp) setPlayer(p => ({ ...p, coins: p.coins - upgCostHp, baseMaxVitality: p.baseMaxVitality + 100, vitality: p.vitality + 100 })) }} disabled={player.coins < upgCostHp} className="w-full py-5 bg-white/10 hover:bg-white text-white hover:text-black rounded font-black uppercase text-xs transition-all font-bold">熬煉 ({upgCostHp} 靈石)</button></div>
                 </div>
-                <div className="bg-gradient-to-br from-white/5 to-transparent p-8 md:p-12 rounded-xl border border-white/10 text-center relative overflow-hidden">
-                  <h3 className="text-white font-black text-2xl uppercase mb-6 tracking-widest font-black">萬寶樓尋寶</h3>
-                  <button onClick={handleGacha} disabled={player.coins < gachaCost} className="px-10 md:px-16 py-6 md:py-8 bg-white/10 hover:bg-white text-white hover:text-black font-black rounded-xl shadow-2xl transition-all whitespace-nowrap border border-white/20 font-black">尋寶 ({Math.floor(gachaCost)} 靈石)</button>
+                <div className="space-y-6 font-bold">
+                   <h3 className="text-white/40 text-[10px] font-black uppercase border-b border-white/10 pb-4 font-bold">陣法樞紐</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 font-bold">
+                      <div className="bg-white/5 p-6 rounded-xl border border-white/10 h-48 flex flex-col justify-between shadow-inner font-bold"><div className="flex justify-between font-bold text-sm font-bold text-white">聚靈大陣 <span className="opacity-50 font-mono font-bold">Lv.{player.arrays?.qi||0}</span></div><p className="text-[10px] opacity-60 italic font-bold">靈氣獲取提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayQiCost) setPlayer(p => ({ ...p, coins: p.coins - arrayQiCost, arrays: {...p.arrays, qi: (p.arrays?.qi||0)+1} })) }} disabled={player.coins < arrayQiCost} className="w-full py-3 bg-white/10 hover:bg-white text-white rounded text-[9px] font-black border border-white/10 transition-all font-bold">升級 ({arrayQiCost} 靈石)</button></div>
+                      <div className="bg-white/5 p-6 rounded-xl border border-white/10 h-48 flex flex-col justify-between shadow-inner font-bold"><div className="flex justify-between font-bold text-sm font-bold text-white">護府大陣 <span className="opacity-50 font-mono font-bold">Lv.{player.arrays?.def||0}</span></div><p className="text-[10px] opacity-60 italic font-bold text-white">反噬減傷提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-3 bg-white/10 hover:bg-white text-white rounded text-[9px] font-black border border-white/10 transition-all font-bold">升級 ({arrayDefCost} 靈石)</button></div>
+                   </div>
+                </div>
+                <div className="bg-gradient-to-br from-white/5 to-transparent p-6 md:p-12 rounded-xl border border-white/10 text-center relative overflow-hidden font-bold">
+                  <h3 className="text-white font-black text-2xl uppercase mb-6 tracking-widest font-bold">萬寶樓尋寶</h3>
+                  <div className="flex justify-center gap-4 mb-10 overflow-x-auto pb-4 custom-scrollbar font-bold">
+                     {Object.entries(RARITY).map(([k, r]) => (<div key={k} className="flex flex-col items-center min-w-[70px] opacity-60 font-bold"><span className={`text-[7px] font-black uppercase ${r.color} font-bold drop-shadow-md`}>{r.name}</span><span className="text-[10px] font-mono mt-1 font-bold text-white">{(r.weight*100*player.luck).toFixed(1)}%</span></div>))}
+                  </div>
+                  <button onClick={handleGacha} disabled={player.coins < gachaCost} className="px-6 md:px-16 py-6 md:py-8 bg-white/10 hover:bg-white text-white hover:text-black font-black rounded-xl shadow-2xl transition-all whitespace-nowrap border border-white/20 font-bold">尋寶 ({Math.floor(gachaCost)} 靈石)</button>
                 </div>
               </div>
             )}
+            {activeTab === 'artifacts' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pop-in pb-10 font-bold">
+                {ARTIFACT_POOL.map(art => {
+                  const unlocked = player.artifacts?.includes(art.id), lvl = player.artifactLvls?.[art.id]||0, cost = Math.floor(RARITY_BASE_COST[art.rarity]*Math.pow(1.8,lvl)*forgeDiscount);
+                  return unlocked ? (
+                    <div key={art.id} className={`p-6 rounded-xl border bg-black/50 border-white/10 flex flex-col justify-between shadow-inner font-bold`}><div className="z-10 font-bold"><h4 className={`font-black text-lg ${RARITY[art.rarity].color} tracking-tighter drop-shadow-md font-bold`}>{art.name} <span className="opacity-50 text-[9px] float-right font-mono font-bold text-white">Lv.{lvl}</span></h4><p className="text-[10px] text-white/60 mt-4 italic leading-relaxed uppercase tracking-tighter font-bold">「{art.desc}」</p></div>{lvl < 5 && <button onClick={()=>handleUpgradeArtifact(art.id, art.rarity)} disabled={player.coins < cost} className="mt-6 w-full py-3 bg-white/10 hover:bg-white text-white hover:text-black rounded text-[9px] font-black transition-all border border-white/10 font-bold">血煉 ({cost} 靈石)</button>}</div>
+                  ) : <div key={art.id} className="p-8 rounded-xl border border-dashed border-white/10 bg-black/40 flex flex-col items-center justify-center opacity-40 font-bold"><EyeOff size={32} className="text-white/20 mb-4 font-bold"/><p className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em] font-bold">寶光內斂：{RARITY[art.rarity].name}</p></div>;
+                })}
+              </div>
+            )}
+            {activeTab === 'insights' && (
+              <div className="h-[400px] md:h-[500px] animate-pop-in bg-black/40 rounded-xl border border-white/10 shadow-inner p-4 md:p-10 flex flex-col font-bold">
+                <div className="flex justify-between items-center mb-10 opacity-50 text-[9px] font-black uppercase tracking-[0.4em] text-white font-bold"><span className="flex items-center gap-2 font-bold"><Activity size={12}/> 識海投影 (修煉進程)</span><span>累計: {Math.floor(player.totalFocusTime/60)}m</span></div>
+                <div className="flex-1 relative border-l border-b border-white/10 font-bold"><InsightsChart /></div>
+              </div>
+            )}
             {activeTab === 'log' && (
-              <div className="space-y-4 pb-10">
-                {(player.logs || []).map((e, i) => (<div key={i} className={`p-4 md:p-5 rounded border border-white/10 text-[10px] leading-relaxed transition-all ${i===0?'bg-white/20 text-white shadow-xl animate-pulse':'bg-black/40 text-white/40'}`}>{e}</div>))}
+              <div className="space-y-4 animate-pop-in pb-10 font-bold">
+                {(player.logs || []).map((e, i) => (<div key={i} className={`p-4 md:p-5 rounded border border-white/10 text-[10px] leading-relaxed transition-all ${i===0?'bg-white/20 text-white shadow-xl animate-pulse font-bold':'bg-black/40 border-white/5 text-white/40'}`}>{e}</div>))}
               </div>
             )}
           </div>
         </div>
-        <footer className="pt-16 pb-20 text-center text-[9px] font-light text-white/40 tracking-[0.6em] md:tracking-[0.8em] uppercase flex flex-col items-center gap-4 z-10">
-          <p>Created by fb/指數三寶飯 with Gemini</p>
-          <button onClick={()=>{if(window.confirm('確定重置修行？')) { localStorage.clear(); window.location.reload(); }}} className="opacity-50 hover:opacity-100 border border-white/20 px-4 py-1.5 rounded-full text-[8px] hover:bg-rose-900/30">散功重修</button>
+
+        <footer className="pt-16 pb-24 text-center text-[9px] font-light text-white/40 tracking-[0.8em] uppercase flex flex-col items-center gap-4 z-10 font-bold">
+          <p>《凡人修仙傳》原著設定歸作者 忘語 所有</p>
+          <p className="opacity-80">Created by <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 underline transition-all font-bold">fb/指數三寶飯</a> with Gemini</p>
+          <button onClick={()=>{if(window.confirm('確定重置修行？所有成果將遺失。')) { localStorage.clear(); window.location.reload(); }}} className="opacity-50 hover:opacity-100 transition-opacity border border-white/20 px-4 py-1.5 rounded-full text-[8px] uppercase tracking-widest font-bold hover:bg-rose-900/50 hover:border-rose-500/50 hover:text-rose-200">散功重修</button>
         </footer>
       </div>
     </div>
