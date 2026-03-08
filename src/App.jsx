@@ -664,7 +664,7 @@ const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1)); // 連
             </button>
           ) : (
             <button onClick={handleGiveUp} className="flex items-center gap-3 px-8 md:px-14 py-4 md:py-6 bg-rose-950/40 text-rose-400 border border-rose-500/30 rounded-xl text-base md:text-lg font-black uppercase active:scale-95 transition-all shadow-2xl backdrop-blur-md">
-              <Alerttriangle size={20} className="fill-current"/> 強行出關
+              <AlertTriangle size={20} className="fill-current"/> 強行出關
             </button>
           )}
         </div>
