@@ -527,20 +527,20 @@ export default function App() {
         </div>
       </div>
 
-      <div className={`w-full max-w-4xl bg-slate-900/30 backdrop-blur-3xl p-12 rounded-xl border border-white/5 text-center mb-8 z-10 transition-all 
+      <div className={`w-full max-w-4xl bg-slate-900/30 backdrop-blur-3xl p-6 md:p-12 rounded-xl border border-white/5 text-center mb-8 z-10 transition-all 
           ${isActive ? 'scale-105 shadow-[0_0_30px_rgba(255,255,255,0.1)]' : 'shadow-xl'} font-bold`}>
         <div className="flex justify-center gap-4 mb-10 font-bold">
            {FOCUS_OPTIONS.map(opt => (<button key={opt.value} onClick={() => { if(!isActive) { setFocusDuration(opt.value); setTimeLeft(opt.value); }}} className={`px-4 py-1.5 rounded-full text-[10px] font-black border transition-all font-bold ${focusDuration === opt.value ? 'bg-white text-black border-white' : 'bg-black/40 text-white/40 border-white/10 hover:text-white/80'}`}>{opt.label}</button>))}
         </div>
         <div className="flex justify-center items-center gap-4 mb-8 opacity-30 text-[10px] tracking-[0.6em] font-black uppercase font-bold"><Compass size={14}/> {monster.name}</div>
-        <div className={`text-[9rem] md:text-[11rem] font-mono leading-none font-black tracking-tighter mb-12 transition-all duration-700 ${isActive ? 'text-white drop-shadow-2xl' : 'text-white/20'}`}>{formatTime(timeLeft)}</div>
+        <div className={`text-6xl sm:text-8xl md:text-[11rem] font-mono leading-none font-black tracking-tighter mb-12 transition-all duration-700 ${isActive ? 'text-white drop-shadow-2xl' : 'text-white/20'}`}>{formatTime(timeLeft)}</div>
         <div className="flex justify-center gap-8 font-bold">
           {!isActive ? (
-            <button onClick={toggleTimer} className="flex items-center gap-2 px-14 py-6 bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 rounded-xl text-lg font-light tracking-[0.5em] transition-all uppercase shadow-2xl font-bold backdrop-blur-md">
+            <button onClick={toggleTimer} className="flex items-center gap-2 px-8 md:px-14 py-4 md:py-6 bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 rounded-xl text-base md:text-lg font-light tracking-[0.5em] transition-all uppercase shadow-2xl font-bold backdrop-blur-md">
               <Play size={20} className="fill-current font-bold"/> 運轉周天
             </button>
           ) : (
-            <button onClick={handleGiveUp} className="flex items-center gap-2 px-14 py-6 bg-rose-950/40 text-rose-400 border border-rose-500/30 rounded-xl text-lg font-light active:scale-95 uppercase font-bold backdrop-blur-md">
+            <button onClick={handleGiveUp} className="flex items-center gap-2 px-8 md:px-14 py-4 md:py-6 bg-rose-950/40 text-rose-400 border border-rose-500/30 rounded-xl text-base md:text-lg font-light active:scale-95 uppercase font-bold backdrop-blur-md">
               <Square size={20} className="fill-current font-bold"/> 強行出關
             </button>
           )}
@@ -596,16 +596,16 @@ export default function App() {
                 <div className="space-y-6 font-bold">
                    <h3 className="text-white/40 text-[10px] font-black uppercase border-b border-white/10 pb-4 font-bold">陣法樞紐</h3>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 font-bold">
-                      <div className="bg-white/5 p-6 rounded-xl border border-white/10 h-48 flex flex-col justify-between shadow-inner font-bold"><div className="flex justify-between font-bold text-sm font-bold text-white">聚靈大陣 <span className="opacity-50 font-mono font-bold">Lv.{player.arrays?.qi||0}</span></div><p className="text-[10px] opacity-60 italic font-bold">靈氣效率 +5%/級</p><button onClick={() => { if(player.coins >= arrayQiCost) setPlayer(p => ({ ...p, coins: p.coins - arrayQiCost, arrays: {...p.arrays, qi: (p.arrays?.qi||0)+1} })) }} disabled={player.coins < arrayQiCost} className="w-full py-3 bg-white/10 hover:bg-white text-white rounded text-[9px] font-black border border-white/10 transition-all font-bold disabled:opacity-30">升級 ({arrayQiCost} 靈石)</button></div>
-                      <div className="bg-white/5 p-6 rounded-xl border border-white/10 h-48 flex flex-col justify-between shadow-inner font-bold"><div className="flex justify-between font-bold text-sm font-bold text-white">護府大陣 <span className="opacity-50 font-mono font-bold">Lv.{player.arrays?.def||0}</span></div><p className="text-[10px] opacity-60 italic font-bold text-white">反噬 -5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-3 bg-white/10 hover:bg-white text-white rounded text-[9px] font-black border border-white/10 transition-all font-bold disabled:opacity-30">升級 ({arrayDefCost} 靈石)</button></div>
+                      <div className="bg-white/5 p-6 rounded-xl border border-white/10 h-48 flex flex-col justify-between shadow-inner font-bold"><div className="flex justify-between font-bold text-sm font-bold text-white">聚靈大陣 <span className="opacity-50 font-mono font-bold">Lv.{player.arrays?.qi||0}</span></div><p className="text-[10px] opacity-60 italic font-bold text-white">靈氣效率 +5%/級</p><button onClick={() => { if(player.coins >= arrayQiCost) setPlayer(p => ({ ...p, coins: p.coins - arrayQiCost, arrays: {...p.arrays, qi: (p.arrays?.qi||0)+1} })) }} disabled={player.coins < arrayQiCost} className="w-full py-3 bg-white/10 hover:bg-white text-white rounded text-[9px] font-black border border-white/10 transition-all font-bold disabled:opacity-30">升級 ({arrayQiCost} 靈石)</button></div>
+                      <div className="bg-white/5 p-6 rounded-xl border border-white/10 h-48 flex flex-col justify-between shadow-inner font-bold"><div className="flex justify-between font-bold text-sm font-bold text-white">護府大陣 <span className="opacity-50 font-mono font-bold">Lv.{player.arrays?.def||0}</span></div><p className="text-[10px] opacity-60 italic font-bold text-white text-white">反噬 -5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-3 bg-white/10 hover:bg-white text-white rounded text-[9px] font-black border border-white/10 transition-all font-bold disabled:opacity-30">升級 ({arrayDefCost} 靈石)</button></div>
                    </div>
                 </div>
-                <div className="bg-gradient-to-br from-white/5 to-transparent p-12 rounded-xl border border-white/10 text-center relative overflow-hidden font-bold">
+                <div className="bg-gradient-to-br from-white/5 to-transparent p-6 md:p-12 rounded-xl border border-white/10 text-center relative overflow-hidden font-bold">
                   <h3 className="text-white font-black text-2xl uppercase mb-6 tracking-widest font-bold">萬寶樓尋寶</h3>
                   <div className="flex justify-center gap-4 mb-10 overflow-x-auto pb-4 custom-scrollbar font-bold">
                      {Object.entries(RARITY).map(([k, r]) => (<div key={k} className="flex flex-col items-center min-w-[70px] opacity-60 font-bold"><span className={`text-[7px] font-black uppercase ${r.color} font-bold drop-shadow-md`}>{r.name}</span><span className="text-[10px] font-mono mt-1 font-bold text-white">{(r.weight*100*player.luck).toFixed(1)}%</span></div>))}
                   </div>
-                  <button onClick={handleGacha} disabled={player.coins < gachaCost} className="px-16 py-8 bg-white/10 hover:bg-white text-white hover:text-black font-black rounded-xl shadow-2xl text-base tracking-widest active:scale-95 transition-all relative z-10 font-bold border border-white/20 disabled:opacity-30">尋寶 ({Math.floor(gachaCost)} 靈石)</button>
+                  <button onClick={handleGacha} disabled={player.coins < gachaCost} className="px-6 md:px-16 py-6 md:py-8 bg-white/10 hover:bg-white text-white hover:text-black font-black rounded-xl shadow-2xl text-base tracking-widest active:scale-95 transition-all relative z-10 font-bold border border-white/20 disabled:opacity-30 whitespace-nowrap">尋寶 ({Math.floor(gachaCost)} 靈石)</button>
                 </div>
               </div>
             )}
