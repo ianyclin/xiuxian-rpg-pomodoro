@@ -94,12 +94,12 @@ const SECRET_BOOKS = [
   { id: 's_05', rarity: 'LEGENDARY', name: '元磁神光', desc: '克制五行。戰力與減傷 +20%/級', type: 'special', val: { atk: 0.20, def: 0.20 } },
   { id: 's_06', rarity: 'MYTHIC', name: '梵聖真魔功', desc: '三頭六臂。戰力加成 +60%/級', type: 'atk', val: 0.60 },
   { id: 's_07', rarity: 'RARE', name: '辟邪神雷', desc: '至陽之雷。爆擊率+5%，爆傷+30%/級', type: 'special', val: { crit: 0.05, crit_dmg: 0.30 } },
-  { id: 's_08', rarity: 'EPIC', name: '拘魂術', desc: '掠奪靈氣。擊殺靈氣 +20%/級', type: 'qi', val: 0.20 },
+  { id: 's_08', rarity: 'EPIC', name: '搜魂術', desc: '抽取記憶。擊殺靈氣 +20%/級', type: 'qi', val: 0.20 }, // 修正為搜魂術
   { id: 's_09', rarity: 'UNCOMMON', name: '青木訣', desc: '生生不息。休息回血比例 +2%/級', type: 'heal_bonus', val: 0.02 },
   { id: 's_10', rarity: 'LEGENDARY', name: '驚蟄十二變', desc: '變身真靈。氣血上限+35%，爆傷+20%/級', type: 'special', val: { hp: 0.35, crit_dmg: 0.20 } },
   { id: 's_11', rarity: 'DIVINE', name: '涅槃金身', desc: '不死不滅。復活機率 +8%/級', type: 'revive', val: 0.08 },
-  { id: 's_12', rarity: 'RARE', name: '太乙煉器訣', desc: '器道真解。洞府成本 -8%/級', type: 'forge_discount', val: 0.08 },
-  { id: 's_13', rarity: 'EPIC', name: '天機訣', desc: '窺探天道。氣運保底 +0.1/級', type: 'luck_floor', val: 0.10 },
+  { id: 's_12', rarity: 'RARE', name: '百脈煉寶訣', desc: '肉身融寶。洞府成本 -8%/級', type: 'forge_discount', val: 0.08 }, // 修正為百脈煉寶訣
+  { id: 's_13', rarity: 'EPIC', name: '明清靈目', desc: '看破虛妄。氣運保底 +0.1/級', type: 'luck_floor', val: 0.10 }, // 修正為明清靈目
 ];
 
 const BASIC_SKILLS = [
@@ -728,7 +728,7 @@ export default function App() {
                    <h3 className="text-white/40 text-[10px] font-black uppercase border-b border-white/10 pb-4">陣法樞紐</h3>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="bg-white/5 p-6 rounded-xl border border-white/10 h-48 flex flex-col justify-between shadow-inner"><div className="flex justify-between text-sm text-white">聚靈大陣 <span className="opacity-50 font-mono">Lv.{player.arrays?.qi||0}</span></div><p className="text-[10px] opacity-60 italic">靈氣獲取提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayQiCost) setPlayer(p => ({ ...p, coins: p.coins - arrayQiCost, arrays: {...p.arrays, qi: (p.arrays?.qi||0)+1} })) }} disabled={player.coins < arrayQiCost} className="w-full py-3 bg-white/10 hover:bg-white text-white rounded text-[9px] font-black border border-white/10 transition-all disabled:opacity-30">升級 ({arrayQiCost} 靈石)</button></div>
-                      <div className="bg-white/5 p-6 rounded-xl border border-white/10 h-48 flex flex-col justify-between shadow-inner"><div className="flex justify-between text-sm text-white">護府大陣 <span className="opacity-50 font-mono">Lv.{player.arrays?.def||0}</span></div><p className="text-[10px] opacity-60 italic text-white">反噬減傷提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-3 bg-white/10 hover:bg-white text-white rounded text-[9px] font-black border border-white/10 transition-all disabled:opacity-30">升級 ({arrayDefCost} 靈石)</button></div>
+<div className="flex justify-between text-sm text-white font-bold drop-shadow-md">顛倒五行陣 <span className="opacity-50 font-mono">Lv.{player.arrays?.def||0}</span></div><p className="text-[10px] opacity-60 italic text-white">反噬減傷提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-3 bg-white/10 hover:bg-white text-white rounded text-[9px] font-black border border-white/10 transition-all disabled:opacity-30">升級 ({arrayDefCost} 靈石)</button></div>
                    </div>
                 </div>
                 <div className="bg-gradient-to-br from-white/5 to-transparent p-6 md:p-12 rounded-xl border border-white/10 text-center relative overflow-hidden">
