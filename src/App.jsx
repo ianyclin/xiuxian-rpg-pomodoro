@@ -661,6 +661,9 @@ export default function App() {
         <Save size={14} className="animate-pulse"/> 天道已同步
       </div>
 
+      {/* ==========================================
+          天道經緯 (境界全覽)
+          ========================================== */}
       {showRealmGuide && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-4xl flex flex-col max-h-[80vh]">
@@ -668,54 +671,83 @@ export default function App() {
                <h2 className="text-xl md:text-2xl font-black text-white tracking-widest uppercase flex items-center gap-3"><BookOpen className="text-emerald-500"/> 天道經緯 (境界全覽)</h2>
                <button onClick={() => setShowRealmGuide(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
             </div>
-            <div className="w-full overflow-y-auto custom-scrollbar bg-black/40 rounded-xl border border-white/5 flex-1">
+            <div className="w-full overflow-y-auto custom-scrollbar bg-[#0a0a0a]/80 rounded-xl border border-white/5 flex-1 shadow-2xl">
               <table className="w-full text-left border-collapse min-w-[600px]">
-                  <thead><tr className="text-xs text-white/30 uppercase tracking-widest border-b border-white/5"><th className="py-4 px-4">位階範圍</th><th className="py-4 px-4">境界名號</th><th className="py-4 px-4">神識導讀</th></tr></thead>
-                  <tbody>{GUIDE_REALMS.map((r, i) => (<tr key={i} className={`border-b border-white/5 transition-colors hover:bg-white/5`}><td className="py-4 px-4 font-mono text-xs text-white/30">{r.range}</td><td className={`py-4 px-4 font-black text-sm text-white/80`}>{r.name}</td><td className="py-4 px-4 text-xs text-white/50 leading-relaxed italic">{r.desc}</td></tr>))}</tbody>
+                  <thead>
+                    <tr className="text-xs text-white/30 uppercase tracking-widest border-b border-white/10 bg-black/50">
+                      <th className="py-5 px-6 font-mono">位階範圍</th>
+                      <th className="py-5 px-6">境界名號</th>
+                      <th className="py-5 px-6">神識導讀</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {GUIDE_REALMS.map((r, i) => (
+                      <tr key={i} className={`border-b border-white/5 transition-colors hover:bg-white/5`}>
+                        <td className="py-5 px-6 font-mono text-xs text-white/40">{r.range}</td>
+                        <td className={`py-5 px-6 font-black text-sm text-white/90`}>{r.name}</td>
+                        <td className="py-5 px-6 text-xs text-white/50 leading-relaxed italic font-bold">{r.desc}</td>
+                      </tr>
+                    ))}
+                  </tbody>
               </table>
             </div>
           </div>
         </div>
       )}
 
+      {/* ==========================================
+          修行指引與祕訣 (基於 V69.3 真實機制)
+          ========================================== */}
       {showGuide && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 flex flex-col items-center justify-center font-bold mt-8">
-          <div className="w-full max-w-2xl bg-slate-900/50 p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh]">
+          <div className="w-full max-w-2xl bg-[#0a0a0a] p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh]">
             <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
                <h2 className="text-lg md:text-xl font-black text-white tracking-widest uppercase flex items-center gap-3"><HelpCircle className="text-emerald-400"/> 修行指引與祕訣</h2>
                <button onClick={() => setShowGuide(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
             </div>
             
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-6 pb-6">
-              <div className="flex gap-2 bg-black/40 p-1 rounded-lg border border-white/5 flex-shrink-0">
-                <button onClick={() => setGuideTab('rules')} className={`flex-1 py-4 text-xs md:text-sm font-bold rounded uppercase tracking-widest transition-all ${guideTab === 'rules' ? 'bg-white/10 text-white shadow-inner' : 'text-white/40 hover:text-white/80'}`}>基礎法則</button>
-                <button onClick={() => setGuideTab('tips')} className={`flex-1 py-4 text-xs md:text-sm font-bold rounded uppercase tracking-widest transition-all ${guideTab === 'tips' ? 'bg-amber-500/20 text-amber-400 shadow-inner' : 'text-amber-400/40 hover:text-amber-400/80'}`}>修行祕訣 (Tips)</button>
+              <div className="flex gap-2 bg-black/60 p-1 rounded-lg border border-white/5 flex-shrink-0">
+                <button onClick={() => setGuideTab('rules')} className={`flex-1 py-4 text-xs md:text-sm font-bold rounded uppercase tracking-widest transition-all ${guideTab === 'rules' ? 'bg-white/10 text-white shadow-inner' : 'text-white/30 hover:text-white/80'}`}>基礎法則</button>
+                <button onClick={() => setGuideTab('tips')} className={`flex-1 py-4 text-xs md:text-sm font-bold rounded uppercase tracking-widest transition-all ${guideTab === 'tips' ? 'bg-amber-900/30 text-amber-500 shadow-inner' : 'text-amber-500/30 hover:text-amber-400/80'}`}>機制與祕訣 (TIPS)</button>
               </div>
 
               {guideTab === 'rules' ? (
                 <div className="space-y-4 text-sm leading-relaxed animate-pop-in">
-                   <section className="bg-white/5 p-5 rounded-lg border border-white/5">
-                     <h3 className="text-emerald-400 text-base mb-2 flex items-center gap-2 font-black"><Play size={18}/> 運轉周天 (專注計時)</h3>
-                     <p className="text-white/70">完成計時唯有擊殺妖獸才能獲得爆量資源。此版本支援「離線修行」。</p>
+                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-emerald-500 flex flex-col gap-2 shadow-inner">
+                     <h3 className="text-emerald-400 text-base flex items-center gap-2 font-black"><Play size={18}/> 運轉周天 (專注計時)</h3>
+                     <p className="text-white/70 font-bold">點擊開始計時。完成後獲取靈氣與靈石機緣。支援離線運算，切換視窗不影響進度。</p>
                    </section>
-                   <section className="bg-white/5 p-5 rounded-lg border border-white/5">
-                     <h3 className="text-rose-400 text-base mb-2 flex items-center gap-2 font-black"><Square size={18}/> 走火入魔 (強行出關)</h3>
-                     <p className="text-white/70">計時中途放棄會扣除百分比氣血與連擊。後期反噬兇猛，具備 80% 氣血保護鎖。</p>
+                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-400 flex flex-col gap-2 shadow-inner">
+                     <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Sparkles size={18}/> 隨機氣運 (奇遇機制)</h3>
+                     <p className="text-white/70 font-bold">每次專注完成時，有 10% 基礎機率觸發奇遇（受氣運倍率加成）。可能獲得：靈氣翻倍、靈石三倍、或瞬間恢復 30% 氣血的頓悟。</p>
                    </section>
-                   <section className="bg-white/5 p-5 rounded-lg border border-white/5">
-                     <h3 className="text-yellow-400 text-base mb-2 flex items-center gap-2 font-black"><Pill size={18}/> 靈丹妙藥 (主動恢復)</h3>
-                     <p className="text-white/70">在「洞府淬煉」可煉製回春丹。消耗靈石即可瞬間拉回血線。</p>
+                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-500 flex flex-col gap-2 shadow-inner">
+                     <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Square size={18}/> 走火入魔與死亡</h3>
+                     <p className="text-white/70 font-bold">中途強行出關會遭受反噬。氣血歸零若無「涅槃復活」將損失 20% 當前修為並清空連擊。請適時至洞府「煉製回春丹」。</p>
+                   </section>
+                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-cyan-400 flex flex-col gap-2 shadow-inner">
+                     <h3 className="text-cyan-400 text-base flex items-center gap-2 font-black"><RefreshCw size={18}/> 散功重修 (退還 SP)</h3>
+                     <p className="text-white/70 font-bold">若點錯技能或遇到大瓶頸卡關，可使用「散功重修」。境界跌落一級，修為歸零，但會全數退還 SP 供重新分配。</p>
                    </section>
                 </div>
               ) : (
                 <div className="space-y-4 text-sm leading-relaxed animate-pop-in">
-                   <section className="bg-white/5 p-5 rounded-lg border-l-4 border-emerald-500">
-                     <h3 className="text-emerald-400 text-base mb-2 flex items-center gap-2 font-black"><Lightbulb size={18}/> 法寶共鳴 (V69)</h3>
-                     <p className="text-white/70">特定類型的法寶（如劍類）同時裝備時，會觸發隱藏的「共鳴」加成，大幅提升連擊上限。</p>
+                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-purple-500 flex flex-col gap-2 shadow-inner">
+                     <h3 className="text-purple-400 text-base flex items-center gap-2 font-black"><Activity size={18}/> 屬性溢出轉化 (核心)</h3>
+                     <p className="text-white/70 font-bold">天道設有極限，但溢出的屬性不會浪費：<br/>• 閃避率上限 75%，溢出的閃避將以 <span className="text-emerald-400">1 : 0.5</span> 轉化為「連擊增幅上限」。<br/>• 爆擊率上限 95%，溢出的爆擊將以 <span className="text-rose-400">1 : 3</span> 轉化為「爆擊傷害」。</p>
                    </section>
-                   <section className="bg-white/5 p-5 rounded-lg border-l-4 border-rose-500">
-                     <h3 className="text-rose-400 text-base mb-2 flex items-center gap-2 font-black"><Lightbulb size={18}/> 神識感應</h3>
-                     <p className="text-white/70">研習《大衍決》可獲得神識加成，降低強行出關時所受的基礎反噬傷害。</p>
+                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-cyan-400 flex flex-col gap-2 shadow-inner">
+                     <h3 className="text-cyan-400 text-base flex items-center gap-2 font-black"><Sword size={18}/> 劍陣共鳴與護盾</h3>
+                     <p className="text-white/70 font-bold">裝備 2 把以上「劍類」法寶，每把劍額外提升 20% 戰力與連擊上限。擁有「連擊護盾」時，強行出關不會中斷連擊倍率。</p>
+                   </section>
+                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-500 flex flex-col gap-2 shadow-inner">
+                     <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Compass size={18}/> 氣運與神識感應</h3>
+                     <p className="text-white/70 font-bold">「氣運」直接乘算萬寶樓出紫金的機率與奇遇觸發率。研習《大衍決》的神識能抵銷走火入魔的基礎反噬傷害。</p>
+                   </section>
+                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-400 flex flex-col gap-2 shadow-inner">
+                     <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Pill size={18}/> 真靈吸血機制</h3>
+                     <p className="text-white/70 font-bold">爆擊時有 20% 機率觸發吸血（若有相應功法），直接以氣血上限百分比進行回復，是後期續航關鍵。</p>
                    </section>
                 </div>
               )}
@@ -724,35 +756,91 @@ export default function App() {
         </div>
       )}
 
+      {/* ==========================================
+          屬性極限報告 (精準對接內部變數)
+          ========================================== */}
       {showStatsReport && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 flex flex-col items-center justify-center font-bold mt-8">
-          <div className="w-full max-w-2xl bg-slate-900/50 p-6 md:p-8 rounded-2xl border border-cyan-900/50 shadow-2xl flex flex-col max-h-[80vh]">
+          <div className="w-full max-w-3xl bg-[#0a0a0a] p-6 md:p-10 rounded-2xl border border-cyan-900/50 shadow-2xl flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4 flex-shrink-0">
                <h2 className="text-lg md:text-xl font-black text-cyan-400 tracking-widest uppercase flex items-center gap-3"><BarChart3 size={24}/> 屬性極限與轉化報告</h2>
-               <button onClick={() => setShowStatsReport(false)} className="p-4 hover:bg-white/10 rounded-full text-white/50"><X size={24}/></button>
+               <button onClick={() => setShowStatsReport(false)} className="p-4 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-all"><X size={24}/></button>
             </div>
+            
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+                {/* 1. 基礎倍率區塊 */}
                 <div className="space-y-4">
-                  <h3 className="text-xs text-white/40 uppercase border-b border-white/5 pb-2">基礎倍率 (Base Multipliers)</h3>
-                  <div className="flex justify-between text-sm"><span className="text-slate-400">總戰力加成</span><span className="text-rose-400 font-mono">x{getMultiplier('atk').toFixed(2)}</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-slate-400">氣血上限加成</span><span className="text-rose-400 font-mono">x{getMultiplier('hp').toFixed(2)}</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-slate-400">靈氣獲取倍率</span><span className="text-cyan-400 font-mono">x{getMultiplier('qi').toFixed(2)}</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-slate-400">靈石掉落倍率</span><span className="text-yellow-400 font-mono">x{getMultiplier('stone').toFixed(2)}</span></div>
+                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 font-mono tracking-widest flex items-center gap-2"><ChevronsUp size={14}/> 基礎倍率 (BASE MULTIPLIERS)</h3>
+                  <div className="flex justify-between text-sm items-center"><span className="text-slate-300 font-bold">總戰力加成</span><span className="text-rose-400 font-mono font-black text-base">x{getMultiplier('atk').toFixed(2)}</span></div>
+                  <div className="flex justify-between text-sm items-center"><span className="text-slate-300 font-bold">氣血上限加成</span><span className="text-emerald-400 font-mono font-black text-base">x{getMultiplier('hp').toFixed(2)}</span></div>
+                  <div className="flex justify-between text-sm items-center"><span className="text-slate-300 font-bold">靈氣獲取倍率</span><span className="text-cyan-400 font-mono font-black text-base">x{getMultiplier('qi').toFixed(2)}</span></div>
+                  <div className="flex justify-between text-sm items-center"><span className="text-slate-300 font-bold">靈石掉落倍率</span><span className="text-yellow-400 font-mono font-black text-base">x{getMultiplier('stone').toFixed(2)}</span></div>
                 </div>
+                
+                {/* 2. 戰鬥極限區塊 */}
                 <div className="space-y-4">
-                  <h3 className="text-xs text-white/40 uppercase border-b border-white/5 pb-2">天道法則 (V69 Logic)</h3>
-                  <div className="flex justify-between text-sm"><span className="text-slate-400">休息回血比例</span><span className="text-emerald-400 font-mono">{(healPct * 100).toFixed(1)}%</span></div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-400 flex flex-col">爆擊率 <span className="text-xs opacity-50 font-normal mt-1">(溢出轉化爆傷 1:3)</span></span>
-                    <span className="text-purple-400 font-mono mt-1">{(critRate * 100).toFixed(1)}%</span>
+                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 font-mono tracking-widest flex items-center gap-2"><Flame size={14}/> 戰鬥極限 (COMBAT CAPS)</h3>
+                  <div className="flex justify-between text-sm items-center">
+                    <span className="text-slate-300 font-bold flex flex-col">爆擊率 <span className="text-[10px] text-purple-400/70 font-mono">(溢出&gt;95% 轉爆傷)</span></span>
+                    <span className="text-purple-400 font-mono font-black text-base">{(critRate * 100).toFixed(1)}%</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-400 flex flex-col">閃避免傷率 <span className="text-xs opacity-50 font-normal mt-1">(溢出轉化連擊 1:0.5)</span></span>
-                    <span className="text-emerald-400 font-mono mt-1">{(evadeRate * 100).toFixed(1)}%</span>
+                  <div className="flex justify-between text-sm items-center">
+                    <span className="text-slate-300 font-bold flex flex-col">爆擊傷害 <span className="text-[10px] text-white/30 font-mono">(極限 2000%)</span></span>
+                    <span className="text-rose-400 font-mono font-black text-base">{(critDmg * 100).toFixed(0)}%</span>
                   </div>
-                  <div className="flex justify-between text-sm"><span className="text-slate-400">連擊增傷上限</span><span className="text-rose-400 font-mono">+{((streakCap - 0.5) * 100).toFixed(0)}%</span></div>
+                  <div className="flex justify-between text-sm items-center">
+                    <span className="text-slate-300 font-bold flex flex-col">連擊增傷上限 <span className="text-[10px] text-white/30 font-mono">(極限 +400%)</span></span>
+                    <span className="text-rose-400 font-mono font-black text-base">+{((streakCap - 0.5) * 100).toFixed(0)}%</span>
+                  </div>
+                  <div className="flex justify-between text-sm items-center">
+                    <span className="text-slate-300 font-bold">連擊效率倍率</span>
+                    <span className="text-rose-400 font-mono font-black text-base">x{streakEff.toFixed(2)}</span>
+                  </div>
                 </div>
+
+                {/* 3. 生存與防禦區塊 */}
+                <div className="space-y-4">
+                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 font-mono tracking-widest flex items-center gap-2"><Shield size={14}/> 生存防禦 (SURVIVAL & DEFENSE)</h3>
+                  <div className="flex justify-between text-sm items-center">
+                    <span className="text-slate-300 font-bold flex flex-col">閃避免傷率 <span className="text-[10px] text-emerald-400/70 font-mono">(溢出&gt;75% 轉連擊)</span></span>
+                    <span className="text-emerald-400 font-mono font-black text-base">{(evadeRate * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between text-sm items-center">
+                     <span className="text-slate-300 font-bold">涅槃復活率 <span className="text-[10px] text-white/30 ml-1 font-mono">(極限 65%)</span></span>
+                     <span className="text-emerald-400 font-mono font-black text-base">{(reviveRate * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between text-sm items-center">
+                     <span className="text-slate-300 font-bold">反噬承傷比例 <span className="text-[10px] text-white/30 ml-1 font-mono">(1 / Def)</span></span>
+                     <span className="text-yellow-500 font-mono font-black text-base">{dmgTakenPct.toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between text-sm items-center">
+                     <span className="text-slate-300 font-bold">神識感應減傷</span>
+                     <span className="text-cyan-400 font-mono font-black text-base">{((getMultiplier('sense_def') - 1) * 100).toFixed(1)}%</span>
+                  </div>
+                </div>
+
+                {/* 4. 機緣與經濟區塊 */}
+                <div className="space-y-4">
+                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 font-mono tracking-widest flex items-center gap-2"><Compass size={14}/> 機緣經濟 (FORTUNE & ECONOMY)</h3>
+                  <div className="flex justify-between text-sm items-center">
+                     <span className="text-slate-300 font-bold flex flex-col">氣運保底倍率 <span className="text-[10px] text-white/30 font-mono">(乘算奇遇與抽獎)</span></span>
+                     <span className="text-yellow-400 font-mono font-black text-base">x{getMultiplier('luck_floor').toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm items-center">
+                     <span className="text-slate-300 font-bold">洞府成本折扣 <span className="text-[10px] text-white/30 ml-1 font-mono">(極限降至 10%)</span></span>
+                     <span className="text-yellow-500 font-mono font-black text-base">{(forgeDiscount * 100).toFixed(0)}%</span>
+                  </div>
+                  <div className="flex justify-between text-sm items-center">
+                     <span className="text-slate-300 font-bold">真靈吸血比例 <span className="text-[10px] text-white/30 ml-1 font-mono">(爆擊時 20% 觸發)</span></span>
+                     <span className="text-rose-400 font-mono font-black text-base">{((getMultiplier('lifesteal') - 1) * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between text-sm items-center">
+                     <span className="text-slate-300 font-bold">休息回血比例 <span className="text-[10px] text-white/30 ml-1 font-mono">(極限 80%)</span></span>
+                     <span className="text-emerald-400 font-mono font-black text-base">{(healPct * 100).toFixed(1)}%</span>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -828,11 +916,6 @@ export default function App() {
            <div className="flex overflow-x-auto py-5 px-4 gap-8 bg-black/40 rounded-xl border border-white/10 flex-shrink-0 custom-scrollbar">
              {REALMS.map((r, i) => (<div key={i} className={`flex flex-col items-center min-w-[90px] transition-all relative ${i===player.realmIndex?'scale-110 opacity-100':'opacity-40'}`}><div className={`w-10 h-10 rounded-lg border flex items-center justify-center font-black text-sm rotate-45 transition-all ${i===player.realmIndex?'bg-white text-black rotate-0 shadow-2xl':'border-white/20 text-white'}`}><span>{i}</span></div><span className="text-xs font-black mt-5 whitespace-nowrap uppercase tracking-tighter">{r.name}</span></div>))}
            </div>
-           <div className="flex flex-wrap justify-center md:justify-end gap-4 mt-2">
-             <button onClick={() => setShowGuide(true)} className="flex items-center gap-2 text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 px-5 py-3 rounded-full border border-white/10 backdrop-blur-md"><HelpCircle size={16}/> 修行指引</button>
-             <button onClick={() => setShowStatsReport(true)} className="flex items-center gap-2 text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 px-5 py-3 rounded-full border border-white/10 backdrop-blur-md"><BarChart3 size={16}/> 屬性極限</button>
-             <button onClick={() => setShowRealmGuide(true)} className="flex items-center gap-2 text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 px-5 py-3 rounded-full border border-white/10 backdrop-blur-md"><BookOpen size={16}/> 境界全覽</button>
-           </div>
         </div>
       </div>
 
@@ -887,7 +970,7 @@ export default function App() {
                     </h3>
                     <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
                       <span className="text-cyan-400 font-mono">可用 SP: {availableSP.toLocaleString()}</span>
-                      <button onClick={handleRebuildBase} className="px-4 py-2.5 bg-rose-900/40 hover:bg-rose-700 text-rose-300 hover:text-white rounded-lg text-xs font-black border border-rose-500/50 transition-all flex items-center gap-2">
+                      <button onClick={handleRebuildBase} className="px-4 py-2.5 bg-rose-900/40 hover:bg-rose-700 text-rose-300 hover:text-white rounded-lg text-xs font-black border border-rose-500/50 transition-all flex items-center gap-2 shadow-lg">
                         <RefreshCw size={14} /> 散功重修 (退SP)
                       </button>
                     </div>
@@ -962,6 +1045,21 @@ export default function App() {
         </div>
 
         <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4">
+          
+          {/* ========== 系統說明按鈕列 (移至頁尾) ========== */}
+          <div className="flex flex-wrap justify-center gap-4 mb-4">
+             <button onClick={() => setShowGuide(true)} className="flex items-center gap-2 text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 px-6 py-3.5 rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+               <HelpCircle size={16}/> 修行指引
+             </button>
+             <button onClick={() => setShowStatsReport(true)} className="flex items-center gap-2 text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 px-6 py-3.5 rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+               <BarChart3 size={16}/> 屬性極限
+             </button>
+             <button onClick={() => setShowRealmGuide(true)} className="flex items-center gap-2 text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 px-6 py-3.5 rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+               <BookOpen size={16}/> 境界全覽
+             </button>
+          </div>
+          {/* ========================================== */}
+
           <p className="leading-relaxed">《凡人修仙傳》原著設定歸作者 忘語 所有</p>
           <p className="opacity-80 leading-loose">
             Created by <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 underline transition-all text-white">fb/指數三寶飯</a> 
