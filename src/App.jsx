@@ -73,7 +73,8 @@ const ARTIFACT_POOL = [
   { id: 'a32', rarity: 'EPIC', name: '天雷竹', desc: '辟邪神雷 (戰力+40%，爆擊率+5%/級)', type: 'special', val: { atk: 0.40, crit: 0.05 } },
   { id: 'a33', rarity: 'EPIC', name: '血魔劍', desc: '嗜血渴望 (戰力+20%，爆擊率+10%/級)', type: 'special', val: { atk: 0.20, crit: 0.10 } },
   { id: 'a40', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖 (閃避率+15%，連擊上限+50%/級)', type: 'special', val: { evade: 0.15, streak_cap: 0.50 } },
-  { id: 'a41', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣 (戰力+80%，爆擊率+8%/級)', type: 'special', val: { atk: 0.80, crit: 0.08 } },
+  // 青竹蜂雲劍：還原為連擊與爆發的劍陣機制
+  { id: 'a41', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣 (戰力+50%，連擊效率+50%，爆擊+5%/級)', type: 'special', val: { atk: 0.50, streak_eff: 0.50, crit: 0.05 } },
   { id: 'a42', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '替身擋災 (氣血+100%，免死+5%/級)', type: 'special', val: { hp: 1.00, revive: 0.05 } },
   { id: 'a43', rarity: 'LEGENDARY', name: '成熟體噬金蟲', desc: '無物不噬 (戰力+100%，爆傷+60%/級)', type: 'special', val: { atk: 1.00, crit_dmg: 0.60 } },
   { id: 'a50', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '法則破壞 (戰力+250%，爆傷+150%/級)', type: 'special', val: { atk: 2.50, crit_dmg: 1.50 } },
@@ -83,7 +84,8 @@ const ARTIFACT_POOL = [
   { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+200%，靈石+100%/級)', type: 'special', val: { qi: 2.00, stone: 1.00 } },
   { id: 'a61', rarity: 'DIVINE', name: '混沌鐘', desc: '時空凝滯 (閃避+30%，連擊效率+100%/級)', type: 'special', val: { evade: 0.30, streak_eff: 1.00 } },
   { id: 'a62', rarity: 'DIVINE', name: '補天石', desc: '天道補缺 (氣運保底 +1.0)', type: 'luck_floor', val: 1.00 },
-  { id: 'a63', rarity: 'DIVINE', name: '聚寶盆', desc: '容納萬物 (靈石獲取+400%，氣運+0.5/級)', type: 'special', val: { stone: 4.00, luck_floor: 0.50 } },
+  // 聚寶盆修正為仙界原著向神物
+  { id: 'a63', rarity: 'DIVINE', name: '仙界靈晶', desc: '容納萬物 (靈石獲取+400%，氣運+0.5/級)', type: 'special', val: { stone: 4.00, luck_floor: 0.50 } },
 ];
 
 const SECRET_BOOKS = [
@@ -122,7 +124,7 @@ export default function App() {
 
   const [player, setPlayer] = useState(() => {
     try {
-      const saved = localStorage.getItem('xianxia_master_v52_final');
+      const saved = localStorage.getItem('xianxia_master_v53_final');
       if (saved) return JSON.parse(saved);
       return defaultPlayerState;
     } catch (e) { return defaultPlayerState; }
@@ -172,7 +174,7 @@ export default function App() {
   const [isHealing, setIsHealing] = useState(false); 
 
   useEffect(() => { 
-    localStorage.setItem('xianxia_master_v52_final', JSON.stringify(player)); 
+    localStorage.setItem('xianxia_master_v53_final', JSON.stringify(player)); 
     setSaveIndicator(true);
     const timer = setTimeout(() => setSaveIndicator(false), 2000);
     return () => clearTimeout(timer);
@@ -255,7 +257,6 @@ export default function App() {
     setTimeLeft(focusDuration);
   };
 
-// 終極雙軌經濟引擎：保留打怪的絕對必要性，同時給予時間保底
   const handleComplete = () => {
     setIsActive(false); setTargetEndTime(null);
     
@@ -270,8 +271,6 @@ export default function App() {
 
       const newHp = Math.max(0, monster.hp - actualDamage);
       
-      // 軌道 A：基礎吐納保底 (Time-based Passive Income)
-      // 解決後期卡怪幾小時沒收入的問題，但收益刻意壓低。
       const timeRatio = focusDuration / 1500;
       const currentLuck = getMultiplier('luck_floor');
       const passiveQi = Math.floor(50 * Math.pow(1.18, player.realmIndex + 1) * getMultiplier('qi') * timeRatio);
@@ -286,16 +285,14 @@ export default function App() {
       
       let killLog = '';
 
-      // 軌道 B：斬妖除魔戰利品 (On-Kill Loot)
-      // 這是升級戰力/爆擊/連擊的唯一動力！大筆財富與法寶皆鎖定於此。
+      // 軌道 B：斬妖除魔戰利品 (大幅增強擊殺爽感)
       if (newHp === 0) {
-        const killQi = Math.floor(100 * Math.pow(1.18, monster.tier) * getMultiplier('qi'));
-        const killCoin = Math.floor(300 * Math.pow(1.15, monster.tier) * getMultiplier('stone') * currentLuck);
+        const killQi = Math.floor(300 * Math.pow(1.18, monster.tier) * getMultiplier('qi')); // 基數從 100 -> 300
+        const killCoin = Math.floor(800 * Math.pow(1.15, monster.tier) * getMultiplier('stone') * currentLuck); // 基數從 200 -> 800
         
         nextQi += killQi;
         nextCoins += killCoin;
         
-        // 【核心修正】：法寶機緣只能透過「擊殺怪物」獲得！
         if (Math.random() < (0.15 * currentLuck)) {
             const potential = ARTIFACT_POOL.filter(a => !newArtifacts.includes(a.id));
             if (potential.length > 0) {
@@ -304,7 +301,6 @@ export default function App() {
             }
         }
 
-        // 結算是否滿足突破條件
         if (nextQi >= nextQiToNext && nextRealm < REALMS.length - 1) {
             nextRealm++;
             nextQi -= nextQiToNext;
@@ -317,11 +313,9 @@ export default function App() {
         }
         setMonster(generateMonsterState(nextRealm));
       } else {
-        // 怪物未死，僅扣血
         setMonster(prev => ({ ...prev, hp: newHp }));
       }
 
-      // 日誌動態合併
       const dmgLog = isCrit ? `🔥 【爆擊】造成 ${actualDamage} 傷害。` : `[運功] 造成 ${actualDamage} 傷害。`;
       const baseLog = `獲基礎修為 ${passiveQi}，零碎靈石 ${passiveCoin}。`;
       addLog(killLog !== '' ? `${dmgLog} ${killLog}` : `${dmgLog} ${baseLog}`);
@@ -340,7 +334,6 @@ export default function App() {
       setMode('break'); setTimeLeft(5 * 60);
 
     } else { 
-      // 休息吐納模式不變
       setMode('focus'); setTimeLeft(focusDuration); 
       const heal = Math.floor(maxVitality * healPct);
       setPlayer(p => ({ ...p, vitality: Math.min(maxVitality, p.vitality + heal) }));
@@ -436,17 +429,16 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen bg-[#020617] text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-all duration-700 
-      ${isCollapsing ? 'bg-red-950/80 animate-shake' : ''} 
-      ${isCritStrike ? 'bg-amber-900/40 animate-pulse' : ''}`}
+    <div className={`min-h-screen text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-all duration-700 
+      ${isCollapsing ? 'bg-red-950/80 animate-shake' : isCritStrike ? 'bg-rose-950/60 animate-shake' : 'bg-[#020617]'}`}
          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&q=80")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
       
       <div className="absolute inset-0 bg-[#020617]/85 backdrop-blur-[1px] z-0"></div>
       
       <style>{`
         .glow-streak { box-shadow: 0 0 30px rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
-        .animate-shake { animation: shake 0.5s ease-in-out; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } }
+        .animate-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
         .custom-scrollbar::-webkit-scrollbar { width: 3px; height: 3px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -494,7 +486,7 @@ export default function App() {
                 <div className="space-y-4 text-sm leading-relaxed animate-pop-in">
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
                      <h3 className="text-emerald-400 text-base mb-2 flex items-center gap-2 font-black"><Play size={16}/> 運轉周天 (專注計時)</h3>
-                     <p className="text-white/70">點擊開始計時。每次完成專注皆會獲得靈氣與靈石機緣。專注越久收穫越高。此版本支援「離線修行」，開始後可關閉螢幕自動補償進度。</p>
+                     <p className="text-white/70">點擊開始計時。每次完成專注皆會獲得靈氣與靈石保底，但唯有擊殺妖獸才能獲得爆量資源與法寶。此版本支援「離線修行」。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
                      <h3 className="text-cyan-400 text-base mb-2 flex items-center gap-2 font-black"><RefreshCw size={16}/> 吐納回血 (休息時間)</h3>
@@ -502,11 +494,11 @@ export default function App() {
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
                      <h3 className="text-rose-400 text-base mb-2 flex items-center gap-2 font-black"><Square size={16}/> 走火入魔 (強行出關)</h3>
-                     <p className="text-white/70">計時中途放棄會遭受反噬扣血，頻繁中斷將導致身死道消。</p>
+                     <p className="text-white/70">計時中途放棄會遭受反噬，扣除百分比氣血，頻繁中斷將導致身死道消。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
                      <h3 className="text-purple-400 text-base mb-2 flex items-center gap-2 font-black"><Skull size={16}/> 身死道消 (死亡懲罰)</h3>
-                     <p className="text-white/70">氣血歸零時若復活失敗，將失去修為與所有連擊，且氣血僅重置至 50%。請務必至洞府煉丹維持狀態。</p>
+                     <p className="text-white/70">氣血歸零時若復活失敗，將失去大量修為與所有連擊，且氣血僅重置至 50%。請務必至洞府煉丹維持狀態。</p>
                    </section>
                    <section className="bg-white/5 p-4 rounded-lg border border-white/5">
                      <h3 className="text-yellow-400 text-base mb-2 flex items-center gap-2 font-black"><Pill size={16}/> 靈丹妙藥 (主動恢復)</h3>
