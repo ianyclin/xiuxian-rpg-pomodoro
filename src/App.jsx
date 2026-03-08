@@ -79,7 +79,7 @@ const ARTIFACT_POOL = [
   { id: 'a50', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '法則破壞 (戰力+250%，爆傷+200%/級)', type: 'special', val: 0 },
   { id: 'a51', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +80%/級)', type: 'special', val: 0 },
   { id: 'a52', rarity: 'MYTHIC', name: '乾坤鼎', desc: '逆轉造化 (洞府成本 -40%)', type: 'forge_discount', val: 0.40 },
-  { id: 'a53', rarity: 'MYTHIC', name: '七彩珠', desc: '突破極限 (連擊上限提升 100%)', type: 'streak_cap', val: 1.00 },
+  { id: 'a53', rarity: 'MYTHIC', name: '七彩珠', desc: '突破極限 (連擊上限提升 150%)', type: 'streak_cap', val: 1.50 },
   { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+500%，回血比例+20%/級)', type: 'special', val: 0 },
   { id: 'a61', rarity: 'DIVINE', name: '混沌鐘', desc: '時空凝滯 (閃避+30%，連擊效率+100%/級)', type: 'special', val: 0 },
   { id: 'a62', rarity: 'DIVINE', name: '補天石', desc: '天道補缺 (氣運保底 +1.0)', type: 'luck_floor', val: 1.00 },
@@ -234,9 +234,8 @@ const getMultiplier = (type) => {
   const forgeDiscount = Math.max(0.1, 1 - (getMultiplier('forge_discount') - 1)); 
   const availableSP = (player.realmIndex * 2) - Object.values(player.basicSkills || {}).reduce((a, b) => a + b, 0);
 
-  // 經濟修正：1.25 -> 1.15
-  const upgCostAtk = Math.floor(1000 * Math.pow(1.15, (player.baseCombat - 100) / 100) * forgeDiscount);
-  const upgCostHp = Math.floor(1000 * Math.pow(1.15, (player.baseMaxVitality - 100) / 100) * forgeDiscount);
+  const upgCostAtk = Math.floor(1000 * Math.pow(1.18, (player.baseCombat - 100) / 100) * forgeDiscount);
+  const upgCostHp = Math.floor(1000 * Math.pow(1.18, (player.baseMaxVitality - 100) / 100) * forgeDiscount);
   const healCost = Math.floor(maxVitality * 1.5 * forgeDiscount);
   const arrayQiCost = Math.floor(5000 * Math.pow(1.8, (player.arrays?.qi || 0)) * forgeDiscount);
   const arrayDefCost = Math.floor(4000 * Math.pow(1.8, (player.arrays?.def || 0)) * forgeDiscount);
@@ -591,15 +590,26 @@ const getMultiplier = (type) => {
                  <span className="text-[7px] text-cyan-400 uppercase font-black flex items-center gap-1"><Zap size={8}/> SP</span>
                  <span className="text-sm text-cyan-400 font-mono font-bold drop-shadow-md">{availableSP}</span>
                </div>
-               <div className="flex flex-col items-center md:items-end min-w-[70px]">
-                 <span className="text-[7px] text-rose-500 uppercase font-black flex items-center gap-1"><Sword size={8}/> 連擊</span>
-                 <span className="text-sm text-rose-500 font-mono font-bold drop-shadow-md">x{comboMultiplier.toFixed(2)}</span>
-               </div>
-               <div className="flex flex-col items-center md:items-end min-w-[70px]">
-                 <span className="text-[7px] text-emerald-400 uppercase font-black flex items-center gap-1"><Clover size={8}/> 氣運</span>
-                 {/* 氣運 UI 修復：真實讀取 */}
-                 <span className="text-sm text-emerald-400 font-mono font-bold drop-shadow-md">x{getMultiplier('luck_floor').toFixed(2)}</span>
-               </div>
+<div className="flex flex-col items-center md:items-end min-w-[70px]">
+  <span className="text-[7px] text-rose-500 uppercase font-black flex items-center gap-1"><Sword size={8}/> 連擊</span>
+  <span className={`text-sm text-rose-500 font-mono font-bold drop-shadow-md transition-all ${comboMultiplier > 2.0 ? 'text-rose-300 scale-125 animate-pulse drop-shadow-[0_0_8px_rgba(244,63,94,0.8)]' : ''}`}>
+    x{comboMultiplier.toFixed(2)}
+  </span>
+</div>
+               <div className="flex flex-col items-center md:items-end font-bold min-w-[70px]">
+  <span className="text-[7px] text-emerald-400 uppercase font-black flex items-center gap-1 font-bold">
+    <Clover size={8}/> 氣運
+  </span>
+  <span 
+    className={`text-sm text-emerald-400 font-mono font-bold drop-shadow-md transition-all duration-500 ${
+      getMultiplier('luck_floor') > 1.5 
+        ? 'text-yellow-400 scale-110 animate-bounce' 
+        : ''
+    }`}
+  >
+    x{getMultiplier('luck_floor').toFixed(2)}
+  </span>
+</div>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 relative z-10">
