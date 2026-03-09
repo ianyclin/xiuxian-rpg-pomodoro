@@ -183,7 +183,7 @@ export default function App() {
     artifacts: [], artifactLvls: {}, basicSkills: {}, secretBooks: {}, arrays: { qi: 0, def: 0 }, 
     streakCount: 0, streakShields: 0, luck: 1.0, totalFocusTime: 0, history: [], hasAscended: false,
     lifetimeStats: { kills: 0, focusCount: 0, totalCoins: 0 },
-    unlockedTitles: [], equippedTitle: null, freeGacha: 0, epiphanyPills: 0, // 新增頓悟丹庫存
+    unlockedTitles: [], equippedTitle: null, freeGacha: 0, epiphanyPills: 0, lastPillTime: 0,
     logs: ['【天道印記】仙途漫漫，唯『靜心專注』方能證道。以現世之光陰，化此界之修為。摒棄雜念，祝道友仙運隆昌。'] 
   };
 
@@ -198,6 +198,12 @@ export default function App() {
   const bellAudioRef = useRef(null);
   useEffect(() => {
     bellAudioRef.current = new Audio('https://actions.google.com/sounds/v1/alarms/meditation_bell.ogg');
+  }, []);
+
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const availableSP = useMemo(() => {
@@ -313,44 +319,15 @@ export default function App() {
   const [isKilling, setIsKilling] = useState(false); 
   const [isHealing, setIsHealing] = useState(false); 
 
-  useEffect(() => { 
-    localStorage.setItem('xianxia_master_v69', JSON.stringify(player)); 
-    setSaveIndicator(true);
-    const timer = setTimeout(() => setSaveIndicator(false), 2000);
-    return () => clearTimeout(timer);
-  }, [player]);
-
   const getMultiplier = (type) => {
     let mult = 1.0;
-    
-    BASIC_SKILLS.forEach(s => { 
-        if (player.basicSkills?.[s.id] > 0 && s.val?.[type]) mult += s.val[type] * player.basicSkills[s.id]; 
-    });
-    
-    Object.entries(player.secretBooks || {}).forEach(([id, lvl]) => { 
-        const book = SECRET_BOOKS.find(x => x.id === id);
-        if (book?.val?.[type]) mult += book.val[type] * lvl;
-    });
-
-    (player.artifacts || []).forEach(id => { 
-        const item = ARTIFACT_POOL.find(a => a.id === id);
-        const lvl = player.artifactLvls?.[id] || 0;
-        if (item?.val?.[type]) mult += item.val[type] * (1 + lvl * 0.5);
-    });
-    
-    if (player.equippedTitle) {
-      const activeTitle = TITLE_DATA.find(t => t.id === player.equippedTitle);
-      if (activeTitle?.val?.[type]) mult += activeTitle.val[type];
-    }
-    
-    if (type === 'atk' || type === 'streak_cap') {
-      const swordCount = (player.artifacts || []).filter(id => ARTIFACT_POOL.find(a => a.id === id)?.tags?.includes('sword')).length;
-      if (swordCount >= 2) mult += 0.2 * swordCount; 
-    }
-
+    BASIC_SKILLS.forEach(s => { if (player.basicSkills?.[s.id] > 0 && s.val?.[type]) mult += s.val[type] * player.basicSkills[s.id]; });
+    Object.entries(player.secretBooks || {}).forEach(([id, lvl]) => { const book = SECRET_BOOKS.find(x => x.id === id); if (book?.val?.[type]) mult += book.val[type] * lvl; });
+    (player.artifacts || []).forEach(id => { const item = ARTIFACT_POOL.find(a => a.id === id); const lvl = player.artifactLvls?.[id] || 0; if (item?.val?.[type]) mult += item.val[type] * (1 + lvl * 0.5); });
+    if (player.equippedTitle) { const activeTitle = TITLE_DATA.find(t => t.id === player.equippedTitle); if (activeTitle?.val?.[type]) mult += activeTitle.val[type]; }
+    if (type === 'atk' || type === 'streak_cap') { const swordCount = (player.artifacts || []).filter(id => ARTIFACT_POOL.find(a => a.id === id)?.tags?.includes('sword')).length; if (swordCount >= 2) mult += 0.2 * swordCount; }
     if (type === 'qi' && (player.arrays?.qi || 0)) mult += player.arrays.qi * 0.05;
     if (type === 'def' && (player.arrays?.def || 0)) mult += player.arrays.def * 0.05;
-    
     return mult;
   };
 
@@ -380,12 +357,17 @@ export default function App() {
   const maxVitality = Math.floor(player.baseMaxVitality * getMultiplier('hp'));
   const forgeDiscount = Math.max(0.1, 1 - (getMultiplier('forge_discount') - 1)); 
 
+  // 無底洞機制 (Infinite Coin Sinks): 戰力、氣血指數升級
   const upgCostAtk = Math.floor(1000 * Math.pow(1.15, (player.baseCombat - 100) / 100) * forgeDiscount);
   const upgCostHp = Math.floor(1000 * Math.pow(1.15, (player.baseMaxVitality - 100) / 100) * forgeDiscount);
   const healCost = Math.floor((maxVitality * 1.0 + player.realmIndex * 100) * forgeDiscount);
+  // 無底洞機制: 陣法極端指數升級 (x1.6)
   const arrayQiCost = Math.floor(5000 * Math.pow(1.6, (player.arrays?.qi || 0)) * forgeDiscount);
   const arrayDefCost = Math.floor(4000 * Math.pow(1.6, (player.arrays?.def || 0)) * forgeDiscount);
   const gachaCost = Math.floor(5000 * Math.pow(1.15, player.realmIndex) * forgeDiscount);
+
+  const pillCooldownRemaining = player.lastPillTime ? Math.max(0, 3600 - Math.floor((now - player.lastPillTime) / 1000)) : 0;
+  const canUsePill = (player.epiphanyPills || 0) > 0 && pillCooldownRemaining === 0;
 
   const addLog = (text) => {
     const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
@@ -483,11 +465,9 @@ export default function App() {
     return [...unownedArts, ...unownedBooks];
   };
 
-  // 結算核心引擎 (加入頓悟丹判斷)
   const handleComplete = (usedPill = false) => {
     const isUsingPill = usedPill === true;
-    if (isUsingPill && (player.epiphanyPills || 0) <= 0) return;
-
+    
     setIsActive(false); 
     setTargetEndTime(null);
     
@@ -500,11 +480,21 @@ export default function App() {
 
       try { update(ref(database, 'globalStats'), { totalFocusCount: increment(1) }); } catch (e) {}
       
-      if (isUsingPill) {
-          addLog(`💊 【歲月頓悟】吞服頓悟丹，無視天地法則，瞬間出關！`);
-      }
+      let nextPills = player.epiphanyPills || 0;
+      let nextLastPillTime = player.lastPillTime;
+      let nextHistory = [...(player.history || [])];
+      let nextLifetime = { ...(player.lifetimeStats || { kills: 0, focusCount: 0, totalCoins: 0 }) };
+      let nextTotalFocusTime = player.totalFocusTime || 0;
 
-      let nextPills = (player.epiphanyPills || 0) - (isUsingPill ? 1 : 0);
+      if (isUsingPill) {
+          addLog(`💊 【歲月法則】吞服頓悟丹，瞬間出關！(此經歷不列入識海與生涯)`);
+          nextPills -= 1;
+          nextLastPillTime = Date.now(); 
+      } else {
+          nextLastPillTime = 0; 
+          nextLifetime.focusCount += 1;
+          nextTotalFocusTime += focusDuration;
+      }
 
       const isCrit = Math.random() < critRate;
       const damageBase = Math.floor(currentCombatPower * (focusDuration / 1500));
@@ -523,14 +513,13 @@ export default function App() {
       let nextVitality = player.vitality;
       let nextRealm = player.realmIndex;
       let nextQiToNext = player.qiToNext;
-      let nextHistory = player.history;
       let newArtifacts = [...(player.artifacts || [])];
       let newSecretBooks = { ...(player.secretBooks || {}) };
       let nextHasAscended = player.hasAscended;
+      let nextBaseCombat = player.baseCombat;
+      let nextBaseMaxVitality = player.baseMaxVitality;
       
-      let nextLifetime = { ...(player.lifetimeStats || { kills: 0, focusCount: 0, totalCoins: 0 }) };
-      nextLifetime.focusCount += 1;
-      nextLifetime.totalCoins += passiveCoin;
+      if (!isUsingPill) nextLifetime.totalCoins += passiveCoin;
       
       if (isCrit && Math.random() < 0.30) {
         const lifesteal = Math.floor(maxVitality * (getMultiplier('lifesteal') - 1));
@@ -549,10 +538,11 @@ export default function App() {
         
         nextQi += killQi;
         nextCoins += killCoin;
-        nextLifetime.kills += 1;
-        nextLifetime.totalCoins += killCoin;
+        if (!isUsingPill) {
+            nextLifetime.kills += 1;
+            nextLifetime.totalCoins += killCoin;
+        }
         
-        // 擊殺固定掉落頓悟丹 (10%)
         if (Math.random() < 0.10) {
             nextPills += 1;
             killLog += ` 💊 搜刮妖獸巢穴，獲得【頓悟丹】x1！`;
@@ -610,7 +600,7 @@ export default function App() {
             nextRealm++;
             nextQi -= nextQiToNext;
             nextQiToNext = Math.floor(nextQiToNext * 1.35);
-            nextHistory = [...(player.history || []), { name: REALMS[nextRealm].name, time: (player.totalFocusTime || 0) + focusDuration }];
+            if (!isUsingPill) nextHistory = [...nextHistory, { name: REALMS[nextRealm].name, time: nextTotalFocusTime }];
             setCelebration({ name: REALMS[nextRealm].name });
             killLog = `☄️ 【突破】晉升至${REALMS[nextRealm].name}！` + killLog;
         } else {
@@ -621,25 +611,91 @@ export default function App() {
         setMonster(prev => ({ ...prev, hp: newHp }));
       }
 
+      // 七大奇遇輪盤擴充 (100% 分配)
       let fortuneLog = '';
       if (Math.random() < (0.10 * currentLuck)) {
-        const fortuneRoll = Math.random();
-        if (fortuneRoll < 0.25) {
+        const fRoll = Math.random() * 100;
+        
+        if (fRoll < 25) {
             const extraQi = Math.floor(passiveQi * 2);
             nextQi += extraQi;
-            fortuneLog = ` 🌈 【氣運爆發】偶遇天地靈泉，額外獲 ${formatNumber(extraQi)} 修為！`;
-        } else if (fortuneRoll < 0.50) {
+            fortuneLog = ` 🌈 【偶遇靈泉】額外獲 ${formatNumber(extraQi)} 修為！`;
+        } else if (fRoll < 50) {
             const extraCoin = Math.floor(passiveCoin * 3);
             nextCoins += extraCoin;
-            nextLifetime.totalCoins += extraCoin;
-            fortuneLog = ` 🌈 【氣運爆發】發掘古修洞府，額外獲 ${formatNumber(extraCoin)} 靈石！`;
-        } else if (fortuneRoll < 0.75) {
+            if (!isUsingPill) nextLifetime.totalCoins += extraCoin;
+            fortuneLog = ` 🌈 【古修洞府】額外獲 ${formatNumber(extraCoin)} 靈石！`;
+        } else if (fRoll < 75) {
             const healAmount = Math.floor(maxVitality * 0.3);
             nextVitality = Math.min(maxVitality, nextVitality + healAmount);
-            fortuneLog = ` 🌈 【氣運爆發】陷入天道頓悟，氣血恢復 ${formatNumber(healAmount)}！`;
-        } else {
+            fortuneLog = ` 🌈 【天道頓悟】氣血恢復 ${formatNumber(healAmount)}！`;
+        } else if (fRoll < 90) {
             nextPills += 1;
-            fortuneLog = ` 🌈 【氣運爆發】天降機緣，獲得【頓悟丹】x1！`;
+            fortuneLog = ` 🌈 【天降機緣】獲得【頓悟丹】x1！`;
+        } else if (fRoll < 98) {
+            if (Math.random() < 0.5) {
+                nextBaseCombat += 5;
+                fortuneLog = ` ⚡ 【天雷淬體】肉身脫胎換骨，永久基礎戰力 +5！`;
+            } else {
+                nextBaseMaxVitality += 5;
+                fortuneLog = ` ⚡ 【天雷淬體】經脈拓寬，永久氣血上限 +5！`;
+            }
+        } else {
+            // 98~100 (2%) - 頂級合併機緣 (雙向圖鑑檢索)
+            const roll = Math.random();
+            let targetRarity = 'COMMON';
+            let accum = 0;
+            const sortedRarities = Object.entries(RARITY).sort((a,b) => a[1].weight - b[1].weight);
+            for (let [r, data] of sortedRarities) {
+                accum += data.weight * currentLuck; // 氣運放大
+                if (roll < accum) {
+                    targetRarity = r;
+                    break;
+                }
+            }
+
+            let originalIdx = RARITIES_ORDER.indexOf(targetRarity);
+            let combinedPool = getUnownedPool(targetRarity, newArtifacts, newSecretBooks);
+
+            // 1. 向下兼容
+            if (combinedPool.length === 0) {
+                for (let i = originalIdx - 1; i >= 0; i--) {
+                    combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks);
+                    if (combinedPool.length > 0) {
+                        targetRarity = RARITIES_ORDER[i];
+                        break;
+                    }
+                }
+            }
+
+            // 2. 向上越級 (僅在 2% 奇遇中生效的特權)
+            if (combinedPool.length === 0) {
+                for (let i = originalIdx + 1; i < RARITIES_ORDER.length; i++) {
+                    combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks);
+                    if (combinedPool.length > 0) {
+                        targetRarity = RARITIES_ORDER[i];
+                        break;
+                    }
+                }
+            }
+
+            if (combinedPool.length > 0) {
+                const drop = combinedPool[Math.floor(Math.random() * combinedPool.length)];
+                if (drop.poolType === 'art') {
+                    newArtifacts.push(drop.id);
+                    fortuneLog = ` 🏺 【異寶出世】霞光萬丈，喜獲【${RARITY[targetRarity].name}】法寶「${drop.name}」！`;
+                } else {
+                    newSecretBooks[drop.id] = 1;
+                    fortuneLog = ` 📜 【殘卷現世】機緣巧合，領悟【${RARITY[targetRarity].name}】功法「${drop.name}」！`;
+                }
+            } else {
+                // 3. 全圖鑑大滿貫 - 給予造化級 (DIVINE) 的期望值補償
+                const topRarity = 'DIVINE';
+                const compCoins = Math.floor((0.1 * gachaCost) / RARITY[topRarity].weight);
+                nextCoins += compCoins;
+                if (!isUsingPill) nextLifetime.totalCoins += compCoins;
+                fortuneLog = ` ✨ 【天道反哺】此界寶物已盡數入您手中！天道降下 ${formatNumber(compCoins)} 靈石補償！`;
+            }
         }
       }
 
@@ -653,12 +709,15 @@ export default function App() {
           qiToNext: nextQiToNext,
           coins: nextCoins,
           vitality: nextVitality,
+          baseCombat: nextBaseCombat,
+          baseMaxVitality: nextBaseMaxVitality,
           streakCount: p.streakCount + 1,
           streakShields: maxStreakShields,
-          totalFocusTime: (p.totalFocusTime || 0) + focusDuration,
+          totalFocusTime: nextTotalFocusTime,
           artifacts: newArtifacts,
           secretBooks: newSecretBooks,
           epiphanyPills: nextPills,
+          lastPillTime: nextLastPillTime,
           history: nextHistory,
           hasAscended: nextHasAscended,
           lifetimeStats: nextLifetime
@@ -766,7 +825,7 @@ export default function App() {
       if (isActive && targetEndTime && !showGiveUpWarning) {
         const remaining = Math.max(0, Math.floor((targetEndTime - Date.now()) / 1000));
         setTimeLeft(remaining); 
-        if (remaining === 0) handleComplete();
+        if (remaining === 0) handleComplete(false);
       }
     };
     if (isActive && !showGiveUpWarning) {
@@ -853,6 +912,9 @@ export default function App() {
         <Save size={14} className="animate-pulse"/> 天道已同步
       </div>
 
+      {/* ==========================================
+          名號頭銜
+          ========================================== */}
       {showTitles && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-4xl bg-[#0a0a0a] p-4 sm:p-6 md:p-8 rounded-2xl border border-amber-500/30 shadow-2xl flex flex-col max-h-[85vh]">
@@ -976,8 +1038,8 @@ export default function App() {
                      <p className="text-white/70 font-bold">「氣運」會放大抽獎機率。當該稀有度法寶與功法皆已集滿時，系統會向下尋找未擁有圖鑑；若向下無果，則觸發靈石與修為期望值(EV)補償。</p>
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-400 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Pill size={18}/> 真靈吸血機制</h3>
-                     <p className="text-white/70 font-bold">爆擊時有 30% 機率觸發吸血（若有相應功法），直接以氣血上限百分比進行回復，是後期續航關鍵。</p>
+                     <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Pill size={18}/> 頓悟與丹毒冷卻</h3>
+                     <p className="text-white/70 font-bold">吞服「頓悟丹」可瞬間出關，但不計入生涯專注。吞服後需經歷「真實 1 小時」或「完成一次真實專注」方可化解丹毒。</p>
                    </section>
                 </div>
               )}
@@ -1198,10 +1260,14 @@ export default function App() {
             )}
           </div>
           
-          {/* 新增：頓悟丹按鈕 */}
           {(player.epiphanyPills || 0) > 0 && mode === 'focus' && (
-            <button onClick={() => handleComplete(true)} className="flex items-center justify-center gap-2 px-8 py-4 bg-amber-900/50 text-amber-400 hover:bg-amber-600 hover:text-white rounded-full text-xs sm:text-sm font-black tracking-widest transition-all border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
-              <Pill size={16} className="animate-pulse"/> 吞服頓悟丹，瞬間出關 (餘 {player.epiphanyPills})
+            <button 
+              onClick={() => canUsePill && handleComplete(true)} 
+              disabled={!canUsePill}
+              className={`flex items-center justify-center gap-2 px-8 py-4 rounded-full text-xs sm:text-sm font-black tracking-widest transition-all border shadow-[0_0_15px_rgba(245,158,11,0.2)] ${canUsePill ? 'bg-amber-900/50 text-amber-400 hover:bg-amber-600 hover:text-white border-amber-500/50 cursor-pointer' : 'bg-slate-900/80 text-slate-500 border-slate-700/50 cursor-not-allowed opacity-80'}`}
+            >
+              <Pill size={16} className={canUsePill ? "animate-pulse" : ""}/> 
+              {canUsePill ? `吞服頓悟丹，瞬間出關 (餘 ${player.epiphanyPills})` : `丹毒未消 (需真實專注或待 ${formatTime(pillCooldownRemaining)})`}
             </button>
           )}
         </div>
@@ -1264,11 +1330,17 @@ export default function App() {
                     <div><h3 className="text-emerald-400 font-black text-xl tracking-tighter uppercase flex items-center gap-3"><Pill size={24}/> 煉製回春丹</h3><p className="text-white/70 text-sm mt-3 italic tracking-widest leading-relaxed">恢復 50% 最大氣血。</p></div>
                     <button onClick={handleHeal} disabled={player.coins < healCost || player.vitality >= maxVitality} className="w-full py-5 bg-emerald-900/80 hover:bg-emerald-600 text-emerald-100 rounded-xl font-black uppercase text-sm transition-all disabled:opacity-40 border border-emerald-500/50 mt-6">{player.vitality >= maxVitality ? '氣血已滿' : `煉丹 (${formatNumber(healCost)} 靈石)`}</button>
                   </div>
-                  <div className="p-8 rounded-2xl bg-white/10 border border-white/20 min-h-[16rem] flex flex-col justify-between group"><div><h3 className="text-white font-black text-xl tracking-tighter uppercase">凝練劍光</h3><p className="text-white/60 text-sm mt-3 italic tracking-widest">基礎戰力 +100。</p></div><button onClick={() => { if(player.coins >= upgCostAtk) setPlayer(p => ({ ...p, coins: p.coins - upgCostAtk, baseCombat: p.baseCombat + 100 })) }} disabled={player.coins < upgCostAtk} className="w-full py-5 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl font-black uppercase text-sm tracking-widest shadow-xl transition-all disabled:opacity-30 mt-6">祭煉 ({formatNumber(upgCostAtk)} 靈石)</button></div>
-                  <div className="p-8 rounded-2xl bg-white/10 border border-white/20 min-h-[16rem] flex flex-col justify-between group"><div><h3 className="text-white font-black text-xl tracking-tighter uppercase">熬煉肉身</h3><p className="text-white/60 text-sm mt-3 italic tracking-widest">氣血上限 +100。</p></div><button onClick={() => { if(player.coins >= upgCostHp) setPlayer(p => ({ ...p, coins: p.coins - upgCostHp, baseMaxVitality: p.baseMaxVitality + 100, vitality: p.vitality + 100 })) }} disabled={player.coins < upgCostHp} className="w-full py-5 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl font-black uppercase text-sm tracking-widest shadow-xl transition-all disabled:opacity-30 mt-6">熬煉 ({formatNumber(upgCostHp)} 靈石)</button></div>
+                  <div className="p-8 rounded-2xl bg-white/10 border border-white/20 min-h-[16rem] flex flex-col justify-between group">
+                      <div><h3 className="text-white font-black text-xl tracking-tighter uppercase">凝練劍光</h3><p className="text-white/60 text-sm mt-3 italic tracking-widest">基礎戰力 +100。<br/>(花費指數提升，無極限)</p></div>
+                      <button onClick={() => { if(player.coins >= upgCostAtk) setPlayer(p => ({ ...p, coins: p.coins - upgCostAtk, baseCombat: p.baseCombat + 100 })) }} disabled={player.coins < upgCostAtk} className="w-full py-5 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl font-black uppercase text-sm tracking-widest shadow-xl transition-all disabled:opacity-30 mt-6">祭煉 ({formatNumber(upgCostAtk)} 靈石)</button>
+                  </div>
+                  <div className="p-8 rounded-2xl bg-white/10 border border-white/20 min-h-[16rem] flex flex-col justify-between group">
+                      <div><h3 className="text-white font-black text-xl tracking-tighter uppercase">熬煉肉身</h3><p className="text-white/60 text-sm mt-3 italic tracking-widest">氣血上限 +100。<br/>(花費指數提升，無極限)</p></div>
+                      <button onClick={() => { if(player.coins >= upgCostHp) setPlayer(p => ({ ...p, coins: p.coins - upgCostHp, baseMaxVitality: p.baseMaxVitality + 100, vitality: p.vitality + 100 })) }} disabled={player.coins < upgCostHp} className="w-full py-5 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl font-black uppercase text-sm tracking-widest shadow-xl transition-all disabled:opacity-30 mt-6">熬煉 ({formatNumber(upgCostHp)} 靈石)</button>
+                  </div>
                 </div>
                 <div className="space-y-6">
-                   <h3 className="text-white/60 text-sm font-black uppercase border-b border-white/20 pb-4">陣法樞紐</h3>
+                   <h3 className="text-white/60 text-sm font-black uppercase border-b border-white/20 pb-4">陣法樞紐 (無上限)</h3>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                       <div className="bg-white/10 p-8 rounded-2xl border border-white/20 min-h-[14rem] flex flex-col justify-between shadow-inner"><div className="flex justify-between text-base text-white font-bold drop-shadow-md">聚靈大陣 <span className="opacity-60 font-mono">Lv.{player.arrays?.qi||0}</span></div><p className="text-sm opacity-70 italic mt-2">靈氣獲取提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayQiCost) setPlayer(p => ({ ...p, coins: p.coins - arrayQiCost, arrays: {...p.arrays, qi: (p.arrays?.qi||0)+1} })) }} disabled={player.coins < arrayQiCost} className="w-full py-4 mt-6 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">升級 ({formatNumber(arrayQiCost)} 靈石)</button></div>
                       <div className="bg-white/10 p-8 rounded-2xl border border-white/20 min-h-[14rem] flex flex-col justify-between shadow-inner"><div className="flex justify-between text-base text-white font-bold drop-shadow-md">顛倒五行陣 <span className="opacity-60 font-mono">Lv.{player.arrays?.def||0}</span></div><p className="text-sm opacity-70 italic text-white mt-2">反噬減傷提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-4 mt-6 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">升級 ({formatNumber(arrayDefCost)} 靈石)</button></div>
