@@ -91,7 +91,7 @@ const ARTIFACT_POOL = [
   { id: 'a03', rarity: 'COMMON', name: '凝神蒲團', desc: '固本培元 (回血+2%，修為+2%)', val: { heal_bonus: 0.02, qi: 0.02 } },
   { id: 'a04', rarity: 'COMMON', name: '粗糙靈石袋', desc: '聚財之陣 (靈石掉落 +5%)', val: { stone: 0.05 } },
   { id: 'a10', rarity: 'UNCOMMON', name: '神風舟', desc: '御風而行 (閃避率 +5%)', val: { evade: 0.05 } },
-  { id: 'a11', rarity: 'UNCOMMON', name: '子母刃', desc: '奇門暗器 (戰力+8%，爆擊率+8%)', val: { atk: 0.08, crit: 0.08 } },
+  { id: 'a11', rarity: 'UNCOMMON', name: '子母刃', desc: '奇門暗器 (戰力+8%，爆擊率+8%)', val: { atk: 0.08, crit: 0.08 }, tags: ['sword'] },
   { id: 'a12', rarity: 'UNCOMMON', name: '無形針', desc: '無影無蹤 (連擊效率+10%，爆擊+10%)', val: { streak_eff: 0.10, crit: 0.10 } },
   { id: 'a13', rarity: 'UNCOMMON', name: '血玉髓', desc: '氣血滋養 (休息回血比例 +5%)', val: { heal_bonus: 0.05 } },
   { id: 'a20', rarity: 'RARE', name: '青蛟旗', desc: '妖魂鎮壓 (戰力加成 +15%)', val: { atk: 0.15 } },
@@ -109,7 +109,7 @@ const ARTIFACT_POOL = [
   { id: 'a50', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '法則破壞 (戰力+150%，爆傷+150%/級)', val: { atk: 1.50, crit_dmg: 1.50 }, tags: ['sword'] },
   { id: 'a51', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +80%/級)', val: { atk: 0.80, def: 0.80 } },
   { id: 'a52', rarity: 'MYTHIC', name: '虛天大鼎', desc: '鼎鎮山河 (減傷+80%，折扣-40%，氣運保底+0.5)', val: { def: 0.80, forge_discount: 0.40, luck_floor: 0.5 } },
-  { id: 'a53', rarity: 'MYTHIC', name: '玄天如意刃', desc: '斬裂虛空 (連擊上限+80%，爆傷+80%/級)', val: { streak_cap: 0.80, crit_dmg: 0.80 } },
+  { id: 'a53', rarity: 'MYTHIC', name: '玄天如意刃', desc: '斬裂虛空 (連擊上限+80%，爆傷+80%/級)', val: { streak_cap: 0.80, crit_dmg: 0.80 }, tags: ['sword'] },
   { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+300%，靈石+150%/級)', val: { qi: 3.00, stone: 1.50 } },
   { id: 'a61', rarity: 'DIVINE', name: '游天鯤鵬翎', desc: '跨越界域 (閃避+15%，連擊效率+100%/級)', val: { evade: 0.15, streak_eff: 1.00 } },
   { id: 'a62', rarity: 'DIVINE', name: '涅槃真血', desc: '真靈不死 (免死+10%，連擊護盾+2/級)', val: { revive: 0.10, streak_shield: 2.0 } }, 
@@ -126,7 +126,7 @@ const SECRET_BOOKS = [
   { id: 's_07', rarity: 'RARE', name: '辟邪神雷', desc: '至陽之雷。爆擊率+10%，爆傷+30%/級', val: { crit: 0.10, crit_dmg: 0.30 } },
   { id: 's_08', rarity: 'EPIC', name: '搜魂術', desc: '抽取記憶。擊殺靈氣 +20%/級', val: { qi: 0.20 } },
   { id: 's_09', rarity: 'UNCOMMON', name: '枯木逢春訣', desc: '生生不息。休息回血比例 +5%/級', val: { heal_bonus: 0.05 } },
-  { id: 's_10', rarity: 'LEGENDARY', name: '驚蟄十二變', desc: '變身真靈。氣血+35%，爆擊有機率回血2%', val: { hp: 0.35, lifesteal: 0.02 } },
+  { id: 's_10', rarity: 'LEGENDARY', name: '驚蟄十二變', desc: '變身真靈。氣血+35%，真靈吸血+2%/級', val: { hp: 0.35, lifesteal: 0.02 } },
   { id: 's_11', rarity: 'DIVINE', name: '涅槃金身', desc: '不死不滅。復活機率 +8%/級', val: { revive: 0.08 } },
   { id: 's_12', rarity: 'RARE', name: '百脈煉寶訣', desc: '肉身融寶。洞府成本 -5%/級', val: { forge_discount: 0.05 } },
   { id: 's_13', rarity: 'EPIC', name: '明清靈目', desc: '看破虛妄。氣運保底 +0.1/級', val: { luck_floor: 0.10 } },
@@ -217,7 +217,7 @@ export default function App() {
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [targetEndTime, setTargetEndTime] = useState(null); 
   const [isActive, setIsActive] = useState(false);
-  const [mode, setMode] = useState('focus'); // 'focus' 或 'break'
+  const [mode, setMode] = useState('focus'); 
   const [activeTab, setActiveTab] = useState('skills');
   const [showRealmGuide, setShowRealmGuide] = useState(false);
   const [showStatsReport, setShowStatsReport] = useState(false);
@@ -241,16 +241,24 @@ export default function App() {
 
   const getMultiplier = (type) => {
     let mult = 1.0;
+    
+    // 基礎技能
     BASIC_SKILLS.forEach(s => { 
         if (player.basicSkills?.[s.id] > 0 && s.val?.[type]) mult += s.val[type] * player.basicSkills[s.id]; 
     });
     
-    const processItem = (item, lvl) => {
+    // 祕籍 (修正為純線性，對齊文本)
+    Object.entries(player.secretBooks || {}).forEach(([id, lvl]) => { 
+        const book = SECRET_BOOKS.find(x => x.id === id);
+        if (book?.val?.[type]) mult += book.val[type] * lvl;
+    });
+
+    // 法寶 (淬鍊公式)
+    (player.artifacts || []).forEach(id => { 
+        const item = ARTIFACT_POOL.find(a => a.id === id);
+        const lvl = player.artifactLvls?.[id] || 0;
         if (item?.val?.[type]) mult += item.val[type] * (1 + lvl * 0.5);
-    };
-    
-    Object.entries(player.secretBooks || {}).forEach(([id, lvl]) => { processItem(SECRET_BOOKS.find(x => x.id === id), lvl); });
-    (player.artifacts || []).forEach(id => { processItem(ARTIFACT_POOL.find(a => a.id === id), (player.artifactLvls?.[id] || 0)); });
+    });
     
     if (type === 'atk' || type === 'streak_cap') {
       const swordCount = (player.artifacts || []).filter(id => ARTIFACT_POOL.find(a => a.id === id)?.tags?.includes('sword')).length;
@@ -271,7 +279,8 @@ export default function App() {
   const critRate = Math.min(0.95, rawCrit);
   const overflowCrit = Math.max(0, rawCrit - 0.95);
   
-  const streakCap = Math.min(4.0, 0.5 + (getMultiplier('streak_cap') - 1) + (overflowEvade * 0.5)); 
+  // 連擊上限解除封印，從 4.0 提升至 8.0 (800%)
+  const streakCap = Math.min(8.0, 0.5 + (getMultiplier('streak_cap') - 1) + (overflowEvade * 0.5)); 
   const streakEff = getMultiplier('streak_eff'); 
   const streakBonusMult = Math.min(streakCap, (player.streakCount || 0) * 0.05 * streakEff);
   const comboMultiplier = 1 + streakBonusMult;
@@ -330,7 +339,6 @@ export default function App() {
     }
   };
 
-  // 強行收功 (有懲罰)
   const executeGiveUp = () => {
     setShowGiveUpWarning(false);
     setIsActive(false); 
@@ -340,7 +348,9 @@ export default function App() {
       addLog(`💨 【羅煙閃避】成功閃避反噬！連擊不墜！`); 
     } else {
       setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
-      const senseDef = getMultiplier('sense_def') - 1;
+      
+      // 確保神識最高只能減免 90% 基礎反噬，防止補血 bug
+      const senseDef = Math.min(0.9, getMultiplier('sense_def') - 1);
       const rawPenalty = Math.floor((maxVitality * 0.20 + monster.tier * 50 + monster.maxHp * 0.01) * (1 / defMultiplier) * (1 - senseDef));
       const penalty = Math.min(rawPenalty, player.vitality * 0.8);
       
@@ -376,7 +386,6 @@ export default function App() {
     setTimeLeft(focusDuration);
   };
 
-  // 提前結束調息 (無懲罰)
   const handleSkipBreak = () => {
     setIsActive(false);
     setTargetEndTime(null);
@@ -417,7 +426,8 @@ export default function App() {
       let newArtifacts = [...(player.artifacts || [])];
       let nextHasAscended = player.hasAscended;
       
-      if (isCrit && Math.random() < 0.20) {
+      // 強化真靈吸血觸發率至 30%
+      if (isCrit && Math.random() < 0.30) {
         const lifesteal = Math.floor(maxVitality * (getMultiplier('lifesteal') - 1));
         if (lifesteal > 0) {
           nextVitality = Math.min(maxVitality, nextVitality + lifesteal);
@@ -502,7 +512,6 @@ export default function App() {
       setMode('break'); setTimeLeft(5 * 60);
 
     } else { 
-      // 完成休息，自動切回專注模式
       setMode('focus'); setTimeLeft(focusDuration); 
       const heal = Math.floor(maxVitality * healPct);
       setPlayer(p => ({ 
@@ -656,6 +665,9 @@ export default function App() {
         <Save size={14} className="animate-pulse"/> 天道已同步
       </div>
 
+      {/* ==========================================
+          天道經緯 (境界全覽)
+          ========================================== */}
       {showRealmGuide && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-4xl flex flex-col max-h-[80vh]">
@@ -687,6 +699,9 @@ export default function App() {
         </div>
       )}
 
+      {/* ==========================================
+          修行指引與祕訣
+          ========================================== */}
       {showGuide && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-2xl bg-[#0a0a0a] p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh]">
@@ -732,11 +747,11 @@ export default function App() {
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-500 flex flex-col gap-2 shadow-inner">
                      <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Compass size={18}/> 氣運與神識感應</h3>
-                     <p className="text-white/70 font-bold">「氣運」直接乘算萬寶樓出紫金的機率與奇遇觸發率。研習《大衍決》的神識能抵銷走火入魔的基礎反噬傷害。</p>
+                     <p className="text-white/70 font-bold">「氣運」直接乘算萬寶樓出紫金的機率與奇遇觸發率。研習《大衍決》的神識能抵銷走火入魔的基礎反噬傷害 (極限90%)。</p>
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-400 flex flex-col gap-2 shadow-inner">
                      <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Pill size={18}/> 真靈吸血機制</h3>
-                     <p className="text-white/70 font-bold">爆擊時有 20% 機率觸發吸血（若有相應功法），直接以氣血上限百分比進行回復，是後期續航關鍵。</p>
+                     <p className="text-white/70 font-bold">爆擊時有 30% 機率觸發吸血（若有相應功法），直接以氣血上限百分比進行回復，是後期續航關鍵。</p>
                    </section>
                 </div>
               )}
@@ -745,6 +760,9 @@ export default function App() {
         </div>
       )}
 
+      {/* ==========================================
+          屬性極限報告 (精準對接內部變數)
+          ========================================== */}
       {showStatsReport && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-3xl bg-[#0a0a0a] p-6 md:p-10 rounded-2xl border border-cyan-900/50 shadow-2xl flex flex-col max-h-[90vh]">
@@ -774,7 +792,7 @@ export default function App() {
                     <span className="text-rose-400 font-mono font-black text-base">{(critDmg * 100).toFixed(0)}%</span>
                   </div>
                   <div className="flex justify-between text-sm items-center">
-                    <span className="text-slate-300 font-bold flex flex-col">連擊增傷上限 <span className="text-[10px] text-white/30 font-mono">(極限 +400%)</span></span>
+                    <span className="text-slate-300 font-bold flex flex-col">連擊增傷上限 <span className="text-[10px] text-white/30 font-mono">(極限 +800%)</span></span>
                     <span className="text-rose-400 font-mono font-black text-base">+{((streakCap - 0.5) * 100).toFixed(0)}%</span>
                   </div>
                   <div className="flex justify-between text-sm items-center">
@@ -798,8 +816,8 @@ export default function App() {
                      <span className="text-yellow-500 font-mono font-black text-base">{dmgTakenPct.toFixed(1)}%</span>
                   </div>
                   <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold">神識感應減傷</span>
-                     <span className="text-cyan-400 font-mono font-black text-base">{((getMultiplier('sense_def') - 1) * 100).toFixed(1)}%</span>
+                     <span className="text-slate-300 font-bold">神識感應減傷 <span className="text-[10px] text-white/30 ml-1 font-mono">(極限 90%)</span></span>
+                     <span className="text-cyan-400 font-mono font-black text-base">{((Math.min(0.9, getMultiplier('sense_def') - 1)) * 100).toFixed(1)}%</span>
                   </div>
                 </div>
 
@@ -814,7 +832,7 @@ export default function App() {
                      <span className="text-yellow-500 font-mono font-black text-base">{(forgeDiscount * 100).toFixed(0)}%</span>
                   </div>
                   <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold">真靈吸血比例 <span className="text-[10px] text-white/30 ml-1 font-mono">(爆擊時 20% 觸發)</span></span>
+                     <span className="text-slate-300 font-bold">真靈吸血比例 <span className="text-[10px] text-white/30 ml-1 font-mono">(爆擊時 30% 觸發)</span></span>
                      <span className="text-rose-400 font-mono font-black text-base">{((getMultiplier('lifesteal') - 1) * 100).toFixed(1)}%</span>
                   </div>
                   <div className="flex justify-between text-sm items-center">
@@ -918,7 +936,6 @@ export default function App() {
             <div className={`flex justify-center items-center gap-3 mb-2 text-sm md:text-base tracking-[0.6em] font-black uppercase transition-colors ${monster.name.includes('瓶頸') || monster.name.includes('劫') ? 'text-rose-500 animate-pulse' : 'text-rose-400'}`}>
               <Compass size={18}/> {monster.name}
             </div>
-            {/* 妖獸血條 */}
             <div className="w-full max-w-xs mx-auto bg-black/60 rounded-full h-2.5 mb-1 overflow-hidden border border-white/10 shadow-inner">
                <div className="bg-gradient-to-r from-rose-900 to-rose-500 h-full transition-all duration-500 shadow-[0_0_10px_#f43f5e]" style={{ width: `${(monster.hp / monster.maxHp) * 100}%` }}></div>
             </div>
@@ -1053,7 +1070,6 @@ export default function App() {
 
         <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4">
           
-          {/* ========== 系統說明按鈕列 (移至頁尾) ========== */}
           <div className="flex flex-wrap justify-center gap-4 mb-4">
              <button onClick={() => setShowGuide(true)} className="flex items-center gap-2 text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 px-6 py-3.5 rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
                <HelpCircle size={16}/> 修行指引
@@ -1065,7 +1081,6 @@ export default function App() {
                <BookOpen size={16}/> 境界全覽
              </button>
           </div>
-          {/* ========================================== */}
 
           <p className="leading-relaxed">《凡人修仙傳》原著設定歸作者 忘語 所有</p>
           <p className="opacity-80 leading-loose">
