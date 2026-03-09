@@ -30,54 +30,32 @@ const database = getDatabase(app);
 
 const CHANGELOG_DATA = [
   {
+    version: "v3.5.0",
+    title: "萬妖朝宗與登仙大劫",
+    desc: "仙凡有別，34大死劫已佈下天羅地網。",
+    changes: [
+      "重構【萬妖圖鑑】：日常改為遭遇泛用型妖修/幫眾，不再頻繁面見具名魔頭。",
+      "新增【34大死劫】：為每一個小境界/大境界配置了完全獨立的原著專屬 Boss。",
+      "優化【渡劫期】：渡劫日常將面臨「四九小天劫」、「九天罡風」等天地考驗。",
+      "新增【登仙祝賀】：擊殺最終「九九重雷劫」後，將解鎖史詩級飛升祝賀。"
+    ]
+  },
+  {
+    version: "v3.0.0",
+    title: "死劫機制與音效圓滿",
+    desc: "修仙逆天而行，唯有打破生死玄關，方能證道。",
+    changes: [
+      "重構【升級機制】：修為滿載時不再自動升級，必須徹底擊殺「守關Boss」才能突破。",
+      "新增【調息音效】：休息結束時新增「清脆水滴聲」，專注結束維持「頌缽聲」。"
+    ]
+  },
+  {
     version: "v2.0.0",
     title: "紅顏道侶與玉簡傳功",
     desc: "天地異變，仙途不再孤單；神識突破空間限制。",
     changes: [
       "新增【仙途伴侶】：結識原著8位紅顏知己，同行雙修獲得專屬增益。",
-      "新增【玉簡傳功】：支援跨裝置進度匯出與匯入 (Base64 防呆加密)。",
-      "優化【顛倒五行陣】：升級曲線平滑化 (1.35x)，文本描述精準化。",
-      "介面【仙影朦朧】：未解鎖道侶與法寶統一隱藏視覺，保留神祕感。"
-    ]
-  },
-  {
-    version: "v1.8.0",
-    title: "妖獸反撲與生死大劫",
-    desc: "天道無情，修仙之路步步殺機。",
-    changes: [
-      "實裝【妖獸反撲】：專注結束未擊殺妖獸，將面臨致命反擊（20%觸發大招）。",
-      "實裝【涅槃重生】：氣血歸零時的最後保命手段，新增「高階替身符」與「三轉重元功」。",
-      "修復【法寶護主】：連擊護盾現可強制鎖血 10% 擋下妖獸致死打擊。"
-    ]
-  },
-  {
-    version: "v1.5.0",
-    title: "屬性極限與轉化法則",
-    desc: "修煉無止境，溢出之真元將化為更強的殺招。",
-    changes: [
-      "實裝【屬性溢出轉化】：閃避溢出(>75%)轉連擊上限，爆擊溢出(>95%)轉爆傷。",
-      "新增【屬性極限報告】：可於選單查看所有底層乘區與極限數值。",
-      "實裝【劍陣共鳴】：裝備2把以上飛劍類法寶，獲得額外戰力與連擊加成。"
-    ]
-  },
-  {
-    version: "v1.2.0",
-    title: "萬寶樓與機緣祕籍",
-    desc: "上古遺寶現世，氣運加身者得之。",
-    changes: [
-      "新增【萬寶樓抽獎】：消耗靈石抽取凡品至造化至寶。",
-      "新增【功法祕籍】：14種原著經典功法，消耗 SP 進行參悟升級。",
-      "新增【隨機氣運】：結算時有 10% 基礎機率觸發天降機緣與7大奇遇。"
-    ]
-  },
-  {
-    version: "v1.0.0",
-    title: "天道初開 (Core System)",
-    desc: "凡人修仙專注法器正式運轉。",
-    changes: [
-      "核心【番茄鐘專注】機制上線，支援離線運算。",
-      "實裝【境界突破】系統，從一介凡人至九九重劫。",
-      "實裝【洞府淬煉】基礎升級與打坐調息回血功能。"
+      "新增【玉簡傳功】：支援跨裝置進度匯出與匯入 (Base64 防呆加密)。"
     ]
   }
 ];
@@ -253,6 +231,60 @@ const getCompanionTier = (kills) => {
   return -1;
 };
 
+// 萬妖圖鑑 (Mobs 泛用怪)
+const MONSTER_DATA = {
+    mobs: {
+        0: [ {n: '野狼幫眾', s:'大砍刀劈砍', b:'淬毒飛刀'}, {n: '猛虎野獸', s:'猛撲', b:'狂暴撕咬'}, {n: '地痞流氓', s:'悶棍重擊', b:'撒石灰致盲'} ],
+        1: [ {n: '散修劫匪', s:'火彈術', b:'低階符籙'}, {n: '低階靈獸', s:'撕咬', b:'靈力衝擊'}, {n: '家族惡霸', s:'初級法器', b:'聯合陣法'} ],
+        2: [ {n: '築基期魔修', s:'血魔功', b:'魔器自爆'}, {n: '二級妖獸', s:'毒液噴射', b:'妖丹衝擊'}, {n: '邪派探子', s:'暗器偷襲', b:'煞氣侵蝕'} ],
+        3: [ {n: '結丹期散修', s:'丹火', b:'本命法寶'}, {n: '五級妖獸', s:'妖風', b:'本命妖術'}, {n: '海王族戰士', s:'水刺', b:'海王印'} ],
+        4: [ {n: '元嬰期老怪', s:'瞬移偷襲', b:'嬰火'}, {n: '八級化形妖修', s:'化形之威', b:'天賦神通'}, {n: '慕蘭法士', s:'靈術', b:'高階靈術'} ],
+        5: [ {n: '化神期修士', s:'天地元氣', b:'法則皮毛'}, {n: '十級大妖', s:'妖力風暴', b:'真靈血脈'}, {n: '高階魔族', s:'真魔之氣', b:'魔化變身'} ],
+        6: [ {n: '煉虛期異族', s:'空間撕裂', b:'法相攻擊'}, {n: '地淵妖物', s:'地煞之氣', b:'地淵領域'}, {n: '靈界叛修', s:'高階法寶', b:'自爆元神'} ],
+        7: [ {n: '合體期尊者', s:'法則之力', b:'本體法相'}, {n: '高階魔尊', s:'魔界法則', b:'魔尊降臨'}, {n: '真靈後裔', s:'血脈壓制', b:'真靈顯影'} ],
+        8: [ {n: '大乘期老祖', s:'領域壓制', b:'法則本源'}, {n: '跨界真靈', s:'吞噬天地', b:'真靈領域'}, {n: '魔界聖祖化身', s:'聖祖威壓', b:'滅世魔光'} ],
+        9: [ {n: '【雷劫】四九小天劫', s:'青色劫雷', b:'五行劫光'}, {n: '【風劫】九天罡風', s:'蝕骨陰風', b:'九幽黑風'}, {n: '【火劫】紅蓮業火', s:'業火灼燒', b:'焚天紅蓮'} ]
+    }
+};
+
+// 34大死劫 (專屬 Boss 嚴格對應 0~33 index)
+const BOSS_DATA = [
+  { n: '【七玄門】墨大夫', s: '銀針偷襲', b: '魔銀手' }, // 0: 凡人
+  { n: '【野狼幫主】賈天龍', s: '鐵衛護陣', b: '天羅地網' }, // 1: 煉氣初
+  { n: '【黃楓谷】陸師兄', s: '青風劍訣', b: '狂風絕息' }, // 2: 煉氣中
+  { n: '【天涯閣】狂人封岳', s: '黃羅傘護體', b: '踏雲靴突襲' }, // 3: 煉氣後
+  { n: '【血色禁地】墨蛟', s: '巨尾掃擊', b: '黑色毒火' }, // 4: 煉氣巔 (Major)
+  { n: '【鬼靈門少主】王蟬', s: '鬼靈步', b: '血靈大法' }, // 5: 築基初
+  { n: '【燕家堡】燕家老祖', s: '燕家機關', b: '天羅陣' }, // 6: 築基中
+  { n: '【黑煞教】血侍', s: '妖化之軀', b: '血咒術' }, // 7: 築基後
+  { n: '【黑煞教主】越皇化身', s: '血靈光波', b: '黑蛟血爪' }, // 8: 築基巔 (Major)
+  { n: '【極陰徒弟】烏丑', s: '玄陰魔氣', b: '極陰真火' }, // 9: 結丹初
+  { n: '【妙音門叛徒】趙長老', s: '迷音陣', b: '妙音殺網' }, // 10: 結丹中
+  { n: '【八級妖修】毒蛟', s: '蛟龍水箭', b: '碧綠毒丹' }, // 11: 結丹後
+  { n: '【六道傳人】溫天仁', s: '魔雷術', b: '八門金光鏡' }, // 12: 結丹巔 (Major)
+  { n: '【慕蘭神師】仲大仙師', s: '五行靈術', b: '木生大術' }, // 13: 元嬰初
+  { n: '【陰羅宗主】房宗主', s: '鬼羅幡動', b: '陰羅幽火' }, // 14: 元嬰中
+  { n: '【大晉皇族】葉家大長老', s: '皇家秘術', b: '天威降臨' }, // 15: 元嬰後
+  { n: '【星海霸主】六道極聖', s: '魔道秘術', b: '六極真魔功' }, // 16: 元嬰巔 (Major)
+  { n: '【冰海之主】冰鳳', s: '極寒冰刺', b: '絕對冰封' }, // 17: 化神初
+  { n: '【突兀族】天瀾聖獸分身', s: '聖獸之威', b: '天瀾狂煞' }, // 18: 化神中
+  { n: '【九幽宗】九幽老魔', s: '幽冥鬼氣', b: '九幽鎖魂' }, // 19: 化神後
+  { n: '【昆吾魔化】元剎聖祖化身', s: '黑魔匕首', b: '元剎魔域' }, // 20: 化神巔 (Major)
+  { n: '【飛靈聖子】赤魔', s: '赤魔炎', b: '飛靈聖火' }, // 21: 煉虛初
+  { n: '【地淵妖物】木靈妖王', s: '木靈刺', b: '森羅萬象' }, // 22: 煉虛中
+  { n: '【夜叉族】王級尊者', s: '夜叉冥水', b: '夜叉真身' }, // 23: 煉虛後
+  { n: '【地淵霸主】地血老鬼', s: '血道秘術', b: '紫血傀儡爆' }, // 24: 煉虛巔 (Major)
+  { n: '【角蚩族】長尊', s: '角蚩秘術', b: '圖騰真身' }, // 25: 合體初
+  { n: '【魔族】血光聖祖化身', s: '血光印', b: '血魔大陣' }, // 26: 合體中
+  { n: '【廣寒界】真靈遺骨', s: '真靈威壓', b: '毀滅之光' }, // 27: 合體後
+  { n: '【魔界始祖】六極聖祖', s: '六極幻影', b: '六道天魔境' }, // 28: 合體巔 (Major)
+  { n: '【蜉蝣族】大乘太上', s: '控蟲秘術', b: '蜉蝣撼樹' }, // 29: 大乘初
+  { n: '【兇司】兇司王', s: '兇絕斬', b: '兇界降臨' }, // 30: 大乘中
+  { n: '【蟲母】螟蟲之母分身', s: '螟蟲海', b: '天道毀滅' }, // 31: 大乘後
+  { n: '【下界真仙】謫仙馬良', s: '仙家法術', b: '萬靈血璽' }, // 32: 大乘巔 (Major)
+  { n: '【飛升大劫】九九重雷劫', s: '五行神雷', b: '紫霄神雷劫' } // 33: 渡劫 (Major)
+];
+
 /**
  * ========================================================
  * 2. 主組件 (App)
@@ -279,8 +311,11 @@ export default function App() {
   });
 
   const bellAudioRef = useRef(null);
+  const breakAudioRef = useRef(null);
+
   useEffect(() => {
     bellAudioRef.current = new Audio('https://actions.google.com/sounds/v1/alarms/meditation_bell.ogg');
+    breakAudioRef.current = new Audio('https://actions.google.com/sounds/v1/water/droplet_reverb.ogg');
   }, []);
 
   const [now, setNow] = useState(Date.now());
@@ -373,73 +408,45 @@ export default function App() {
 
   const formatTime = (s) => `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
   
-  const getMonsterData = (tier) => {
-    const monsters = [
-        { name: '野狼幫眾', s: '砍刀劈砍', b: '淬毒暗器' },
-        { name: '墨大夫', s: '銀針偷襲', b: '魔銀手' },
-        { name: '金光上人', s: '符籙火彈', b: '金光磚重砸' },
-        { name: '陸師兄', s: '青風劍訣', b: '狂風絕息' },
-        { name: '黑煞教徒', s: '煞氣侵蝕', b: '血祭妖功' },
-        { name: '越皇化身', s: '血靈光波', b: '黑蛟血爪' },
-        { name: '鬼靈門王蟬', s: '幽冥鬼爪', b: '血靈大法' },
-        { name: '血線蛟', s: '血線纏繞', b: '嗜血毒液' },
-        { name: '墨蛟', s: '巨尾掃擊', b: '黑色毒火' },
-        { name: '土甲龍', s: '地刺突襲', b: '裂地衝擊' },
-        { name: '雙尾人面蠍', s: '巨螯夾擊', b: '雙尾毒針' },
-        { name: '溫天仁', s: '魔雷術', b: '八門金光鏡' },
-        { name: '鐵甲煉屍', s: '屍毒噴濺', b: '銅皮鐵骨撞' },
-        { name: '慕蘭法士', s: '初級靈術', b: '木生大術' },
-        { name: '極陰祖師', s: '玄陰魔氣', b: '天都屍火' },
-        { name: '裂風獸風希', s: '風刃亂舞', b: '裂風斬' },
-        { name: '六道極聖', s: '魔道秘術', b: '真魔附體' },
-        { name: '古魔血焰', s: '魔氣侵襲', b: '血焰魔刀' },
-        { name: '陰羅宗宗主', s: '鬼羅幡動', b: '陰羅幽火' },
-        { name: '化形毒蛟', s: '蛟龍水箭', b: '碧綠毒丹' },
-        { name: '夜叉族守衛', s: '飛叉突刺', b: '夜叉冥水' },
-        { name: '角蚩族戰尊', s: '角蚩秘術', b: '圖騰真身' },
-        { name: '六翼霜蚣', s: '極寒冰刺', b: '絕對冰封' },
-        { name: '銀甲屍王', s: '銀甲霸體', b: '千年屍毒爆' },
-        { name: '高階魔尊', s: '真魔之氣', b: '無相魔功' },
-        { name: '元剎聖祖化身', s: '黑魔匕首', b: '元剎魔域' },
-        { name: '噬金蟲王', s: '金甲衝撞', b: '無物不噬' },
-        { name: '海王族大乘', s: '覆海印', b: '驚濤駭浪' },
-        { name: '六極聖祖', s: '六極幻影', b: '六道天魔境' },
-        { name: '降臨謫仙馬良', s: '仙家法術', b: '萬靈血璽' },
-        { name: '始印神尊', s: '神尊法印', b: '滅世法則' },
-        { name: '游天鯤鵬', s: '裂空擊', b: '空間風暴' },
-        { name: '真靈羅睺', s: '幽冥之氣', b: '吞天噬地' },
-        { name: '螟蟲之母', s: '螟蟲海', b: '天道毀滅' }
-    ];
-    const index = Math.min(Math.max(1, tier), monsters.length) - 1;
-    return monsters[index];
-  };
-  
-  const generateMonsterState = (realmIdx) => {
+  // 核心：生成隨機妖獸或固定 Boss (死劫機制)
+  const generateMonsterState = (realmIdx, currentQi, qiToNext) => {
+    const isReadyToBreakthrough = currentQi >= qiToNext;
     const nTier = realmIdx + 1;
-    const isPeak = REALMS[realmIdx].name.includes('巔峰');
+    const isMortal = realmIdx === 0;
     const isFinal = realmIdx === REALMS.length - 1;
-    const bossMult = isFinal ? 20 : (isPeak ? 4 : 1);
-    
-    const nHp = Math.floor(120 * Math.pow(1.25, nTier - 1) * bossMult);
-    const mAtk = Math.floor(30 * Math.pow(1.2, nTier - 1) * (isPeak ? 2.5 : 1) * (isFinal ? 10 : 1));
-    
-    const mData = getMonsterData(nTier);
-    let mName = mData.name;
-    let sAtkName = mData.s;
-    let bAtkName = mData.b;
-    
-    if (isFinal) {
-        mName = '【九九重劫】';
-        sAtkName = '五行神雷';
-        bAtkName = '紫霄神雷劫';
-    } else if (isPeak) {
-        mName = `${mName} [大瓶頸]`;
+    const isMajorBreakthrough = isMortal || isFinal || (realmIdx % 4 === 0 && realmIdx > 0);
+    const majorRealmIdx = isMortal ? 0 : (isFinal ? 9 : Math.floor((realmIdx - 1) / 4) + 1);
+
+    let mData;
+    let isBoss = false;
+    let mName = '';
+    let bossMult = 1;
+    let atkMult = 1;
+
+    if (isReadyToBreakthrough) {
+        isBoss = true;
+        mData = BOSS_DATA[realmIdx];
+        mName = mData.n;
+        bossMult = isFinal ? 30 : (isMajorBreakthrough ? 6 : 2); 
+        atkMult = isFinal ? 10.0 : (isMajorBreakthrough ? 2.5 : 1.5);
+        if (isMajorBreakthrough && !isMortal && !isFinal) mName += ' [大瓶頸]';
+        else if (!isFinal && !isMortal) mName += ' [心魔死劫]';
+    } else {
+        const mobList = MONSTER_DATA.mobs[majorRealmIdx];
+        mData = mobList[Math.floor(Math.random() * mobList.length)];
+        mName = mData.n;
+        bossMult = 1;
+        atkMult = 1.0;
     }
 
-    return { name: mName, hp: nHp, maxHp: nHp, tier: nTier, atk: mAtk, sAtkName, bAtkName };
+    const nHp = Math.floor(120 * Math.pow(1.25, nTier - 1) * bossMult);
+    const mAtk = Math.floor(30 * Math.pow(1.2, nTier - 1) * atkMult);
+
+    return { name: mName, hp: nHp, maxHp: nHp, tier: nTier, atk: mAtk, sAtkName: mData.s, bAtkName: mData.b, isBoss };
   };
 
-  const [monster, setMonster] = useState(() => generateMonsterState(player.realmIndex));
+  // 初始掛載，或重整時生成
+  const [monster, setMonster] = useState(() => generateMonsterState(player.realmIndex, player.qi, player.qiToNext));
   const [focusDuration, setFocusDuration] = useState(25 * 60);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [targetEndTime, setTargetEndTime] = useState(null); 
@@ -451,7 +458,7 @@ export default function App() {
   const [showGuide, setShowGuide] = useState(false); 
   const [showTitles, setShowTitles] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
-  const [showChangelog, setShowChangelog] = useState(false); // 新增天道紀元狀態
+  const [showChangelog, setShowChangelog] = useState(false); 
   const [importString, setImportString] = useState(''); 
   const [guideTab, setGuideTab] = useState('rules'); 
   const [celebration, setCelebration] = useState(null);
@@ -555,6 +562,7 @@ export default function App() {
           if (parsed && parsed.realmIndex !== undefined) {
               if (window.confirm("【奪舍警告】\n匯入將完全覆蓋當前裝置的進度，確定要注入神識嗎？")) {
                   setPlayer({ ...defaultPlayerState, ...parsed, logs: ['【天道】跨界奪舍成功，神識與記憶已完美融合。'] });
+                  setMonster(generateMonsterState(parsed.realmIndex, parsed.qi || 0, parsed.qiToNext || 250)); 
                   setImportString('');
                   setShowSaveModal(false);
                   alert("奪舍成功！進度已同步。");
@@ -590,12 +598,13 @@ export default function App() {
       const newRealm = player.realmIndex - 1;
       const newQiToNext = Math.floor(250 * Math.pow(1.35, newRealm));
       setPlayer(p => ({ ...p, realmIndex: newRealm, qi: 0, qiToNext: newQiToNext, basicSkills: {}, secretBooks: {}, activeCompanion: null }));
+      setMonster(generateMonsterState(newRealm, 0, newQiToNext)); 
       addLog(`⚡ 【散功重修】自廢修為，境界跌落至 ${REALMS[newRealm].name}，經脈重塑，SP 全數返還！`);
     }
   };
 
   const preCheckGiveUp = () => {
-    const isBottleneck = monster.name.includes('瓶頸') || monster.name.includes('劫');
+    const isBottleneck = monster.isBoss;
     if (isBottleneck) {
       setShowGiveUpWarning(true);
     } else {
@@ -673,11 +682,10 @@ export default function App() {
     setIsActive(false); 
     setTargetEndTime(null);
     
-    if (bellAudioRef.current) {
-        bellAudioRef.current.play().catch(e => console.log("Audio muted by browser:", e));
-    }
-    
     if (mode === 'focus') {
+      if (bellAudioRef.current) {
+          bellAudioRef.current.play().catch(e => console.log("Audio muted by browser:", e));
+      }
       setIsAttacking(true); setTimeout(() => setIsAttacking(false), 500);
 
       try { update(ref(database, 'globalStats'), { totalFocusCount: increment(1) }); } catch (e) {}
@@ -817,27 +825,33 @@ export default function App() {
             } else {
                 const compQi = Math.floor((100 * monster.tier) / RARITY[targetRarity].weight);
                 nextQi += compQi;
-                killLog += ` ✨ 擊殺珍稀妖獸，汲取本源獲得修為 ${formatNumber(compQi)}！`;
+                killLog += ` ✨ 擊殺珍稀敵手，汲取本源獲得修為 ${formatNumber(compQi)}！`;
             }
         }
 
-        const isFinalBoss = monster.name === '【九九重劫】';
-        if (isFinalBoss && !player.hasAscended) {
-            try { update(ref(database, 'globalStats'), { totalAscensions: increment(1) }); } catch(e) {}
-            nextHasAscended = true;
-            killLog = `🌌 【破空飛升】位列仙班！ ` + killLog;
-            setCelebration({ name: '飛升仙界！成就真仙！' });
-        } else if (nextQi >= nextQiToNext && nextRealm < REALMS.length - 1) {
-            nextRealm++;
-            nextQi -= nextQiToNext;
-            nextQiToNext = Math.floor(nextQiToNext * 1.35);
-            if (!isUsingPill) nextHistory = [...nextHistory, { name: REALMS[nextRealm].name, time: nextTotalFocusTime }];
-            setCelebration({ name: REALMS[nextRealm].name });
-            killLog = `☄️ 【突破】晉升至${REALMS[nextRealm].name}！` + killLog;
+        // 死劫突破判定
+        if (monster.isBoss) {
+            if (monster.name.includes('九九重雷劫') && !player.hasAscended) {
+                try { update(ref(database, 'globalStats'), { totalAscensions: increment(1) }); } catch(e) {}
+                nextHasAscended = true;
+                killLog = `🌌 【破空飛升】位列仙班！ ` + killLog;
+                setCelebration({ name: '飛升仙界！成就無上真仙！' });
+                setMonster(generateMonsterState(nextRealm, nextQi, nextQiToNext)); 
+            } else if (nextRealm < REALMS.length - 1) {
+                nextRealm++;
+                nextQi -= nextQiToNext;
+                if(nextQi < 0) nextQi = 0;
+                nextQiToNext = Math.floor(nextQiToNext * 1.35);
+                if (!isUsingPill) nextHistory = [...nextHistory, { name: REALMS[nextRealm].name, time: nextTotalFocusTime }];
+                setCelebration({ name: REALMS[nextRealm].name });
+                killLog = `☄️ 【突破死劫】境界晉升至${REALMS[nextRealm].name}！` + killLog;
+                setMonster(generateMonsterState(nextRealm, nextQi, nextQiToNext));
+            }
         } else {
             killLog = `⚔️ 【擊殺】奪得修為 ${formatNumber(killQi)}！` + killLog;
+            setMonster(generateMonsterState(nextRealm, nextQi, nextQiToNext));
         }
-        setMonster(generateMonsterState(nextRealm));
+
       } else {
         setMonster(prev => ({ ...prev, hp: newHp }));
         
@@ -990,6 +1004,9 @@ export default function App() {
       setMode('break'); setTimeLeft(5 * 60);
 
     } else { 
+      if (breakAudioRef.current) {
+          breakAudioRef.current.play().catch(e => console.log("Audio muted by browser:", e));
+      }
       setMode('focus'); setTimeLeft(focusDuration); 
       const heal = Math.floor(maxVitality * healPct);
       setPlayer(p => ({ 
@@ -1164,7 +1181,7 @@ export default function App() {
           <div className="w-full max-w-lg bg-rose-950/80 p-8 rounded-2xl border border-rose-500/50 shadow-[0_0_80px_rgba(244,63,94,0.3)] flex flex-col items-center text-center animate-pop-in">
             <ShieldAlert size={64} className="text-rose-500 mb-6 animate-pulse"/>
             <h2 className="text-2xl font-black text-white tracking-widest uppercase mb-4">天道警示</h2>
-            <p className="text-rose-200 text-sm md:text-base leading-relaxed mb-8">當前正處於 <span className="text-white font-black underline decoration-rose-500 decoration-2">大瓶頸/雷劫</span>！<br/>此時強行收功將遭受極為嚴重的反噬。<br/><br/>確認要放棄本次蓄力嗎？</p>
+            <p className="text-rose-200 text-sm md:text-base leading-relaxed mb-8">當前正面臨 <span className="text-white font-black underline decoration-rose-500 decoration-2">突破死劫</span>！<br/>此時強行收功將遭受極為嚴重的反噬。<br/><br/>確認要放棄本次蓄力嗎？</p>
             <div className="flex gap-4 w-full">
               <button onClick={() => setShowGiveUpWarning(false)} className="flex-1 py-4 bg-white/10 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black transition-all border border-white/20">繼續運功</button>
               <button onClick={executeGiveUp} className="flex-1 py-4 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-sm font-black transition-all shadow-lg">強行收功</button>
@@ -1246,232 +1263,23 @@ export default function App() {
         </div>
       )}
 
-      <div className={`fixed top-14 right-4 z-50 flex items-center gap-2 bg-emerald-900/80 text-emerald-300 px-4 py-2 rounded-full text-xs font-bold border border-emerald-500/30 transition-opacity duration-500 ${saveIndicator ? 'opacity-100' : 'opacity-0'}`}>
-        <Save size={14} className="animate-pulse"/> 天道已同步
-      </div>
-
-      {showTitles && (
-        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
-          <div className="w-full max-w-4xl bg-[#0a0a0a] p-4 sm:p-6 md:p-8 rounded-2xl border border-amber-500/30 shadow-2xl flex flex-col max-h-[85vh]">
-            <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
-               <h2 className="text-xl md:text-2xl font-black text-amber-400 tracking-widest uppercase flex items-center gap-3"><Award className="text-amber-500"/> 名號頭銜 (成就)</h2>
-               <button onClick={() => setShowTitles(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
-            </div>
-            
-            <div className="flex justify-between md:justify-start gap-4 md:gap-12 mb-6 bg-black/40 p-4 rounded-xl border border-white/5 flex-shrink-0 overflow-x-auto">
-               <div className="flex flex-col"><span className="text-[10px] text-white/40 uppercase tracking-widest">累計專注</span><span className="text-white font-mono">{formatNumber(player.lifetimeStats?.focusCount || 0)} 次</span></div>
-               <div className="flex flex-col"><span className="text-[10px] text-white/40 uppercase tracking-widest">擊殺妖獸</span><span className="text-rose-400 font-mono">{formatNumber(player.lifetimeStats?.kills || 0)} 隻</span></div>
-               <div className="flex flex-col"><span className="text-[10px] text-white/40 uppercase tracking-widest">累計靈石</span><span className="text-yellow-400 font-mono">{formatNumber(player.lifetimeStats?.totalCoins || 0)}</span></div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
-               {TITLE_DATA.map(t => {
-                 const isUnlocked = (player.unlockedTitles || []).includes(t.id);
-                 const isEquipped = player.equippedTitle === t.id;
-                 return (
-                   <div key={t.id} className={`p-5 rounded-xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${isEquipped ? 'bg-amber-950/40 border-amber-500/60 shadow-[0_0_15px_rgba(245,158,11,0.2)]' : isUnlocked ? 'bg-white/5 border-white/20' : 'bg-black/60 border-white/5 opacity-50'}`}>
-                      <div className="flex-1">
-                         <div className="flex items-center gap-3 mb-1">
-                            <h4 className={`text-base font-black tracking-widest ${isUnlocked ? 'text-amber-400' : 'text-white/50'}`}>【{t.name}】</h4>
-                            {isEquipped && <span className="text-[10px] bg-amber-500 text-black px-2 py-0.5 rounded uppercase font-black tracking-widest">已裝備</span>}
-                         </div>
-                         <p className="text-xs text-white/70 italic mb-2">"{t.desc}"</p>
-                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-[11px] font-mono">
-                            <span className="text-cyan-400">條件：{t.cat === 'kill' ? '擊殺妖獸' : t.cat === 'focus' ? '運轉周天' : t.cat === 'coin' ? '獲得靈石' : t.cat === 'artifact' ? '收集法寶' : t.cat === 'secret' ? '解鎖祕籍' : '滿級功法'} {formatNumber(t.req)}</span>
-                            <span className="text-emerald-400">被動：{t.buffDesc}</span>
-                         </div>
-                      </div>
-                      {isUnlocked && !isEquipped && (
-                        <button onClick={() => setPlayer(p => ({ ...p, equippedTitle: t.id }))} className="py-3 px-6 bg-white/10 hover:bg-amber-600 hover:text-white rounded-lg text-xs font-black border border-white/20 transition-all flex-shrink-0">
-                          裝備稱號
-                        </button>
-                      )}
-                   </div>
-                 );
-               })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showRealmGuide && (
-        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
-          <div className="w-full max-w-4xl flex flex-col max-h-[80vh]">
-            <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
-               <h2 className="text-xl md:text-2xl font-black text-white tracking-widest uppercase flex items-center gap-3"><BookOpen className="text-emerald-500"/> 天道經緯 (境界全覽)</h2>
-               <button onClick={() => setShowRealmGuide(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
-            </div>
-            <div className="w-full overflow-y-auto custom-scrollbar bg-[#0a0a0a]/80 rounded-xl border border-white/5 flex-1 shadow-2xl">
-              <table className="w-full text-left border-collapse min-w-[600px]">
-                  <thead>
-                    <tr className="text-xs text-white/30 uppercase tracking-widest border-b border-white/10 bg-black/50">
-                      <th className="py-5 px-6 font-mono">位階範圍</th>
-                      <th className="py-5 px-6">境界名號</th>
-                      <th className="py-5 px-6">神識導讀</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {GUIDE_REALMS.map((r, i) => (
-                      <tr key={i} className={`border-b border-white/5 transition-colors hover:bg-white/5`}>
-                        <td className="py-5 px-6 font-mono text-xs text-white/40">{r.range}</td>
-                        <td className={`py-5 px-6 font-black text-sm text-white/90`}>{r.name}</td>
-                        <td className="py-5 px-6 text-xs text-white/50 leading-relaxed italic font-bold">{r.desc}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showGuide && (
-        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
-          <div className="w-full max-w-2xl bg-[#0a0a0a] p-4 sm:p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh]">
-            <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
-               <h2 className="text-lg md:text-xl font-black text-white tracking-widest uppercase flex items-center gap-3"><HelpCircle className="text-emerald-400"/> 修行指引與祕訣</h2>
-               <button onClick={() => setShowGuide(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-6 pb-6">
-              <div className="flex gap-2 bg-black/60 p-1 rounded-lg border border-white/5 flex-shrink-0">
-                <button onClick={() => setGuideTab('rules')} className={`flex-1 py-4 text-xs md:text-sm font-bold rounded uppercase tracking-widest transition-all ${guideTab === 'rules' ? 'bg-white/10 text-white shadow-inner' : 'text-white/30 hover:text-white/80'}`}>基礎法則</button>
-                <button onClick={() => setGuideTab('tips')} className={`flex-1 py-4 text-xs md:text-sm font-bold rounded uppercase tracking-widest transition-all ${guideTab === 'tips' ? 'bg-amber-900/30 text-amber-500 shadow-inner' : 'text-amber-500/30 hover:text-amber-400/80'}`}>機制與祕訣 (TIPS)</button>
-              </div>
-
-              {guideTab === 'rules' ? (
-                <div className="space-y-4 text-sm leading-relaxed animate-pop-in">
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-emerald-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-emerald-400 text-base flex items-center gap-2 font-black"><Play size={18}/> 運轉周天 (專注蓄力)</h3>
-                     <p className="text-white/70 font-bold">點擊開始計時。完成後結算傷害並獲取靈氣機緣。支援離線運算，切換視窗不影響進度。</p>
-                   </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-400 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Sparkles size={18}/> 隨機氣運 (奇遇機制)</h3>
-                     <p className="text-white/70 font-bold">每次專注完成時，有 10% 基礎機率觸發奇遇（受氣運倍率加成）。可能獲得：靈氣翻倍、靈石三倍、或瞬間恢復 30% 氣血的頓悟。</p>
-                   </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Square size={18}/> 妖獸反撲與死亡懲罰</h3>
-                     <p className="text-white/70 font-bold">若專注結算未能擊殺妖獸，將面臨妖獸反撲。防禦與閃避屬性將決定生死。氣血歸零若無「涅槃復活」或「護盾」保護，將損失 20% 當前修為並清空連擊。請適時至洞府「煉製回春丹」。</p>
-                   </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-cyan-400 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-cyan-400 text-base flex items-center gap-2 font-black"><Wind size={18}/> 吐納調息 (休息無懲罰)</h3>
-                     <p className="text-white/70 font-bold">專注後進入 5 分鐘調息。調息結束可恢復大量氣血。若提前結束調息，只會放棄本次回血，【不會】受到反噬懲罰。</p>
-                   </section>
-                </div>
-              ) : (
-                <div className="space-y-4 text-sm leading-relaxed animate-pop-in">
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-purple-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-purple-400 text-base flex items-center gap-2 font-black"><Activity size={18}/> 屬性溢出轉化 (核心)</h3>
-                     <p className="text-white/70 font-bold">天道設有極限，但溢出的屬性不會浪費：<br/>• 閃避率上限 75%，溢出的閃避將以 <span className="text-emerald-400">1 : 0.5</span> 轉化為「連擊增幅上限」。<br/>• 爆擊率上限 95%，溢出的爆擊將以 <span className="text-rose-400">1 : 3</span> 轉化為「爆擊傷害」。</p>
-                   </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-cyan-400 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-cyan-400 text-base flex items-center gap-2 font-black"><Sword size={18}/> 劍陣共鳴與護盾</h3>
-                     <p className="text-white/70 font-bold">裝備 2 把以上「劍類」法寶，每把劍額外提升 20% 戰力與連擊上限。擁有「連擊護盾」時，能為你抵擋一次致死打擊或強行收功反噬。</p>
-                   </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Compass size={18}/> 氣運與圖鑑保底</h3>
-                     <p className="text-white/70 font-bold">「氣運」會放大抽獎機率。當該稀有度法寶與功法皆已集滿時，系統會向下尋找未擁有圖鑑；若向下無果，則觸發靈石與修為期望值(EV)補償。</p>
-                   </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-400 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Pill size={18}/> 頓悟與丹毒冷卻</h3>
-                     <p className="text-white/70 font-bold">吞服「頓悟丹」可瞬間出關，但不計入生涯專注。吞服後需經歷「真實 1 小時」或「完成一次真實專注」方可化解丹毒。</p>
-                   </section>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showStatsReport && (
-        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
-          <div className="w-full max-w-3xl bg-[#0a0a0a] p-4 sm:p-6 md:p-10 rounded-2xl border border-cyan-900/50 shadow-2xl flex flex-col max-h-[90vh]">
-            <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4 flex-shrink-0">
-               <h2 className="text-lg md:text-xl font-black text-cyan-400 tracking-widest uppercase flex items-center gap-3"><BarChart3 size={24}/> 屬性極限與轉化報告</h2>
-               <button onClick={() => setShowStatsReport(false)} className="p-4 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-all"><X size={24}/></button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-                <div className="space-y-4">
-                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 font-mono tracking-widest flex items-center gap-2"><ChevronsUp size={14}/> 基礎倍率 (BASE MULTIPLIERS)</h3>
-                  <div className="flex justify-between text-sm items-center"><span className="text-slate-300 font-bold">總戰力加成</span><span className="text-rose-400 font-mono font-black text-base">x{getMultiplier('atk').toFixed(2)}</span></div>
-                  <div className="flex justify-between text-sm items-center"><span className="text-slate-300 font-bold">氣血上限加成</span><span className="text-emerald-400 font-mono font-black text-base">x{getMultiplier('hp').toFixed(2)}</span></div>
-                  <div className="flex justify-between text-sm items-center"><span className="text-slate-300 font-bold">靈氣獲取倍率</span><span className="text-cyan-400 font-mono font-black text-base">x{getMultiplier('qi').toFixed(2)}</span></div>
-                  <div className="flex justify-between text-sm items-center"><span className="text-slate-300 font-bold">靈石掉落倍率</span><span className="text-yellow-400 font-mono font-black text-base">x{getMultiplier('stone').toFixed(2)}</span></div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 font-mono tracking-widest flex items-center gap-2"><Flame size={14}/> 戰鬥極限 (COMBAT CAPS)</h3>
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-slate-300 font-bold flex flex-col">爆擊率 <span className="text-[10px] text-purple-400/70 font-mono">(溢出&gt;95% 轉爆傷)</span></span>
-                    <span className="text-purple-400 font-mono font-black text-base">{(critRate * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-slate-300 font-bold flex flex-col">爆擊傷害 <span className="text-[10px] text-white/30 font-mono">(極限 2000%)</span></span>
-                    <span className="text-rose-400 font-mono font-black text-base">{(critDmg * 100).toFixed(0)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-slate-300 font-bold flex flex-col">連擊增傷上限 <span className="text-[10px] text-white/30 font-mono">(極限 +800%)</span></span>
-                    <span className="text-rose-400 font-mono font-black text-base">+{((streakCap - 0.5) * 100).toFixed(0)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-slate-300 font-bold">連擊效率倍率</span>
-                    <span className="text-rose-400 font-mono font-black text-base">x{streakEff.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 font-mono tracking-widest flex items-center gap-2"><Shield size={14}/> 生存防禦 (SURVIVAL & DEFENSE)</h3>
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-slate-300 font-bold flex flex-col">閃避免傷率 <span className="text-[10px] text-emerald-400/70 font-mono">(溢出&gt;75% 轉連擊)</span></span>
-                    <span className="text-emerald-400 font-mono font-black text-base">{(evadeRate * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold">涅槃復活率 <span className="text-[10px] text-white/30 ml-1 font-mono">(極限 65%)</span></span>
-                     <span className="text-emerald-400 font-mono font-black text-base">{(reviveRate * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold">反噬承傷比例 <span className="text-[10px] text-white/30 ml-1 font-mono">(1 / Def)</span></span>
-                     <span className="text-yellow-500 font-mono font-black text-base">{dmgTakenPct.toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold">神識感應減傷 <span className="text-[10px] text-white/30 ml-1 font-mono">(極限 90%)</span></span>
-                     <span className="text-cyan-400 font-mono font-black text-base">{((Math.min(0.9, getMultiplier('sense_def') - 1)) * 100).toFixed(1)}%</span>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 font-mono tracking-widest flex items-center gap-2"><Compass size={14}/> 機緣經濟 (FORTUNE & ECONOMY)</h3>
-                  <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold flex flex-col">氣運保底倍率 <span className="text-[10px] text-white/30 font-mono">(乘算奇遇與抽獎)</span></span>
-                     <span className="text-yellow-400 font-mono font-black text-base">x{getMultiplier('luck_floor').toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold">洞府成本折扣 <span className="text-[10px] text-white/30 ml-1 font-mono">(極限降至 10%)</span></span>
-                     <span className="text-yellow-500 font-mono font-black text-base">{(forgeDiscount * 100).toFixed(0)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold">真靈吸血比例 <span className="text-[10px] text-white/30 ml-1 font-mono">(爆擊時 30% 觸發)</span></span>
-                     <span className="text-rose-400 font-mono font-black text-base">{((getMultiplier('lifesteal') - 1) * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold">休息回血比例 <span className="text-[10px] text-white/30 ml-1 font-mono">(極限 80%)</span></span>
-                     <span className="text-emerald-400 font-mono font-black text-base">{(healPct * 100).toFixed(1)}%</span>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {celebration && (
-        <div className="fixed inset-0 z-[300] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-12 cursor-pointer font-bold mt-8" onClick={() => setCelebration(null)}>
-          <Crown size={80} className="text-yellow-500/80 mb-6 animate-bounce" />
-          <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-widest">{celebration.name.includes('成就真仙') ? '渡劫成功' : '突破瓶頸'}</h2>
-          <p className="text-xl text-emerald-400 font-light tracking-widest">【{celebration.name}】</p>
+        <div className="fixed inset-0 z-[500] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 sm:p-12 cursor-pointer font-bold mt-8 text-center animate-pop-in" onClick={() => setCelebration(null)}>
+          <Crown size={80} className="text-yellow-500/80 mb-6 animate-bounce drop-shadow-[0_0_30px_rgba(250,204,21,0.5)]" />
+          <h2 className="text-3xl sm:text-4xl font-black text-white mb-2 uppercase tracking-widest">
+              {celebration.name.includes('成就無上真仙') ? '渡劫成功・羽化登仙' : '突破死劫'}
+          </h2>
+          <p className="text-xl sm:text-2xl text-emerald-400 font-light tracking-widest mb-6">【{celebration.name}】</p>
+          
+          {celebration.name.includes('成就無上真仙') && (
+              <div className="mt-8 border-t border-white/20 pt-8 max-w-lg">
+                  <p className="text-sm sm:text-base text-yellow-200 leading-loose tracking-widest">
+                      歷經無數次專注與生死劫難，您終於打破此界桎梏，成就無上真仙！<br/><br/>
+                      <span className="text-white/60 text-xs">（仙路漫漫，您已達成目前的最高境界。您可以繼續在此界積累底蘊，或在輪迴中尋找新的大道。）</span>
+                  </p>
+              </div>
+          )}
+          <p className="text-white/30 text-xs mt-12 animate-pulse tracking-widest">點擊畫面任意處繼續</p>
         </div>
       )}
 
@@ -1542,7 +1350,10 @@ export default function App() {
                 </div>
             </div>
             <div className="space-y-3 relative z-10">
-              <div className="flex justify-between text-xs uppercase font-black opacity-60 tracking-widest text-white"><span>修為進度</span><span>{formatNumber(player.qi)} / {formatNumber(player.qiToNext)}</span></div>
+              <div className="flex justify-between text-xs uppercase font-black opacity-60 tracking-widest text-white">
+                  <span>修為進度 {monster.isBoss && <span className="text-rose-400 ml-2 font-black">(滿載・突破死劫中)</span>}</span>
+                  <span>{formatNumber(player.qi)} / {formatNumber(player.qiToNext)}</span>
+              </div>
               <div className="h-2.5 bg-black/60 rounded-full overflow-hidden shadow-inner"><div className={`h-full ${mode === 'break' ? 'bg-cyan-500' : activeColorClass.bg} transition-all duration-1000 shadow-[0_0_10px_currentColor]`} style={{ width: `${Math.min(100, (player.qi/player.qiToNext)*100)}%` }}></div></div>
             </div>
           </div>
@@ -1567,11 +1378,11 @@ export default function App() {
         
         {mode === 'focus' ? (
           <>
-            <div className={`flex justify-center items-center gap-3 mb-2 text-sm md:text-base tracking-[0.6em] font-black uppercase transition-colors ${monster.name.includes('瓶頸') || monster.name.includes('劫') ? 'text-rose-500 animate-pulse' : 'text-rose-400'}`}>
+            <div className={`flex justify-center items-center gap-3 mb-2 text-sm md:text-base tracking-[0.6em] font-black uppercase transition-colors ${monster.isBoss ? 'text-rose-500 animate-pulse drop-shadow-[0_0_10px_rgba(244,63,94,0.8)]' : 'text-emerald-400'}`}>
               <Compass size={18}/> {monster.name}
             </div>
             <div className="w-full max-w-xs mx-auto bg-black/60 rounded-full h-2.5 mb-1 overflow-hidden border border-white/10 shadow-inner">
-               <div className="bg-gradient-to-r from-rose-900 to-rose-500 h-full transition-all duration-500 shadow-[0_0_10px_#f43f5e]" style={{ width: `${Math.min(100, (monster.hp / monster.maxHp) * 100)}%` }}></div>
+               <div className={`h-full transition-all duration-500 ${monster.isBoss ? 'bg-gradient-to-r from-rose-900 to-rose-500 shadow-[0_0_10px_#f43f5e]' : 'bg-gradient-to-r from-emerald-900 to-emerald-500 shadow-[0_0_10px_#10b981]'}`} style={{ width: `${Math.min(100, (monster.hp / monster.maxHp) * 100)}%` }}></div>
             </div>
             <div className="text-[10px] font-mono text-white/40 text-center mb-10">氣血 {formatNumber(monster.hp)} / {formatNumber(monster.maxHp)} ｜ 戰力 {formatNumber(monster.atk)}</div>
           </>
