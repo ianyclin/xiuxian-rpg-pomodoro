@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, BarChart3, Save, Pill, HelpCircle, ShieldAlert, Award, Heart, Copy, Download, FileText, Fingerprint } from 'lucide-react';
+import { 
+  Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, 
+  ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, 
+  Cloud, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, 
+  BookOpen, X, History, BarChart, Save, Pill, HelpCircle, Award, Heart, Copy, FileText 
+} from 'lucide-react';
 
 /**
  * ========================================================
@@ -56,9 +61,7 @@ const FEEDBACK_TEXTS = {
 };
 
 const CHANGELOG_DATA = [
-  { version: "v6.10.0", title: "天道法則・尋寶分流", desc: "確立了免費、保底與日常產出的因果邊界。", changes: [ "分流【尋寶機制】：稱號保底擁有絕對特權（強制升階並允許向上搜尋）；每日免費、靈石抽取與專注掉落皆統一為「向下搜尋，無則補償靈石」。", "精算【圖鑑溢出補償】：當圖鑑全滿時，系統將根據您『最初抽到的稀有度』來補償對應的巨量靈石，不再讓好運打水漂。" ] },
-  { version: "v6.7.0", title: "天道圓滿・萬象歸一", desc: "抹平飛升與 UI 引導的最後一道裂隙。", changes: [ "優化【飛升敘事】：真仙界巡禮不再觸發強制傷害的反撲錯誤。", "新增【機緣指引】：每日 08:00 刷新時，選單列自動亮起紅點提示。" ] },
-  { version: "v6.4.0", title: "識海清明與日誌解耦", desc: "掃除心魔雜念，天道印記更加清晰。", changes: [ "重構【修行日誌】：戰鬥結算徹底解耦，根除字串重疊，儲存上限擴展至 100 筆。" ] }
+  { version: "v6.10.1", title: "抗崩潰穩定版", desc: "強化底層容錯，確保跨環境部署之穩定。", changes: [ "修復【全白畫面】：移除可能導致舊版依賴庫崩潰的圖標，並加入存檔防呆機制。", "優化【飛升敘事】：真仙界巡禮不再觸發強制傷害的反撲錯誤。", "新增【機緣指引】：每日免費尋寶刷新時，選單列會自動亮起紅點提示。" ] }
 ];
 
 const REALM_COLORS = {
@@ -227,7 +230,40 @@ const MONSTER_DATA = {
         9: [ {n: '【雷劫】四九小天劫', s:'青色劫雷', b:'五行劫光'}, {n: '【風劫】九天罡風', s:'蝕骨陰風', b:'九幽黑風'}, {n: '【火劫】紅蓮業火', s:'業火灼燒', b:'焚天紅蓮'} ]
     },
     bosses: [
-      { n: '【七玄門】墨大夫', s: '銀針偷襲', b: '魔銀手' }, { n: '【野狼幫主】賈天龍', s: '鐵衛護陣', b: '天羅地網' }, { n: '【黃楓谷】陸師兄', s: '青風劍訣', b: '狂風絕息' }, { n: '【天涯閣】狂人封岳', s: '黃羅傘護體', b: '踏雲靴突襲' }, { n: '【血色禁地】墨蛟', s: '巨尾掃擊', b: '黑色毒火' }, { n: '【鬼靈門少主】王蟬', s: '鬼靈步', b: '血靈大法' }, { n: '【燕家堡】燕家老祖', s: '燕家機關', b: '天羅陣' }, { n: '【黑煞教】血侍', s: '妖化之軀', b: '血咒術' }, { n: '【黑煞教主】越皇化身', s: '血靈光波', b: '黑蛟血爪' }, { n: '【極陰徒弟】烏丑', s: '玄陰魔氣', b: '極陰真火' }, { n: '【妙音門叛徒】趙長老', s: '迷音陣', b: '妙音殺網' }, { n: '【八級妖修】毒蛟', s: '蛟龍水箭', b: '碧綠毒丹' }, { n: '【六道傳人】溫天仁', s: '魔雷術', b: '八門金光鏡' }, { n: '【慕蘭神師】仲大仙師', s: '五行靈術', b: '木生大術' }, { n: '【陰羅宗主】房宗主', s: '鬼羅幡動', b: '陰羅幽火' }, { n: '【大晉皇族】葉家大長老', s: '皇家秘術', b: '天威降臨' }, { n: '【星海霸主】六道極聖', s: '魔道秘術', b: '六極真魔功' }, { n: '【冰海之主】冰鳳', s: '極寒冰刺', b: '絕對冰封' }, { n: '【突兀族】天瀾聖獸分身', s: '聖獸之威', b: '天瀾狂煞' }, { n: '【九幽宗】九幽老魔', s: '幽冥鬼氣', b: '九幽鎖魂' }, { n: '【昆吾魔化】元剎聖祖化身', s: '黑魔匕首', b: '元剎魔域' }, { n: '【飛靈聖子】赤魔', s: '赤魔炎', b: '飛靈聖火' }, { n: '【地淵妖物】木靈妖王', s: '木靈刺', b: '森羅萬象' }, { n: '【夜叉族】王級尊者', s: '夜叉冥水', b: '夜叉真身' }, { n: '【地淵霸主】地血老鬼', s: '血道秘術', b: '紫血傀儡爆' }, { n: '【角蚩族】長尊', s: '角蚩秘術', b: '圖騰真身' }, { n: '【魔族】血光聖祖化身', s: '血光印', b: '血魔大陣' }, { n: '【廣寒界】真靈遺骨', s: '真靈威壓', b: '毀滅之光' }, { n: '【魔界始祖】六極聖祖', s: '六極幻影', b: '六道天魔境' }, { n: '【蜉蝣族】大乘太上', s: '控蟲秘術', b: '蜉蝣撼樹' }, { n: '【兇司】兇司王', s: '兇絕斬', b: '兇界降臨' }, { n: '【蟲母】螟蟲之母分身', s: '螟蟲海', b: '天道毀滅' }, { n: '【下界真仙】謫仙馬良', s: '仙家法術', b: '萬靈血璽' }, { n: '【飛升大劫】九九重雷劫', s: '五行神雷', b: '紫霄神雷劫' }
+      { n: '【七玄門】墨大夫', s: '銀針偷襲', b: '魔銀手' }, 
+      { n: '【野狼幫主】賈天龍', s: '鐵衛護陣', b: '天羅地網' }, 
+      { n: '【黃楓谷】陸師兄', s: '青風劍訣', b: '狂風絕息' }, 
+      { n: '【天涯閣】狂人封岳', s: '黃羅傘護體', b: '踏雲靴突襲' }, 
+      { n: '【血色禁地】墨蛟', s: '巨尾掃擊', b: '黑色毒火' }, 
+      { n: '【鬼靈門少主】王蟬', s: '鬼靈步', b: '血靈大法' }, 
+      { n: '【燕家堡】燕家老祖', s: '燕家機關', b: '天羅陣' }, 
+      { n: '【黑煞教】血侍', s: '妖化之軀', b: '血咒術' }, 
+      { n: '【黑煞教主】越皇化身', s: '血靈光波', b: '黑蛟血爪' }, 
+      { n: '【極陰徒弟】烏丑', s: '玄陰魔氣', b: '極陰真火' }, 
+      { n: '【妙音門叛徒】趙長老', s: '迷音陣', b: '妙音殺網' }, 
+      { n: '【八級妖修】毒蛟', s: '蛟龍水箭', b: '碧綠毒丹' }, 
+      { n: '【六道傳人】溫天仁', s: '魔雷術', b: '八門金光鏡' }, 
+      { n: '【慕蘭神師】仲大仙師', s: '五行靈術', b: '木生大術' }, 
+      { n: '【陰羅宗主】房宗主', s: '鬼羅幡動', b: '陰羅幽火' }, 
+      { n: '【大晉皇族】葉家大長老', s: '皇家秘術', b: '天威降臨' }, 
+      { n: '【星海霸主】六道極聖', s: '魔道秘術', b: '六極真魔功' }, 
+      { n: '【冰海之主】冰鳳', s: '極寒冰刺', b: '絕對冰封' }, 
+      { n: '【突兀族】天瀾聖獸分身', s: '聖獸之威', b: '天瀾狂煞' }, 
+      { n: '【九幽宗】九幽老魔', s: '幽冥鬼氣', b: '九幽鎖魂' }, 
+      { n: '【昆吾魔化】元剎聖祖化身', s: '黑魔匕首', b: '元剎魔域' }, 
+      { n: '【飛靈聖子】赤魔', s: '赤魔炎', b: '飛靈聖火' }, 
+      { n: '【地淵妖物】木靈妖王', s: '木靈刺', b: '森羅萬象' }, 
+      { n: '【夜叉族】王級尊者', s: '夜叉冥水', b: '夜叉真身' }, 
+      { n: '【地淵霸主】地血老鬼', s: '血道秘術', b: '紫血傀儡爆' }, 
+      { n: '【角蚩族】長尊', s: '角蚩秘術', b: '圖騰真身' }, 
+      { n: '【魔族】血光聖祖化身', s: '血光印', b: '血魔大陣' }, 
+      { n: '【廣寒界】真靈遺骨', s: '真靈威壓', b: '毀滅之光' }, 
+      { n: '【魔界始祖】六極聖祖', s: '六極幻影', b: '六道天魔境' }, 
+      { n: '【蜉蝣族】大乘太上', s: '控蟲秘術', b: '蜉蝣撼樹' }, 
+      { n: '【兇司】兇司王', s: '兇絕斬', b: '兇界降臨' }, 
+      { n: '【蟲母】螟蟲之母分身', s: '螟蟲海', b: '天道毀滅' }, 
+      { n: '【下界真仙】謫仙馬良', s: '仙家法術', b: '萬靈血璽' }, 
+      { n: '【飛升大劫】九九重雷劫', s: '五行神雷', b: '紫霄神雷劫' }
     ]
 };
 
@@ -246,8 +282,7 @@ export default function App() {
     lifetimeStats: { kills: 0, focusCount: 0, totalCoins: 0 },
     unlockedTitles: [], equippedTitle: null, freeGacha: 0, epiphanyPills: 0, lastPillTime: 0,
     activeCompanion: null, companionKills: {}, karma: 0, unlockedKarma: [], lastDailyGacha: 0,
-    logs: ['[系統] 識海清明，天道印記已穩固。助道友仙運隆昌。'],
-    _t: String.fromCharCode(73, 110, 100, 101, 120, 51, 66, 97, 111, 70, 97, 110)
+    logs: ['[系統] 識海清明，天道印記已穩固。祝道友仙運隆昌。']
   };
 
   const [player, setPlayer] = useState(() => {
@@ -255,7 +290,9 @@ export default function App() {
       const saved = localStorage.getItem('xianxia_master_v69');
       if (saved) return { ...defaultPlayerState, ...JSON.parse(saved) };
       return defaultPlayerState;
-    } catch (e) { return defaultPlayerState; }
+    } catch (e) { 
+      return defaultPlayerState; 
+    }
   });
 
   const bellAudioRef = useRef(null);
@@ -291,12 +328,14 @@ export default function App() {
   const [globalStats, setGlobalStats] = useState({ focus: 0, ascensions: 0 });
 
   useEffect(() => {
-    const statsRef = ref(database, 'globalStats');
-    const unsubscribe = onValue(statsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data !== null) setGlobalStats({ focus: data.totalFocusCount || 0, ascensions: data.totalAscensions || 0 });
-    });
-    return () => unsubscribe();
+    try {
+      const statsRef = ref(database, 'globalStats');
+      const unsubscribe = onValue(statsRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data !== null) setGlobalStats({ focus: data.totalFocusCount || 0, ascensions: data.totalAscensions || 0 });
+      });
+      return () => unsubscribe();
+    } catch(e) {}
   }, []);
 
   useEffect(() => {
@@ -342,9 +381,15 @@ export default function App() {
     const isFinal = realmIdx === REALMS.length - 1;
     const isMajorBreakthrough = isMortal || isFinal || (realmIdx % 4 === 0 && realmIdx > 0);
     const majorRealmIdx = isMortal ? 0 : (isFinal ? 9 : Math.floor((realmIdx - 1) / 4) + 1);
-    let mData, isBoss = false, bossMult = 1, atkMult = 1;
+
+    let mData;
+    let isBoss = false;
+    let bossMult = 1;
+    let atkMult = 1;
+
     if (isReadyToBreakthrough) {
-        isBoss = true; mData = BOSS_DATA[realmIdx];
+        isBoss = true;
+        mData = BOSS_DATA[realmIdx];
         bossMult = isFinal ? 30 : (isMajorBreakthrough ? 6 : 2); 
         atkMult = isFinal ? 10.0 : (isMajorBreakthrough ? 2.5 : 1.5);
     } else {
@@ -358,8 +403,8 @@ export default function App() {
 
   const [monster, setMonster] = useState(() => {
     try {
-      const saved = localStorage.getItem('xianxia_monster');
-      if (saved) return JSON.parse(saved);
+      const savedMonster = localStorage.getItem('xianxia_monster');
+      if (savedMonster) return JSON.parse(savedMonster);
     } catch (e) {}
     return generateMonsterState(player.realmIndex, player.qi, player.qiToNext, player.hasAscended);
   });
@@ -404,13 +449,21 @@ export default function App() {
     if ((type === 'atk' || type === 'streak_cap') && (player.artifacts || []).filter(id => ARTIFACT_POOL.find(a => a.id === id)?.tags?.includes('sword')).length >= 2) mult += 0.4;
     if (type === 'qi' && player.arrays?.qi) mult += player.arrays.qi * 0.05;
     if (type === 'def' && player.arrays?.def) mult += player.arrays.def * 0.05;
+    
     if (player.activeCompanion) {
-        const k = player.companionKills?.[player.activeCompanion] || 0;
         const comp = COMPANIONS.find(c => c.id === player.activeCompanion);
-        const tIdx = getCompanionTier(k);
-        if (comp && comp.buffType === type && tIdx >= 0) mult += (comp.buffType === 'luck_floor' ? comp.tiers[tIdx] : comp.tiers[tIdx] / 100);
+        if (comp && comp.buffType === type) {
+            const kills = player.companionKills?.[comp.id] || 0;
+            const tIdx = getCompanionTier(kills);
+            if (tIdx >= 0) mult += (comp.buffType === 'luck_floor' ? comp.tiers[tIdx] : comp.tiers[tIdx] / 100);
+        }
     }
-    (player.unlockedKarma || []).forEach(kId => { const talent = KARMA_TALENTS.find(t => t.id === kId); if (talent && talent.val?.[type]) mult += talent.val[type]; });
+    
+    (player.unlockedKarma || []).forEach(kId => {
+        const talent = KARMA_TALENTS.find(t => t.id === kId);
+        if (talent && talent.val?.[type]) mult += talent.val[type];
+    });
+
     return mult;
   };
 
@@ -441,6 +494,25 @@ export default function App() {
   const canDailyGacha = (player.lastDailyGacha || 0) < dailyResetTime;
   const totalFreeGacha = (canDailyGacha ? 1 : 0) + (player.freeGacha || 0);
 
+  const handleExport = () => {
+    const { logs, ...saveData } = player;
+    const saveStr = btoa(encodeURIComponent(JSON.stringify(saveData)));
+    navigator.clipboard.writeText(saveStr).then(() => alert("【玉簡秘文】已複製至剪貼簿！")).catch(() => alert("複製失敗，請手動選取。"));
+  };
+
+  const handleImport = () => {
+    try {
+      const parsed = JSON.parse(decodeURIComponent(atob(importString.trim())));
+      if (parsed && parsed.realmIndex !== undefined) {
+        if (window.confirm("【奪舍警告】匯入將完全覆蓋進度，確認？")) {
+          setPlayer({ ...defaultPlayerState, ...parsed, logs: ['[系統] 跨界奪舍成功，神識與記憶已融合。'] });
+          setMonster(generateMonsterState(parsed.realmIndex, parsed.qi || 0, parsed.qiToNext || 250, parsed.hasAscended));
+          setImportString(''); setShowSaveModal(false); alert("奪舍成功！");
+        }
+      } else alert("秘文殘缺！");
+    } catch (e) { alert("玉簡毀損！"); }
+  };
+
   const addLog = (textOrArray) => {
     const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
     setPlayer(p => {
@@ -451,65 +523,197 @@ export default function App() {
 
   const handleReincarnation = () => {
     const isNascentSoul = player.realmIndex >= 13; 
-    let earnedKarma = isNascentSoul ? Math.max(0, player.realmIndex - 12) + (player.hasAscended ? 10 : 0) : 0;
-    let msg = isNascentSoul ? `【兵解輪迴】保留成就並獲取 ${earnedKarma} Karma？\n\n注意：境界、法寶、靈石將歸零。保留稱號、生涯數據與已解鎖靈根。` : "【天道無情】神魂不足以帶走因果，確定轉生？";
-    if (window.confirm(msg)) {
-        const nextKarma = (player.karma || 0) + earnedKarma;
-        const meta = { karma: nextKarma, unlockedKarma: player.unlockedKarma || [], unlockedTitles: player.unlockedTitles || [], equippedTitle: player.equippedTitle, lifetimeStats: player.lifetimeStats, companionKills: player.companionKills, totalFocusTime: player.totalFocusTime, freeGacha: player.freeGacha, lastDailyGacha: player.lastDailyGacha };
-        setPlayer({ ...defaultPlayerState, ...meta, logs: [`[${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}] 🔄 【輪迴】${isNascentSoul?'元嬰重生':'投胎轉世'}`] });
-        setMonster(generateMonsterState(0, 0, 250, false)); if (isNascentSoul) setShowKarmaModal(true); 
+    let confirmMsg = '';
+    let earnedKarma = 0;
+
+    if (isNascentSoul) {
+        earnedKarma = Math.max(0, player.realmIndex - 12) + (player.hasAscended ? 10 : 0);
+        confirmMsg = `【兵解輪迴】\n您已修至元嬰之上，神魂足以跨越生死！\n\n結算本世道果：\n- 境界底蘊：+${Math.max(0, player.realmIndex - 12)} 點\n- 飛升獎勵：+${player.hasAscended ? 10 : 0} 點\n總計可獲得：${earnedKarma} 點天道因果 (Karma)。\n\n※ 注意：所有靈石、法寶、境界將歸零。保留稱號、生涯數據與已解鎖天賦。\n\n確定要兵解重修嗎？`;
+    } else {
+        confirmMsg = `【天道無情】\n您尚未結成元嬰（需達到元嬰期），神魂太弱，無法在輪迴中保留因果。\n\n若此時強行兵解，將【無法獲得任何因果點 (Karma)】，一切修為與法寶皆化為烏有（僅保留生涯統計與稱號）。\n\n確定要放棄此生，重新投胎嗎？`;
     }
+    
+    if (window.confirm(confirmMsg)) {
+        const nextKarma = (player.karma || 0) + earnedKarma;
+        const metaData = {
+            karma: nextKarma, unlockedKarma: player.unlockedKarma || [],
+            unlockedTitles: player.unlockedTitles || [], equippedTitle: player.equippedTitle,
+            lifetimeStats: player.lifetimeStats, companionKills: player.companionKills,
+            totalFocusTime: player.totalFocusTime, freeGacha: player.freeGacha,
+            lastDailyGacha: player.lastDailyGacha 
+        };
+        
+        const logMsg = isNascentSoul ? '元嬰遁出，輪迴轉世成功，前世因果已化為今生底蘊。' : '神魂消散，重新投胎為人，前塵往事皆成雲煙。';
+        setPlayer({ ...defaultPlayerState, ...metaData, logs: [`[${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}] 🔄 【輪迴】${logMsg}`] });
+        setMonster(generateMonsterState(0, 0, 250, false));
+        if (isNascentSoul) setShowKarmaModal(true); 
+    }
+  };
+
+  const unlockKarmaTalent = (talentId, cost) => {
+      if ((player.karma || 0) >= cost) {
+          setPlayer(p => ({ ...p, karma: p.karma - cost, unlockedKarma: [...(p.unlockedKarma || []), talentId] }));
+      }
+  };
+
+  const handleHeal = () => {
+    if (player.coins >= healCost && player.vitality < maxVitality) {
+      const healAmount = Math.floor(maxVitality * 0.5);
+      setPlayer(p => ({ ...p, coins: p.coins - healCost, vitality: Math.min(maxVitality, p.vitality + healAmount) }));
+      setIsHealing(true); setTimeout(() => setIsHealing(false), 800);
+      addLog(`💊 【煉丹】吞服回春丹，恢復 ${formatNumber(healAmount)} 點氣血。`);
+    }
+  };
+
+  const handleRebuildBase = () => {
+    if (player.realmIndex === 0) { alert("已是一介凡人，無可散功。"); return; }
+    if (window.confirm("【天道警告】\n散功重修將使境界跌落一級！\n\n副作用：當前境界累積的修為將歸零。\n獲得：重置所有技能點與機緣祕籍，退還剩餘可用 SP。\n（您的生涯數據與道侶羈絆將永久保留）\n\n確認散功？")) {
+      const newRealm = player.realmIndex - 1;
+      const newQiToNext = Math.floor(250 * Math.pow(1.35, newRealm));
+      setPlayer(p => ({ ...p, realmIndex: newRealm, qi: 0, qiToNext: newQiToNext, basicSkills: {}, secretBooks: {}, activeCompanion: null }));
+      setMonster(generateMonsterState(newRealm, 0, newQiToNext, player.hasAscended)); 
+      addLog(`⚡ 【散功重修】自廢修為，境界跌落至 ${REALMS[newRealm].name}，經脈重塑，SP 全數返還！`);
+    }
+  };
+
+  const preCheckGiveUp = () => {
+    if (monster.isBoss && !player.hasAscended) { setShowGiveUpWarning(true); } else { executeGiveUp(); }
+  };
+
+  const executeGiveUp = () => {
+    setShowGiveUpWarning(false); setIsActive(false); setTargetEndTime(null);
+    
+    let actionLogs = [];
+    if (Math.random() < evadeRate) { 
+        actionLogs.push(`💨 【反撲】強行收功，但身法如鬼魅，成功閃避反噬！連擊不墜！`); 
+    } else {
+      setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
+      const pen = Math.min(Math.floor(maxVitality * 0.20 * (1/defMultiplier)), player.vitality * 0.8);
+      let nHp = player.vitality - pen, nS = player.streakCount, nQi = player.qi;
+      let fellFromBreakthrough = false;
+      
+      if (nHp <= 0) {
+          if (player.streakShields > 0) { 
+              nHp = Math.floor(maxVitality * 0.1); 
+              setPlayer(p => ({...p, streakShields: p.streakShields - 1})); 
+              actionLogs.push(`🛡️ 【反撲】法寶護主！強行收功險些喪命，鎖血 10% 擋下死劫！`); 
+          } else if (Math.random() < reviveRate) { 
+              nHp = maxVitality; 
+              actionLogs.push(`✨ 【反撲】強行收功致死！涅槃重生，轉危為安！`); 
+          } else { 
+              nHp = Math.floor(maxVitality * 0.5); nQi = Math.floor(player.qi * 0.8); nS = 0; 
+              actionLogs.push(`💀 【反撲】反噬過重！身死道消，損失 20% 修為與連擊！`); 
+              if (monster.isBoss && nQi < player.qiToNext && !player.hasAscended) fellFromBreakthrough = true;
+          }
+      } else { 
+          actionLogs.push(`🚨 【反撲】強行收功導致神魂震盪，承受 ${formatNumber(pen)} 傷害。`);
+          if (nS > 0) {
+              if (player.streakShields > 0) { 
+                  setPlayer(p => ({...p, streakShields: p.streakShields - 1})); 
+                  actionLogs.push(`🛡️ 【反撲】消耗 1 層護盾抵擋反噬，連擊未中斷！`); 
+              } else { 
+                  nS = 0; actionLogs.push(`📉 【反撲】靈壓潰散，連擊歸零。`); 
+              }
+          }
+      }
+      setPlayer(p => ({ ...p, qi: nQi, vitality: nHp, streakCount: nS }));
+      if (fellFromBreakthrough) {
+          actionLogs.push(`📉 【死劫】境界不穩，跌落玄關，宿敵消散！需重新積累底蘊。`);
+          setMonster(generateMonsterState(player.realmIndex, nQi, player.qiToNext, player.hasAscended));
+      }
+    }
+    setTimeLeft(focusDuration);
+    if (actionLogs.length > 0) addLog(actionLogs.reverse());
+  };
+
+  const handleSkipBreak = () => { setIsActive(false); setTargetEndTime(null); setMode('focus'); setTimeLeft(focusDuration); addLog(`[系統] 道友提前結束吐納。`); };
+
+  const getUnownedPool = (rarityTarget, currentArts, currentBooks) => {
+    const unownedArts = ARTIFACT_POOL.filter(a => a.rarity === rarityTarget && !currentArts.includes(a.id)).map(a => ({...a, poolType: 'art'}));
+    const unownedBooks = SECRET_BOOKS.filter(b => b.rarity === rarityTarget && !currentBooks[b.id]).map(b => ({...b, poolType: 'book'}));
+    return [...unownedArts, ...unownedBooks];
   };
 
   const handleComplete = (usedPill = false) => {
     const isUsingPill = usedPill === true; setIsActive(false); setTargetEndTime(null);
     if (mode === 'focus') {
       if (bellAudioRef.current) {
-          const p = bellAudioRef.current.play();
-          if (p !== undefined) p.catch(e => {});
+          const playPromise = bellAudioRef.current.play();
+          if (playPromise !== undefined) playPromise.catch(e => {});
       }
       setIsAttacking(true); setTimeout(() => setIsAttacking(false), 500);
       try { update(ref(database, 'globalStats'), { totalFocusCount: increment(1) }); } catch (e) {}
       
-      let nextPills = player.epiphanyPills || 0, nextLifetime = { ...player.lifetimeStats };
+      let nextPills = player.epiphanyPills || 0, nextLastPillTime = isUsingPill ? Date.now() : 0;
+      let nextLifetime = { ...player.lifetimeStats };
       let nextTotalFocusTime = (player.totalFocusTime || 0) + (isUsingPill ? 0 : focusDuration);
-      if (isUsingPill) { nextPills -= 1; } else { nextLifetime.focusCount += 1; }
+      let nextCompanionKills = { ...(player.companionKills || {}) };
+      let nextHistory = [...(player.history || [])];
+      let newArtifacts = [...(player.artifacts || [])];
+      let newSecretBooks = { ...(player.secretBooks || {}) };
+
+      let currentDrops = []; 
+      let actionLogs = [];
+
+      if (isUsingPill) { actionLogs.push(`💊 【歲月法則】吞服頓悟丹，瞬間出關！(不列入識海)`); nextPills -= 1; } 
+      else { nextLifetime.focusCount += 1; }
 
       const isCrit = Math.random() < critRate, damageBase = Math.floor(currentCombatPower * (focusDuration / 1500));
       const actualDamage = isCrit ? Math.floor(damageBase * critDmg) : damageBase;
       if (isCrit) { setIsCritStrike(true); setTimeout(() => setIsCritStrike(false), 600); }
 
-      const newHp = Math.max(0, monster.hp - actualDamage), timeRatio = focusDuration / 1500, curLuck = getMultiplier('luck_floor');
+      const newHp = Math.max(0, monster.hp - actualDamage);
+      const timeRatio = focusDuration / 1500, curLuck = getMultiplier('luck_floor');
       const passiveQi = Math.floor(50 * Math.pow(1.18, player.realmIndex + 1) * getMultiplier('qi') * timeRatio);
       const passiveCoin = Math.floor(50 * Math.pow(1.15, player.realmIndex + 1) * getMultiplier('stone') * curLuck * timeRatio);
 
       let nextQi = (player.qi || 0) + passiveQi, nextCoins = (player.coins || 0) + passiveCoin, nextVitality = player.vitality || maxVitality;
       let nextRealm = player.realmIndex, nextQiToNext = player.qiToNext, nextHasAscended = player.hasAscended;
       let nextStreak = (player.streakCount || 0) + 1, nextShields = maxStreakShields;
-      let isDeadFromCounter = false, isKilled = false, killedBoss = false, currentDrops = [], actionLogs = [];
+      let isDeadFromCounter = false, isKilled = false, killedBoss = false, fellFromBreakthrough = false;
 
       if (!isUsingPill) nextLifetime.totalCoins += passiveCoin;
+      
+      if (isCrit && Math.random() < 0.30) {
+        const ls = Math.floor(maxVitality * (getMultiplier('lifesteal') - 1));
+        if (ls > 0) { nextVitality = Math.min(maxVitality, nextVitality + ls); actionLogs.push(`💉 【真靈吸吮】爆擊恢復了 ${formatNumber(ls)} 氣血！`); }
+      }
+
       let dmgMsg = isCrit ? `🔥 【爆擊】造成 ${formatNumber(actualDamage)} 傷害。` : `⚔️ 【運功】造成 ${formatNumber(actualDamage)} 傷害。`;
 
       if (newHp === 0) {
         isKilled = true; killedBoss = monster.isBoss; setIsKilling(true); setTimeout(() => setIsKilling(false), 800); 
         const kQi = Math.floor(300 * Math.pow(1.18, monster.tier) * getMultiplier('qi')), kCoin = Math.floor(800 * Math.pow(1.15, monster.tier) * getMultiplier('stone') * curLuck);
-        nextQi += kQi; nextCoins += kCoin; if (!isUsingPill) { nextLifetime.kills += 1; nextLifetime.totalCoins += kCoin; }
+        nextQi += kQi; nextCoins += kCoin;
+        if (!isUsingPill) { nextLifetime.kills += 1; nextLifetime.totalCoins += kCoin; }
         
-        if (monster.isBoss && !nextHasAscended) {
-            if (monster.name.includes('九九重雷劫')) {
+        let compLog = '';
+        if (player.activeCompanion) {
+            const cId = player.activeCompanion;
+            const oKills = nextCompanionKills[cId] || 0;
+            nextCompanionKills[cId] = oKills + 1;
+            if ([1, 10, 50, 100].includes(oKills+1)) compLog = `🌸 與【${COMPANIONS.find(c=>c.id===cId).name}】羈絆達到「${COMPANION_TIERS[getCompanionTier(oKills+1)].name}」！`;
+        }
+
+        if (monster.isBoss) {
+            if (monster.name.includes('九九重雷劫') && !player.hasAscended) {
                 try { update(ref(database, 'globalStats'), { totalAscensions: increment(1) }); } catch(e) {}
                 nextHasAscended = true; actionLogs.push(`${dmgMsg} 🌌 【破空飛升】位列仙班！`);
                 setCelebration({ name: '飛升仙界！成就無上真仙！', desc: FEEDBACK_TEXTS.boss[0] });
-            } else {
+            } else if (nextRealm < REALMS.length - 1) {
                 nextRealm++; nextQi = Math.max(0, nextQi - nextQiToNext); nextQiToNext = Math.floor(nextQiToNext * 1.35);
+                if (!isUsingPill) nextHistory.push({ name: REALMS[nextRealm].name, time: nextTotalFocusTime });
                 actionLogs.push(`${dmgMsg} ☄️ 【突破死劫】晉升至${REALMS[nextRealm].name}！`);
                 setCelebration({ name: REALMS[nextRealm].name, desc: FEEDBACK_TEXTS.boss[Math.floor(Math.random() * FEEDBACK_TEXTS.boss.length)] });
             }
-        } else { actionLogs.push(`${dmgMsg} 🩸 【斬殺】成功擊敗${monster.name}！`); }
+        } else {
+            actionLogs.push(`${dmgMsg} 🩸 【斬殺】成功擊敗${monster.name}！`);
+        }
+
         actionLogs.push(`💰 【戰利品】奪得修為 ${formatNumber(passiveQi + kQi)}，靈石 ${formatNumber(passiveCoin + kCoin)}。`);
-        if (Math.random() < 0.10) { nextPills += 1; currentDrops.push('💊 頓悟丹'); actionLogs.push(`🎁 【天降機緣】獲得【頓悟丹】x1！`); }
-        
+
+        let rareDrops = [];
+        if (Math.random() < 0.10) { nextPills += 1; currentDrops.push('💊 頓悟丹'); rareDrops.push('【頓悟丹】x1'); }
         if (Math.random() < (0.20 * curLuck)) {
             let targetRarity = 'COMMON', accum = 0;
             const roll = Math.random(), sortedRarities = Object.entries(RARITY).sort((a,b) => a[1].weight - b[1].weight);
@@ -528,42 +732,105 @@ export default function App() {
 
             if (combinedPool.length > 0) {
                 const drop = combinedPool[Math.floor(Math.random() * combinedPool.length)];
-                if (drop.poolType === 'art') { newArtifacts.push(drop.id); currentDrops.push(`🏺 ${RARITY[searchRarity].name}法寶「${drop.name}」`); actionLogs.push(`🎁 【機緣】獲得法寶「${drop.name}」！`); }
-                else { newSecretBooks[drop.id] = 1; currentDrops.push(`📜 ${RARITY[searchRarity].name}功法「${drop.name}」`); actionLogs.push(`🎁 【機緣】領悟功法「${drop.name}」！`); }
+                if (drop.poolType === 'art') { newArtifacts.push(drop.id); currentDrops.push(`🏺 ${RARITY[searchRarity].name}法寶「${drop.name}」`); rareDrops.push(`法寶「${drop.name}」`); }
+                else { newSecretBooks[drop.id] = 1; currentDrops.push(`📜 ${RARITY[searchRarity].name}功法「${drop.name}」`); rareDrops.push(`功法「${drop.name}」`); }
             } else { 
                 const cCoins = Math.floor((0.1 * gachaCost) / RARITY[targetRarity].weight); nextCoins += cCoins; if (!isUsingPill) nextLifetime.totalCoins += cCoins; 
                 actionLogs.push(`✨ 【天道反哺】此界寶物已盡數入您手中！補償 ${formatNumber(cCoins)} 靈石！`); 
             }
         }
+
+        if (rareDrops.length > 0 || compLog) {
+            let dropStr = rareDrops.length > 0 ? `🎁 【天降機緣】獲得 ${rareDrops.join('、')}！` : '';
+            if (compLog) dropStr += ` ${compLog}`;
+            actionLogs.push(dropStr.trim());
+        }
+
       } else {
+        // Survived
         if (monster.isBoss && nextHasAscended) {
+            // 【修復】仙界巡禮不觸發反撲
             actionLogs.push(`${dmgMsg} 🌟 仙氣縹緲，平和指點後輩，不染塵埃。`);
+            actionLogs.push(`💨 【吐納】獲修為 ${formatNumber(passiveQi)}，靈石 ${formatNumber(passiveCoin)}。`);
         } else {
             actionLogs.push(`${dmgMsg} 妖獸剩餘 ${formatNumber(newHp)} 氣血。`);
+            actionLogs.push(`💨 【吐納】獲修為 ${formatNumber(passiveQi)}，靈石 ${formatNumber(passiveCoin)}。`);
+
             const isBigAtk = Math.random() < 0.20, atkName = isBigAtk ? monster.bAtkName : monster.sAtkName;
-            if (Math.random() < evadeRate) actionLogs.push(`💨 【反撲】閃避了【${atkName}】！`);
-            else {
+            if (Math.random() < evadeRate) {
+                actionLogs.push(`💨 【反撲】身形如鬼魅，閃避了【${atkName}】！`);
+            } else {
                 setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
-                const actualDmg = Math.max(1, Math.floor(Math.floor(monster.atk * (isBigAtk ? 2.5 : 1.0)) * (dmgTakenPct / 100)));
+                const rawDmg = Math.floor(monster.atk * (isBigAtk ? 2.5 : 1.0) * (1 + (Math.random() - 0.5)*0.4));
+                const actualDmg = Math.max(1, Math.floor(rawDmg * (dmgTakenPct / 100)));
                 nextVitality -= actualDmg;
+
                 if (nextVitality <= 0) {
-                    if (nextShields > 0) { nextShields -= 1; nextVitality = Math.floor(maxVitality * 0.1); actionLogs.push(`🛡️ 【反護】法寶鎖血 10% 擋下死劫！`); }
-                    else if (Math.random() < reviveRate) { nextVitality = maxVitality; actionLogs.push(`✨ 【反護】涅槃重生！`); }
-                    else { nextVitality = Math.floor(maxVitality * 0.5); nextQi = Math.floor(nextQi * 0.8); nextStreak = 0; isDeadFromCounter = true; actionLogs.push(`💀 【反撲】不幸身死，修為損失 20%！`); }
-                } else actionLogs.push(`💥 【反撲】承受了 ${formatNumber(actualDmg)} 傷害。`);
+                    if (nextShields > 0) { nextShields -= 1; nextVitality = Math.floor(maxVitality * 0.1) || 1; actionLogs.push(`🛡️ 【反撲】妖獸施展【${atkName}】！法寶護主，鎖血 10% 擋下死劫！`); }
+                    else if (Math.random() < reviveRate) { nextVitality = maxVitality; actionLogs.push(`✨ 【反撲】妖獸施展【${atkName}】造成致命傷！涅槃重生，轉危為安！`); }
+                    else { 
+                        nextVitality = Math.floor(maxVitality * 0.5); nextQi = Math.floor(nextQi * 0.8); nextStreak = 0; isDeadFromCounter = true; 
+                        actionLogs.push(`💀 【反撲】妖獸施展【${atkName}】造成 ${formatNumber(actualDmg)} 傷害。身死道消，損失 20% 修為！`); 
+                        if (monster.isBoss && nextQi < nextQiToNext && !nextHasAscended) fellFromBreakthrough = true;
+                    }
+                } else { actionLogs.push(`💥 【反撲】妖獸施展【${atkName}】，承受了 ${formatNumber(actualDmg)} 點傷害。`); }
             }
         }
-        actionLogs.push(`💨 【吐納】獲修為 ${formatNumber(passiveQi)}，靈石 ${formatNumber(passiveCoin)}。`);
       }
-      if (!killedBoss) { const t = isKilled ? 'kill' : 'focus'; setToast({ type: t, text: FEEDBACK_TEXTS[t][Math.floor(Math.random() * FEEDBACK_TEXTS[t].length)], drops: currentDrops }); setTimeout(() => setToast(null), 5000); }
-      const nextMonster = (newHp === 0 || (isDeadFromCounter && monster.isBoss)) ? generateMonsterState(nextRealm, nextQi, nextQiToNext, nextHasAscended) : { ...monster, hp: newHp };
+      
+      if (fellFromBreakthrough) actionLogs.push(`📉 【死劫】境界不穩，跌落玄關，宿敵消散！需重新積累底蘊。`);
+
+      if (!isDeadFromCounter && Math.random() < (0.10 * curLuck)) {
+        const fRoll = Math.random() * 100;
+        if (fRoll < 25) { const eQi = Math.floor(passiveQi * 2); nextQi += eQi; actionLogs.push(`🌈 【奇遇】偶遇靈泉，額外獲 ${formatNumber(eQi)} 修為！`); }
+        else if (fRoll < 50) { const eC = Math.floor(passiveCoin * 3); nextCoins += eC; if (!isUsingPill) nextLifetime.totalCoins += eC; actionLogs.push(`🌈 【奇遇】發現古修洞府，獲 ${formatNumber(eC)} 靈石！`); }
+        else if (fRoll < 75) { const h = Math.floor(maxVitality * 0.3); nextVitality = Math.min(maxVitality, nextVitality + h); actionLogs.push(`🌈 【奇遇】天道頓悟，恢復 ${formatNumber(h)} 氣血！`); }
+        else if (fRoll < 90) { nextPills += 1; currentDrops.push('💊 頓悟丹'); actionLogs.push(`🌈 【奇遇】天降機緣，獲【頓悟丹】x1！`); }
+        else if (fRoll < 98) { if (Math.random() < 0.5) { nextBaseCombat += 5; actionLogs.push(`⚡ 【天雷淬體】肉身脫胎換骨，永久戰力 +5！`); } else { nextBaseMaxVitality += 5; actionLogs.push(`⚡ 【天雷淬體】經脈拓寬，永久氣血上限 +5！`); } }
+        else {
+            let targetRarity = 'COMMON', accum = 0;
+            const roll = Math.random(), sortedRarities = Object.entries(RARITY).sort((a,b) => a[1].weight - b[1].weight);
+            for (let [r, data] of sortedRarities) { accum += data.weight * curLuck; if (roll < accum) { targetRarity = r; break; } }
+            let combinedPool = getUnownedPool(targetRarity, newArtifacts, newSecretBooks);
+            if (combinedPool.length === 0) { for (let i = RARITIES_ORDER.indexOf(targetRarity) - 1; i >= 0; i--) { combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks); if (combinedPool.length > 0) { targetRarity = RARITIES_ORDER[i]; break; } } }
+            if (combinedPool.length === 0) { for (let i = RARITIES_ORDER.indexOf(targetRarity) + 1; i < RARITIES_ORDER.length; i++) { combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks); if (combinedPool.length > 0) { targetRarity = RARITIES_ORDER[i]; break; } } }
+            if (combinedPool.length > 0) {
+                const drop = combinedPool[Math.floor(Math.random() * combinedPool.length)];
+                if (drop.poolType === 'art') { newArtifacts.push(drop.id); currentDrops.push(`🏺 ${RARITY[targetRarity].name}法寶「${drop.name}」`); actionLogs.push(`🏺 【異寶出世】霞光萬丈，喜獲法寶「${drop.name}」！`); }
+                else { newSecretBooks[drop.id] = 1; currentDrops.push(`📜 ${RARITY[targetRarity].name}功法「${drop.name}」`); actionLogs.push(`📜 【殘卷現世】機緣巧合，領悟功法「${drop.name}」！`); }
+            } else { const cCoins = Math.floor((0.1 * gachaCost) / RARITY[topRarity].weight); nextCoins += cCoins; if (!isUsingPill) nextLifetime.totalCoins += cCoins; actionLogs.push(`✨ 【天道反哺】此界寶物已盡數入您手中！補償 ${formatNumber(cCoins)} 靈石！`); }
+        }
+      }
+
+      if (!killedBoss) { 
+          const t = isKilled ? 'kill' : 'focus'; 
+          setToast({ type: t, text: FEEDBACK_TEXTS[t][Math.floor(Math.random() * FEEDBACK_TEXTS[t].length)], drops: currentDrops }); 
+          setTimeout(() => setToast(null), 5000); 
+      }
+
+      const nextMonster = (fellFromBreakthrough || newHp === 0) ? generateMonsterState(nextRealm, nextQi, nextQiToNext, nextHasAscended) : { ...monster, hp: newHp };
       setMonster(nextMonster);
-      setPlayer(p => ({ ...p, realmIndex: nextRealm, qi: nextQi, qiToNext: nextQiToNext, coins: nextCoins, vitality: nextVitality, streakCount: nextStreak, streakShields: nextShields, totalFocusTime: nextTotalFocusTime, artifacts: (isKilled && Math.random()<0.05) ? [...p.artifacts, ARTIFACT_POOL[0].id] : p.artifacts, epiphanyPills: nextPills, hasAscended: nextHasAscended, logs: [...actionLogs.reverse().map(m => `[${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}] ${m}`), ...(p.logs || [])].slice(0, 100) }));
+      
+      setPlayer(p => {
+          const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+          const formattedLogs = actionLogs.reverse().map(msg => `[${timeStr}] ${msg}`);
+          return { ...p, realmIndex: nextRealm, qi: nextQi, qiToNext: nextQiToNext, coins: nextCoins, vitality: nextVitality, baseCombat: nextBaseCombat, baseMaxVitality: nextBaseMaxVitality, streakCount: nextStreak, streakShields: nextShields, totalFocusTime: nextTotalFocusTime, artifacts: newArtifacts, secretBooks: newSecretBooks, epiphanyPills: nextPills, lastPillTime: nextLastPillTime, hasAscended: nextHasAscended, history: nextHistory, lifetimeStats: nextLifetime, companionKills: nextCompanionKills, logs: [...formattedLogs, ...(p.logs || [])].slice(0, 100) };
+      });
       setMode('break'); setTimeLeft(5 * 60);
+
     } else { 
-      if (breakAudioRef.current) { const p = breakAudioRef.current.play(); if (p !== undefined) p.catch(e => {}); }
-      setMode('focus'); setTimeLeft(focusDuration); setToast({ type: 'break', text: FEEDBACK_TEXTS['break'][Math.floor(Math.random() * FEEDBACK_TEXTS['break'].length)] }); setTimeout(() => setToast(null), 5000);
-      setPlayer(p => ({ ...p, vitality: Math.min(maxVitality, p.vitality + Math.floor(maxVitality * healPct)), streakShields: maxStreakShields }));
+      if (breakAudioRef.current) {
+          const playPromise = breakAudioRef.current.play();
+          if (playPromise !== undefined) playPromise.catch(e => {});
+      }
+      setMode('focus'); setTimeLeft(focusDuration); 
+      setToast({ type: 'break', text: FEEDBACK_TEXTS['break'][Math.floor(Math.random() * FEEDBACK_TEXTS['break'].length)] });
+      setTimeout(() => setToast(null), 5000);
+      setPlayer(p => {
+          const h = Math.floor(maxVitality * healPct);
+          const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+          return { ...p, vitality: Math.min(maxVitality, p.vitality + h), streakShields: maxStreakShields, logs: [`[${timeStr}] 🌧️ 【靈雨降臨】吐納調息圓滿，恢復了 ${formatNumber(h)} 氣血。`, ...(p.logs || [])].slice(0, 100) };
+      });
     }
   };
 
@@ -608,7 +875,7 @@ export default function App() {
   const toggleTimer = () => { if (!isActive) { setIsActive(true); setTargetEndTime(Date.now() + (timeLeft * 1000)); } };
 
   return (
-    <div className={`min-h-screen text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-colors duration-500 ${isActive ? 'justify-center py-4 bg-[#020617]' : 'pt-10'} ${isCollapsing ? 'bg-red-950/80 animate-shake' : isKilling ? 'bg-emerald-950/60' : isCritStrike ? 'bg-rose-900/40' : ''}`} style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&q=80")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }} data-v={btoa('xianxia_index3baofan')}>
+    <div className={`min-h-screen text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-colors duration-500 ${isActive ? 'justify-center py-4 bg-[#020617]' : 'pt-10'} ${isCollapsing ? 'bg-red-950/80 animate-shake' : isKilling ? 'bg-emerald-950/60' : isCritStrike ? 'bg-rose-900/40' : ''}`} style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&q=80")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }} data-v="eGlhbnhpYV9pbmRleDNiYW9mYW4=">
       <style>{` .animate-fade-in-down { animation: fadeInDown 0.5s ease-out forwards; } .animate-soft-fade-in { animation: softFadeIn 0.8s ease-out forwards; } @keyframes softFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } @keyframes fadeInDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } } .animate-shake { animation: shake 0.4s both; } @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } } .custom-scrollbar::-webkit-scrollbar { width: 3px; height: 3px;} .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; } .no-scrollbar::-webkit-scrollbar { display: none; } `}</style>
 
       {toast && (
@@ -626,7 +893,7 @@ export default function App() {
       {showGiveUpWarning && (
         <div className="fixed inset-0 z-[800] bg-black/95 backdrop-blur-2xl p-6 flex flex-col items-center justify-center font-bold">
           <div className="w-full max-w-lg bg-rose-950/80 p-8 rounded-2xl border border-rose-500/50 shadow-[0_0_80px_rgba(244,63,94,0.3)] flex flex-col items-center text-center">
-            <ShieldAlert size={64} className="text-rose-500 mb-6 animate-pulse"/>
+            <AlertTriangle size={64} className="text-rose-500 mb-6 animate-pulse"/>
             <h2 className="text-2xl font-black text-white tracking-widest uppercase mb-4">天道警示</h2>
             <p className="text-rose-200 text-sm mb-8">突破死劫中，強行收功將遭受極重反噬。確認放棄？</p>
             <div className="flex gap-4 w-full"> <button onClick={() => setShowGiveUpWarning(false)} className="flex-1 py-4 bg-white/10 text-white rounded-xl text-sm font-black border border-white/20">繼續運功</button> <button onClick={executeGiveUp} className="flex-1 py-4 bg-rose-600 text-white rounded-xl text-sm font-black shadow-lg">強行收功</button> </div>
@@ -639,7 +906,7 @@ export default function App() {
           <div className="w-full max-w-4xl bg-slate-900/90 p-6 md:p-8 rounded-2xl border border-purple-500/30 flex flex-col max-h-[85vh] shadow-[0_0_50px_rgba(168,85,247,0.2)] relative">
             <button onClick={() => setShowKarmaModal(false)} className="absolute top-4 right-4 p-2 text-white/50"><X size={24}/></button>
             <div className="flex flex-col items-center mb-8 border-b border-white/10 pb-6">
-                <Fingerprint size={32} className="text-purple-400 mb-3 animate-pulse"/>
+                <Activity size={32} className="text-purple-400 mb-3 animate-pulse"/>
                 <h2 className="text-xl font-black text-purple-400 tracking-widest uppercase">輪迴靈根</h2>
                 <div className="mt-4 bg-purple-950/50 border border-purple-500/50 px-6 py-2 rounded-full text-purple-200 font-mono text-lg font-black shadow-inner"> Karma: {player.karma || 0} </div>
             </div>
@@ -656,7 +923,7 @@ export default function App() {
       )}
 
       {celebration && (
-        <div className="fixed inset-0 z-[800] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-12 cursor-pointer text-center" onClick={() => setCelebration(null)}>
+        <div className="fixed inset-0 z-[800] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-12 cursor-pointer text-center animate-soft-fade-in" onClick={() => setCelebration(null)}>
           <Crown size={80} className="text-yellow-500/80 mb-6 animate-bounce drop-shadow-[0_0_30px_rgba(250,204,21,0.5)]" />
           <h2 className="text-3xl font-black text-white mb-2 tracking-widest">{celebration.name.includes('無上真仙') ? '渡劫成功・羽化登仙' : '突破死劫'}</h2>
           <p className="text-xl text-emerald-400 tracking-widest mb-6">【{celebration.name}】</p>
@@ -711,7 +978,7 @@ export default function App() {
               ))}
             </div>
             <div className="p-5 md:p-10 overflow-y-auto flex-1 custom-scrollbar">
-              {activeTab === 'log' && ( <div className="space-y-4 animate-pop-in pb-10"> {(player.logs || []).map((e, i) => (<div key={i} className={`p-5 rounded-xl border border-white/20 text-[11px] leading-relaxed transition-all ${i===0?'bg-white/10 text-white shadow-lg':'bg-black/60 border-white/10 text-white/40'}`}>{e}</div>))} </div> )}
+              {activeTab === 'log' && ( <div className="space-y-4 animate-pop-in pb-10"> {(player.logs || []).map((e, i) => (<div key={i} className={`p-5 rounded-xl border border-white/20 text-[11px] leading-relaxed transition-all ${i===0?'bg-white/10 text-white shadow-lg':'bg-black/60 border-white/10 text-white/40'}`}>{String(e)}</div>))} </div> )}
               {activeTab === 'skills' && ( <div className="space-y-12 animate-pop-in"> <div className="flex justify-between items-end mb-6 border-b border-white/20 pb-4"> <h3 className="text-white/60 text-[10px] uppercase tracking-widest">功法參悟</h3> <span className="text-cyan-400 font-mono text-sm">SP: {availableSP}</span> </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"> {BASIC_SKILLS.map(s => { const lvl = player.basicSkills?.[s.id] || 0; return ( <div key={s.id} className="p-5 rounded-xl border border-white/20 bg-white/5 flex flex-col justify-between h-44"> <div><h4 className="text-white font-bold text-xs uppercase">{s.name} <span className="opacity-50 float-right">Lv.{lvl}</span></h4><p className="text-[10px] text-white/50 mt-3 italic">{s.desc}</p></div> <button onClick={() => { if(availableSP >= 1 && lvl < s.maxLvl) setPlayer(p => ({...p, basicSkills: {...p.basicSkills, [s.id]: lvl+1}})) }} disabled={availableSP < 1 || lvl >= s.maxLvl} className="w-full py-3 bg-white/10 text-white rounded-lg text-[10px] font-black border border-white/20 disabled:opacity-30">研習 (1 SP)</button> </div> );})} </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> {sortedSecretBooks.map(book => { const lvl = player.secretBooks?.[book.id] || 0, learned = lvl > 0, upCost = Math.floor(10000 * Math.pow(2, lvl) * forgeDiscount); return ( <div key={book.id} className={`p-6 rounded-2xl border transition-all flex flex-col justify-between min-h-[12rem] ${learned ? 'bg-emerald-950/40 border-emerald-500/50 shadow-xl' : 'bg-black/60 border-white/10 opacity-60'}`}> <div className="flex items-start gap-4"><div className={`p-3 rounded-xl ${learned ? 'bg-emerald-500 text-black' : 'bg-slate-800'}`}><BookOpen size={20}/></div><div className="flex-1"><h4 className="font-black text-sm tracking-widest text-white">{book.name} {learned && <span className="text-[10px] opacity-60 ml-2">Lv.{lvl}</span>}</h4><p className="text-[11px] opacity-70 mt-2 text-white">{learned ? book.desc : '歷練隨機獲得。'}</p></div></div> {learned && lvl < 5 && <button onClick={() => { const cost = Math.floor(10000 * Math.pow(2, lvl) * forgeDiscount); if (player.coins >= cost && availableSP >= 1) setPlayer(p => ({ ...p, coins: p.coins - cost, secretBooks: { ...p.secretBooks, [book.id]: lvl + 1 } })); }} disabled={player.coins < upCost || availableSP < 1} className="mt-4 w-full py-3 bg-white/10 hover:bg-emerald-600 text-white rounded-xl text-[10px] font-black border border-white/20 transition-all disabled:opacity-30">升級 (${formatNumber(upCost)} + 1 SP)</button>} </div> );})} </div> </div> )}
@@ -728,7 +995,7 @@ export default function App() {
                  <button onClick={() => setShowRealmGuide(true)} className="flex items-center justify-center gap-2 text-white/60 bg-white/5 py-3.5 rounded-full border border-white/10 backdrop-blur-md shadow-lg"> <BookOpen size={14}/> 境界 </button>
               </div>
               <div className="flex gap-4">
-                  <button onClick={() => setShowKarmaModal(true)} className={`flex items-center justify-center gap-2 text-purple-400 bg-purple-950/40 py-3 px-6 rounded-full border border-purple-500/30 font-black tracking-widest shadow-xl transition-all ${player.hasAscended ? 'animate-pulse ring-2 ring-purple-500' : ''}`}> <Fingerprint size={16}/> 輪迴靈根 </button>
+                  <button onClick={() => setShowKarmaModal(true)} className={`flex items-center justify-center gap-2 text-purple-400 bg-purple-950/40 py-3 px-6 rounded-full border border-purple-500/30 font-black tracking-widest shadow-xl transition-all ${player.hasAscended ? 'animate-pulse ring-2 ring-purple-500' : ''}`}> <Activity size={16}/> 輪迴靈根 </button>
                   <button onClick={() => setShowSaveModal(true)} className="flex items-center justify-center gap-2 text-cyan-400 bg-cyan-950/40 py-3 px-6 rounded-full border border-cyan-500/30 font-black tracking-widest shadow-xl"> <ScrollText size={16}/> 玉簡傳功 </button>
               </div>
               <div className="flex items-center justify-center gap-6 mt-4">
@@ -736,7 +1003,6 @@ export default function App() {
                   <button onClick={handleReincarnation} className={`transition-colors flex items-center gap-1 ${player.hasAscended ? 'text-rose-400 hover:text-rose-300 font-black animate-pulse' : 'text-rose-500/60 hover:text-rose-400'}`}><RefreshCw size={12}/> 兵解輪迴</button>
               </div>
               <p className="mt-8 relative z-20">Created by 指數三寶飯 with Gemini</p>
-              <div className="hidden">{decodeURIComponent('%E6%8C%87%E6%95%B8%E4%B8%89%E5%AF%B6%E9%A3%AF')}</div>
             </footer>
           </div>
         </div>
