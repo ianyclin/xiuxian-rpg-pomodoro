@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, BarChart3, Save, Pill, HelpCircle, ShieldAlert, Award, Heart, Copy, Download } from 'lucide-react';
+import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, BarChart3, Save, Pill, HelpCircle, ShieldAlert, Award, Heart, Copy, Download, FileText } from 'lucide-react';
 
 /**
  * ========================================================
@@ -27,6 +27,60 @@ const database = getDatabase(app);
  * 1. 靜態數據定義 (Lore & Database)
  * ========================================================
  */
+
+const CHANGELOG_DATA = [
+  {
+    version: "v2.0.0",
+    title: "紅顏道侶與玉簡傳功",
+    desc: "天地異變，仙途不再孤單；神識突破空間限制。",
+    changes: [
+      "新增【仙途伴侶】：結識原著8位紅顏知己，同行雙修獲得專屬增益。",
+      "新增【玉簡傳功】：支援跨裝置進度匯出與匯入 (Base64 防呆加密)。",
+      "優化【顛倒五行陣】：升級曲線平滑化 (1.35x)，文本描述精準化。",
+      "介面【仙影朦朧】：未解鎖道侶與法寶統一隱藏視覺，保留神祕感。"
+    ]
+  },
+  {
+    version: "v1.8.0",
+    title: "妖獸反撲與生死大劫",
+    desc: "天道無情，修仙之路步步殺機。",
+    changes: [
+      "實裝【妖獸反撲】：專注結束未擊殺妖獸，將面臨致命反擊（20%觸發大招）。",
+      "實裝【涅槃重生】：氣血歸零時的最後保命手段，新增「高階替身符」與「三轉重元功」。",
+      "修復【法寶護主】：連擊護盾現可強制鎖血 10% 擋下妖獸致死打擊。"
+    ]
+  },
+  {
+    version: "v1.5.0",
+    title: "屬性極限與轉化法則",
+    desc: "修煉無止境，溢出之真元將化為更強的殺招。",
+    changes: [
+      "實裝【屬性溢出轉化】：閃避溢出(>75%)轉連擊上限，爆擊溢出(>95%)轉爆傷。",
+      "新增【屬性極限報告】：可於選單查看所有底層乘區與極限數值。",
+      "實裝【劍陣共鳴】：裝備2把以上飛劍類法寶，獲得額外戰力與連擊加成。"
+    ]
+  },
+  {
+    version: "v1.2.0",
+    title: "萬寶樓與機緣祕籍",
+    desc: "上古遺寶現世，氣運加身者得之。",
+    changes: [
+      "新增【萬寶樓抽獎】：消耗靈石抽取凡品至造化至寶。",
+      "新增【功法祕籍】：14種原著經典功法，消耗 SP 進行參悟升級。",
+      "新增【隨機氣運】：結算時有 10% 基礎機率觸發天降機緣與7大奇遇。"
+    ]
+  },
+  {
+    version: "v1.0.0",
+    title: "天道初開 (Core System)",
+    desc: "凡人修仙專注法器正式運轉。",
+    changes: [
+      "核心【番茄鐘專注】機制上線，支援離線運算。",
+      "實裝【境界突破】系統，從一介凡人至九九重劫。",
+      "實裝【洞府淬煉】基礎升級與打坐調息回血功能。"
+    ]
+  }
+];
 
 const REALM_COLORS = {
   emerald: { text: 'text-emerald-400', border: 'border-emerald-500/30', bg: 'bg-emerald-500' },
@@ -396,8 +450,9 @@ export default function App() {
   const [showStatsReport, setShowStatsReport] = useState(false);
   const [showGuide, setShowGuide] = useState(false); 
   const [showTitles, setShowTitles] = useState(false);
-  const [showSaveModal, setShowSaveModal] = useState(false); // 新增存檔管理彈窗
-  const [importString, setImportString] = useState(''); // 新增匯入字串
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showChangelog, setShowChangelog] = useState(false); // 新增天道紀元狀態
+  const [importString, setImportString] = useState(''); 
   const [guideTab, setGuideTab] = useState('rules'); 
   const [celebration, setCelebration] = useState(null);
   const [showGiveUpWarning, setShowGiveUpWarning] = useState(false);
@@ -472,10 +527,9 @@ export default function App() {
   const pillCooldownRemaining = player.lastPillTime ? Math.max(0, 3600 - Math.floor((now - player.lastPillTime) / 1000)) : 0;
   const canUsePill = (player.epiphanyPills || 0) > 0 && pillCooldownRemaining === 0;
 
-  // 玉簡傳功：匯出與匯入邏輯
   const getExportString = () => {
       try {
-          const { logs, ...saveData } = player; // 移除 logs 以節省空間
+          const { logs, ...saveData } = player; 
           return btoa(encodeURIComponent(JSON.stringify(saveData)));
       } catch (e) {
           return "【天道異常】秘文生成失敗。";
@@ -1154,6 +1208,44 @@ export default function App() {
         </div>
       )}
 
+      {/* 天道紀元 (變更紀錄) 彈窗 */}
+      {showChangelog && (
+        <div className="fixed inset-0 z-[600] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
+          <div className="w-full max-w-2xl bg-[#0a0a0a] p-4 sm:p-6 md:p-8 rounded-2xl border border-white/20 shadow-[0_0_50px_rgba(255,255,255,0.1)] flex flex-col max-h-[85vh] animate-pop-in">
+            <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
+               <h2 className="text-xl md:text-2xl font-black text-white tracking-widest uppercase flex items-center gap-3"><FileText className="text-emerald-500"/> 天道紀元 (版本演化)</h2>
+               <button onClick={() => setShowChangelog(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-6">
+               {CHANGELOG_DATA.map((log, index) => {
+                 const isLatest = index === 0;
+                 return (
+                   <div key={log.version} className={`relative pl-6 sm:pl-8 py-2 ${!isLatest ? 'opacity-70' : ''}`}>
+                      <div className={`absolute left-0 top-3 bottom-0 w-px ${isLatest ? 'bg-gradient-to-b from-emerald-500 to-emerald-500/0' : 'bg-white/10'}`}></div>
+                      <div className={`absolute left-[-4px] top-3 w-2 h-2 rounded-full ${isLatest ? 'bg-emerald-400 shadow-[0_0_10px_#34d399]' : 'bg-white/30'}`}></div>
+                      
+                      <div className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-2`}>
+                        <span className={`text-sm font-mono font-black px-2 py-0.5 rounded ${isLatest ? 'bg-emerald-900/50 text-emerald-400 border border-emerald-500/50' : 'bg-white/5 text-white/50'}`}>{log.version}</span>
+                        <h3 className={`text-base md:text-lg font-black tracking-widest ${isLatest ? 'text-white' : 'text-white/70'}`}>{log.title}</h3>
+                      </div>
+                      <p className="text-xs text-white/40 italic mb-4">"{log.desc}"</p>
+                      
+                      <ul className="space-y-2">
+                        {log.changes.map((change, cIdx) => (
+                          <li key={cIdx} className="text-xs md:text-sm text-white/70 flex items-start gap-2 leading-relaxed">
+                            <span className={`text-emerald-500/50 mt-0.5`}>▹</span> {change}
+                          </li>
+                        ))}
+                      </ul>
+                   </div>
+                 );
+               })}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className={`fixed top-14 right-4 z-50 flex items-center gap-2 bg-emerald-900/80 text-emerald-300 px-4 py-2 rounded-full text-xs font-bold border border-emerald-500/30 transition-opacity duration-500 ${saveIndicator ? 'opacity-100' : 'opacity-0'}`}>
         <Save size={14} className="animate-pulse"/> 天道已同步
       </div>
@@ -1735,7 +1827,11 @@ export default function App() {
             <br className="block sm:hidden mt-2" />
             <span className="sm:ml-3">with Gemini</span>
           </p>
-          <button onClick={()=>{if(window.confirm('【天道輪迴】\n確定要刪除所有進度，重新投胎轉世嗎？\n所有成果將灰飛煙滅。')) { localStorage.clear(); window.location.reload(); }}} className="opacity-60 hover:opacity-100 transition-opacity border border-white/30 px-6 py-3 rounded-full text-xs tracking-widest hover:bg-rose-900/60 hover:border-rose-500/60 hover:text-rose-200 mt-4 flex items-center gap-2"><RefreshCw size={14}/> 輪迴轉世 (刪檔)</button>
+          
+          <div className="flex items-center justify-center gap-4 mt-4">
+              <button onClick={() => setShowChangelog(true)} className="opacity-60 hover:opacity-100 transition-opacity border border-white/30 px-6 py-3 rounded-full text-xs tracking-widest hover:bg-emerald-900/60 hover:border-emerald-500/60 hover:text-emerald-200 flex items-center gap-2"><FileText size={14}/> 天道紀元 (版本紀錄)</button>
+              <button onClick={()=>{if(window.confirm('【天道輪迴】\n確定要刪除所有進度，重新投胎轉世嗎？\n所有成果將灰飛煙滅。')) { localStorage.clear(); window.location.reload(); }}} className="opacity-60 hover:opacity-100 transition-opacity border border-white/30 px-6 py-3 rounded-full text-xs tracking-widest hover:bg-rose-900/60 hover:border-rose-500/60 hover:text-rose-200 flex items-center gap-2"><RefreshCw size={14}/> 輪迴轉世 (刪檔)</button>
+          </div>
         </footer>
       </div>
     </div>
