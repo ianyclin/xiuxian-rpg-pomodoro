@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, BarChart3, Save, Pill, HelpCircle, Lightbulb, ShieldAlert, Award } from 'lucide-react';
+import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, BarChart3, Save, Pill, HelpCircle, Lightbulb, ShieldAlert, Award, Heart } from 'lucide-react';
 
 /**
  * ========================================================
@@ -175,6 +175,37 @@ const TITLE_DATA = [
 
 /**
  * ========================================================
+ * 道侶系統 (Companions)
+ * ========================================================
+ */
+const COMPANIONS = [
+  { id: 'c_chen', name: '陳巧倩', unlockIdx: 4, desc: '「韓師弟，你真的不明白我的心意嗎？」落雲宗師姐，對你一往情深，至死未嫁。', buffType: 'atk', buffName: '痴情劍意', buffDesc: '總戰力加成', tiers: [5, 10, 20, 30] },
+  { id: 'c_dong', name: '董萱兒', unlockIdx: 6, desc: '「師兄，你看看萱兒嘛。」紅拂仙子之女，天生媚骨，後轉修魔道。', buffType: 'evade', buffName: '幻媚之身', buffDesc: '閃避率提升', tiers: [2, 4, 8, 15] },
+  { id: 'c_nangong', name: '南宮婉', unlockIdx: 9, desc: '「你這登徒子...」掩月宗長老，血色禁地結下不解之緣，唯一的正室妻子。', buffType: 'qi', buffName: '素女輪迴', buffDesc: '靈氣獲取倍率', tiers: [8, 15, 30, 50] },
+  { id: 'c_yuan', name: '元瑤', unlockIdx: 12, desc: '「韓兄大恩，元瑤沒齒難忘。」為救師姐不惜修煉陰陽輪迴訣，重情重義。', buffType: 'hp', buffName: '陰陽秘術', buffDesc: '氣血上限加成', tiers: [5, 10, 20, 30] },
+  { id: 'c_ziling', name: '紫靈仙子', unlockIdx: 14, desc: '「韓兄，亂星海一別，別來無恙？」妙音門門主，亂星海第一美女，紅顏知己。', buffType: 'luck_floor', buffName: '妙音氣運', buffDesc: '氣運保底加成', tiers: [0.05, 0.10, 0.20, 0.30] },
+  { id: 'c_yinyue', name: '銀月', unlockIdx: 17, desc: '「主人，銀月會一直陪著你。」靈界銀狼一族，化為器靈長伴左右，共患難。', buffType: 'crit_dmg', buffName: '天狼神擊', buffDesc: '爆擊傷害提升', tiers: [10, 20, 40, 60] },
+  { id: 'c_bingfeng', name: '冰鳳', unlockIdx: 21, desc: '「韓道友，你我聯手撕裂空間如何？」冰海之主，掌握空間法則的十級妖修。', buffType: 'streak_cap', buffName: '破空靈羽', buffDesc: '連擊增傷上限', tiers: [10, 20, 40, 60] },
+  { id: 'c_baohua', name: '寶花始祖', unlockIdx: 25, desc: '「你區區一名人族大乘，竟敢直視本座？」魔界三大始祖之一，與你亦敵亦友。', buffType: 'def', buffName: '玄天聖樹', buffDesc: '護甲防禦加成', tiers: [5, 10, 20, 30] }
+];
+
+const COMPANION_TIERS = [
+  { req: 1, name: '初識' },
+  { req: 10, name: '相知' },
+  { req: 50, name: '傾心' },
+  { req: 100, name: '生死相隨' }
+];
+
+const getCompanionTier = (kills) => {
+  if (kills >= 100) return 3;
+  if (kills >= 50) return 2;
+  if (kills >= 10) return 1;
+  if (kills >= 1) return 0;
+  return -1;
+};
+
+/**
+ * ========================================================
  * 2. 主組件 (App)
  * ========================================================
  */
@@ -186,6 +217,7 @@ export default function App() {
     streakCount: 0, streakShields: 0, luck: 1.0, totalFocusTime: 0, history: [], hasAscended: false,
     lifetimeStats: { kills: 0, focusCount: 0, totalCoins: 0 },
     unlockedTitles: [], equippedTitle: null, freeGacha: 0, epiphanyPills: 0, lastPillTime: 0,
+    activeCompanion: null, companionKills: {},
     logs: ['【天道印記】仙途漫漫，唯『靜心專注』方能證道。以現世之光陰，化此界之修為。摒棄雜念，祝道友仙運隆昌。'] 
   };
 
@@ -380,6 +412,22 @@ export default function App() {
     if (type === 'atk' || type === 'streak_cap') { const swordCount = (player.artifacts || []).filter(id => ARTIFACT_POOL.find(a => a.id === id)?.tags?.includes('sword')).length; if (swordCount >= 2) mult += 0.2 * swordCount; }
     if (type === 'qi' && (player.arrays?.qi || 0)) mult += player.arrays.qi * 0.05;
     if (type === 'def' && (player.arrays?.def || 0)) mult += player.arrays.def * 0.05;
+    
+    if (player.activeCompanion) {
+        const comp = COMPANIONS.find(c => c.id === player.activeCompanion);
+        if (comp && comp.buffType === type) {
+            const kills = player.companionKills?.[comp.id] || 0;
+            const tierIdx = getCompanionTier(kills);
+            if (tierIdx >= 0) {
+                const buffVal = comp.tiers[tierIdx];
+                if (['luck_floor'].includes(type)) {
+                    mult += buffVal; 
+                } else {
+                    mult += buffVal / 100; 
+                }
+            }
+        }
+    }
     return mult;
   };
 
@@ -409,7 +457,6 @@ export default function App() {
   const maxVitality = Math.floor(player.baseMaxVitality * getMultiplier('hp'));
   const forgeDiscount = Math.max(0.1, 1 - (getMultiplier('forge_discount') - 1)); 
 
-  // 無底洞機制: 平滑的 x1.35 陣法升級曲線，確保大後期依然有戰略意義
   const upgCostAtk = Math.floor(1000 * Math.pow(1.15, (player.baseCombat - 100) / 100) * forgeDiscount);
   const upgCostHp = Math.floor(1000 * Math.pow(1.15, (player.baseMaxVitality - 100) / 100) * forgeDiscount);
   const healCost = Math.floor((maxVitality * 1.0 + player.realmIndex * 100) * forgeDiscount);
@@ -442,7 +489,7 @@ export default function App() {
     if (window.confirm("【天道警告】\n散功重修將使境界跌落一級！\n\n副作用：當前境界累積的修為將歸零。\n獲得：重置所有技能點與機緣祕籍，退還剩餘可用 SP。\n（您的生涯數據與稱號將永久保留）\n\n確認散功？")) {
       const newRealm = player.realmIndex - 1;
       const newQiToNext = Math.floor(250 * Math.pow(1.35, newRealm));
-      setPlayer(p => ({ ...p, realmIndex: newRealm, qi: 0, qiToNext: newQiToNext, basicSkills: {}, secretBooks: {} }));
+      setPlayer(p => ({ ...p, realmIndex: newRealm, qi: 0, qiToNext: newQiToNext, basicSkills: {}, secretBooks: {}, activeCompanion: null }));
       addLog(`⚡ 【散功重修】自廢修為，境界跌落至 ${REALMS[newRealm].name}，經脈重塑，SP 全數返還！`);
     }
   };
@@ -540,6 +587,7 @@ export default function App() {
       let nextHistory = [...(player.history || [])];
       let nextLifetime = { ...(player.lifetimeStats || { kills: 0, focusCount: 0, totalCoins: 0 }) };
       let nextTotalFocusTime = player.totalFocusTime || 0;
+      let nextCompanionKills = { ...(player.companionKills || {}) };
 
       if (isUsingPill) {
           addLog(`💊 【歲月法則】吞服頓悟丹，瞬間出關！(此經歷不列入識海與生涯)`);
@@ -589,6 +637,7 @@ export default function App() {
       }
 
       let killLog = '';
+      let compLog = '';
 
       if (newHp === 0) {
         setIsKilling(true); setTimeout(() => setIsKilling(false), 800); 
@@ -600,6 +649,19 @@ export default function App() {
         if (!isUsingPill) {
             nextLifetime.kills += 1;
             nextLifetime.totalCoins += killCoin;
+        }
+
+        if (player.activeCompanion) {
+            const compId = player.activeCompanion;
+            const oldKills = nextCompanionKills[compId] || 0;
+            const newKills = oldKills + 1;
+            nextCompanionKills[compId] = newKills;
+            
+            const compData = COMPANIONS.find(c => c.id === compId);
+            if ([1, 10, 50, 100].includes(newKills)) {
+                const tierName = COMPANION_TIERS[getCompanionTier(newKills)].name;
+                compLog = ` 🌸 與【${compData.name}】羈絆加深，達到「${tierName}」！增益效果提升！`;
+            }
         }
         
         if (Math.random() < 0.10) {
@@ -792,7 +854,7 @@ export default function App() {
       }
 
       const dmgLog = isCrit ? `🔥 【爆擊】造成 ${formatNumber(actualDamage)} 傷害。` : `[運功] 造成 ${formatNumber(actualDamage)} 傷害。`;
-      addLog(`${dmgLog} ${killLog || `獲修為 ${formatNumber(passiveQi)}。`}${fortuneLog}`);
+      addLog(`${dmgLog} ${killLog || `獲修為 ${formatNumber(passiveQi)}。`}${fortuneLog}${compLog}`);
 
       setPlayer(p => ({
           ...p,
@@ -810,6 +872,7 @@ export default function App() {
           secretBooks: newSecretBooks,
           epiphanyPills: nextPills,
           lastPillTime: nextLastPillTime,
+          companionKills: nextCompanionKills,
           history: nextHistory,
           hasAscended: nextHasAscended,
           lifetimeStats: nextLifetime
@@ -1004,9 +1067,6 @@ export default function App() {
         <Save size={14} className="animate-pulse"/> 天道已同步
       </div>
 
-      {/* ==========================================
-          名號頭銜
-          ========================================== */}
       {showTitles && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-4xl bg-[#0a0a0a] p-4 sm:p-6 md:p-8 rounded-2xl border border-amber-500/30 shadow-2xl flex flex-col max-h-[85vh]">
@@ -1245,9 +1305,16 @@ export default function App() {
             <div className="flex items-center gap-4 w-full md:flex-1 min-w-0">
                <Shield size={36} className={`${mode === 'break' ? 'text-cyan-400' : activeColorClass.text} flex-shrink-0`}/>
                <div className="flex flex-col justify-center flex-1 min-w-0">
-                  <h2 className="text-xl sm:text-2xl font-black tracking-widest uppercase text-white font-bold drop-shadow-lg truncate">
+                  <h2 className="text-xl sm:text-2xl font-black tracking-widest uppercase text-white font-bold drop-shadow-lg truncate flex items-center flex-wrap">
                     {player.equippedTitle && <span className="text-amber-400 mr-2 border border-amber-500/50 bg-amber-950/50 px-2 py-0.5 rounded text-[10px] sm:text-xs tracking-widest relative -top-0.5">[{TITLE_DATA.find(t=>t.id===player.equippedTitle)?.name}]</span>}
                     {currentRealmData.name}
+                    
+                    {player.activeCompanion && (
+                      <span className="ml-3 text-pink-400 border border-pink-500/50 bg-pink-950/50 px-2 py-0.5 rounded text-[10px] sm:text-xs tracking-widest relative -top-0.5 flex items-center gap-1.5 whitespace-nowrap mt-2 sm:mt-0">
+                        <Heart size={12} className="fill-current animate-pulse"/> 
+                        {COMPANIONS.find(c=>c.id===player.activeCompanion)?.name} ({getCompanionTier(player.companionKills?.[player.activeCompanion]||0) >= 0 ? COMPANION_TIERS[getCompanionTier(player.companionKills?.[player.activeCompanion]||0)].name : '未結緣'})
+                      </span>
+                    )}
                   </h2>
                   <p className={`text-xs md:text-sm leading-tight ${mode === 'break' ? 'text-cyan-300' : activeColorClass.text} font-bold mt-2 opacity-90 italic drop-shadow-md truncate`}>{currentRealmData.desc}</p>
                </div>
@@ -1372,11 +1439,12 @@ export default function App() {
               { id: 'skills', label: '功法祕籍', icon: ScrollText },
               { id: 'forge', label: '洞府淬煉', icon: Hammer },
               { id: 'artifacts', label: '法寶庫', icon: Box },
+              { id: 'companions', label: '道侶紅顏', icon: Heart },
               { id: 'insights', label: '識海投影', icon: Activity },
               { id: 'log', label: '修行日誌', icon: History }
             ].map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 py-4 md:py-5 rounded-xl text-xs md:text-sm font-black uppercase flex flex-col items-center justify-center gap-2 transition-all min-w-[80px] ${activeTab===tab.id ? 'bg-white/15 text-white shadow-inner border border-white/20' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}>
-                <tab.icon size={18} className="md:size-[20px]"/> <span>{tab.label}</span>
+                <tab.icon size={18} className={`md:size-[20px] ${tab.id === 'companions' && activeTab===tab.id ? 'text-pink-400 fill-current' : ''}`}/> <span>{tab.label}</span>
               </button>
             ))}
           </div>
@@ -1415,6 +1483,78 @@ export default function App() {
                   </div></div>
               </div>
             )}
+            
+            {activeTab === 'companions' && (
+              <div className="space-y-8 animate-pop-in pb-10">
+                <div className="bg-pink-950/30 border border-pink-500/30 p-6 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h3 className="text-pink-400 font-black text-lg tracking-widest flex items-center gap-2"><Heart size={20} className="fill-current"/> 仙途伴侶</h3>
+                        <p className="text-white/60 text-xs mt-2 leading-relaxed">道侶解鎖與當前境界息息相關。選擇一位道侶同行，共同斬殺妖獸將提升羈絆，獲得強大增益。<br/>(羈絆階級：初識 1 / 相知 10 / 傾心 50 / 生死相隨 100)</p>
+                    </div>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {COMPANIONS.map(comp => {
+                        const isUnlocked = player.realmIndex >= comp.unlockIdx;
+                        const isActive = player.activeCompanion === comp.id;
+                        const kills = player.companionKills?.[comp.id] || 0;
+                        const tierIdx = getCompanionTier(kills);
+                        const currentBuff = tierIdx >= 0 ? comp.tiers[tierIdx] : 0;
+                        
+                        return isUnlocked ? (
+                            <div key={comp.id} className={`p-6 rounded-2xl border transition-all flex flex-col justify-between ${isActive ? 'bg-pink-900/40 border-pink-500/50 shadow-[0_0_20px_rgba(244,114,182,0.2)]' : 'bg-black/60 border-white/10'}`}>
+                                <div>
+                                    <div className="flex justify-between items-start mb-4">
+                                        <h4 className="text-white font-black text-xl tracking-widest flex items-center gap-2">
+                                            {comp.name} 
+                                            {isActive && <span className="text-[10px] bg-pink-500 text-white px-2 py-0.5 rounded-full uppercase tracking-widest ml-2">同行中</span>}
+                                        </h4>
+                                        <div className="text-right">
+                                            <div className="text-pink-400 font-mono text-sm">{kills} 斬</div>
+                                            <div className="text-white/40 text-[10px] uppercase tracking-widest mt-1">{tierIdx >= 0 ? COMPANION_TIERS[tierIdx].name : '未結緣'}</div>
+                                        </div>
+                                    </div>
+                                    <p className="text-white/70 text-xs italic leading-relaxed mb-6 h-12">"{comp.desc}"</p>
+                                    
+                                    <div className="bg-black/40 rounded-xl p-4 border border-white/5 mb-6">
+                                        <div className="text-pink-300 text-xs font-black mb-2 flex items-center gap-2">【{comp.buffName}】</div>
+                                        <div className="flex justify-between items-end">
+                                            <span className="text-white/60 text-xs">{comp.buffDesc}</span>
+                                            <span className="text-white font-mono text-base font-black">+{comp.buffType === 'luck_floor' ? currentBuff.toFixed(2) : `${currentBuff}%`}</span>
+                                        </div>
+                                        <div className="flex gap-1 mt-3">
+                                            {comp.tiers.map((t, idx) => (
+                                                <div key={idx} className={`h-1.5 flex-1 rounded-full ${idx <= tierIdx ? 'bg-pink-500' : 'bg-white/10'}`}></div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                {!isActive ? (
+                                    <button 
+                                      onClick={() => setPlayer(p => ({ ...p, activeCompanion: comp.id }))}
+                                      className="w-full py-4 rounded-xl border border-white/20 text-xs font-black text-white/70 hover:bg-pink-600 hover:border-pink-400 hover:text-white transition-all mt-4">
+                                      邀其同行
+                                    </button>
+                                ) : (
+                                    <button 
+                                      onClick={() => setPlayer(p => ({ ...p, activeCompanion: null }))}
+                                      className="w-full py-4 rounded-xl border border-pink-500/30 text-xs font-black text-pink-400 hover:bg-pink-950 hover:text-pink-300 transition-all mt-4">
+                                      請其回府 (取消同行)
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <div key={comp.id} className="p-6 rounded-2xl border-2 border-dashed border-pink-900/30 bg-black/50 flex flex-col items-center justify-center min-h-[16rem] opacity-50">
+                                <EyeOff size={40} className="text-pink-900/50 mb-5"/>
+                                <p className="text-xs font-black text-pink-700/50 uppercase tracking-[0.3em]">仙影朦朧</p>
+                                <div className="text-pink-900/40 text-[10px] mt-4 font-mono border border-pink-900/30 px-3 py-1 rounded-full">需突破至【{REALMS[comp.unlockIdx].name}】</div>
+                            </div>
+                        );
+                    })}
+                </div>
+              </div>
+            )}
+
             {activeTab === 'forge' && (
               <div className="space-y-14 animate-pop-in pb-10">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
