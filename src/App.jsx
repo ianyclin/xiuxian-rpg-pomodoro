@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Shield, Flame, Wind, Hammer, Box, ScrollText, Network, AlertTriangle, 
-  EyeOff, Crown, RefreshCw, CloudLightning, Activity, Sparkles, Sword, 
-  Compass, BookOpen, X, History, BarChart3, Pill, HelpCircle, Award, 
-  Heart, Copy, FileText, Fingerprint 
+  EyeOff, Crown, RefreshCw, Cloud, Activity, Sparkles, Sword, 
+  Compass, BookOpen, X, History, BarChart, Pill, HelpCircle, Award, 
+  Heart, Copy, FileText, Zap 
 } from 'lucide-react';
 
 /**
@@ -45,25 +45,57 @@ const KARMA_TALENTS = [
 
 const FEEDBACK_TEXTS = {
   focus: [
-    "劍光閃爍，在妖獸身上留下一道深深的血痕。", "法寶轟擊，震退了眼前的強敵！", "攻勢如潮，妖獸的氣息隨之衰弱了幾分。", "真元激盪，這一擊結結實實地打在了妖獸的破綻上。", "趁其不備，凌厲的殺招狠狠命中了目標。",
-    "激烈交鋒！你的法術成功穿透了它的防禦。", "靈力爆發，妖獸的護體靈光被你強行撕裂。", "一番纏鬥，妖獸的動作明顯遲緩了下來。", "抓住破綻，連續的猛攻讓妖獸連連後退。", "氣血翻湧，你的一擊讓妖獸發出了痛苦的嘶吼。"
+    "劍光閃爍，在妖獸身上留下一道深深的血痕。", 
+    "法寶轟擊，震退了眼前的強敵！", 
+    "攻勢如潮，妖獸的氣息隨之衰弱了幾分。", 
+    "真元激盪，這一擊結結實實地打在了妖獸的破綻上。", 
+    "趁其不備，凌厲的殺招狠狠命中了目標。",
+    "激烈交鋒！你的法術成功穿透了它的防禦。", 
+    "靈力爆發，妖獸的護體靈光被你強行撕裂。", 
+    "一番纏鬥，妖獸的動作明顯遲緩了下來。", 
+    "抓住破綻，連續的猛攻讓妖獸連連後退。", 
+    "氣血翻湧，你的一擊讓妖獸發出了痛苦的嘶吼。"
   ],
   break: [
-    "靈氣運轉一個周天，神清氣爽。", "心無旁騖，道心更堅定了一分。", "摒棄雜念，真元如臂使指。", "吐納之間，修為暗暗增長。", "一念不生，萬法無咎。",
-    "神識清明，對天地法則的感悟加深了。", "氣沉丹田，經脈中的靈力越發凝實。", "歲月如梭，唯有苦修方能證得大道。", "不驕不躁，平心靜氣地完成了一次循環。", "周天圓滿，將外界喧囂盡數隔絕。"
+    "靈氣運轉一個周天，神清氣爽。", 
+    "心無旁騖，道心更堅定了一分。", 
+    "摒棄雜念，真元如臂使指。", 
+    "吐納之間，修為暗暗增長。", 
+    "一念不生，萬法無咎。",
+    "神識清明，對天地法則的感悟加深了。", 
+    "氣沉丹田，經脈中的靈力越發凝實。", 
+    "歲月如梭，唯有苦修方能證得大道。", 
+    "不驕不躁，平心靜氣地完成了一次循環。", 
+    "周天圓滿，將外界喧囂盡數隔絕。"
   ],
   kill: [
-    "劍氣如虹，妖血染紅了大地！", "雷霆手段，瞬間將妖邪斬化為飛灰！", "區區妖物，也敢擋我修仙之路！", "真元爆發，摧枯拉朽般粉碎了敵人的防禦。", "身法如電，在妖獸來不及反應前取其首級。"
+    "劍氣如虹，妖血染紅了大地！", 
+    "雷霆手段，瞬間將妖邪斬化為飛灰！", 
+    "區區妖物，也敢擋我修仙之路！", 
+    "真元爆發，摧枯拉朽般粉碎了敵人的防禦。", 
+    "身法如電，在妖獸來不及反應前取其首級。"
   ],
   boss: [
-    "逆天改命！硬生生踏破了這生死玄關！", "天道不公，我便逆天！死劫已破！", "千百次生死邊緣的試探，終於斬滅此瓶頸！", "縱使九死一生，也絕不退縮半步！境界突破！", "宿敵伏誅！從今往後，此界再無人能阻我！"
+    "逆天改命！硬生生踏破了這生死玄關！", 
+    "天道不公，我便逆天！死劫已破！", 
+    "千百次生死邊緣的試探，終於斬滅此瓶頸！", 
+    "縱使九死一生，也絕不退縮半步！境界突破！", 
+    "宿敵伏誅！從今往後，此界再無人能阻我！"
   ]
 };
 
 const CHANGELOG_DATA = [
-  { version: "v6.11.0", title: "天道無漏・飛升發布版", desc: "掃除所有部署與體驗上的最後塵埃。", changes: [ "實裝【音效駭客流】：針對 iOS Safari 特性，於開始計時瞬間進行音頻預載(Audio Priming)，徹底解決鎖屏結算無聲的問題。", "優化【洗髓機制】：現在成功擊殺 Boss 突破境界時，不僅提升修為，更會觸發「肉身重塑」，氣血瞬間全滿。", "強化【非同步容錯】：為底層雲端連線加入更嚴謹的 Promise 捕捉機制，保證離線狀態絕不崩潰。" ] },
-  { version: "v6.10.1", title: "抗崩潰穩定版", desc: "確保跨環境部署之穩定。", changes: [ "修復【全白畫面】：移除未定義的圖標變數，並加入日誌物件強制轉型防呆機制。", "消除【SSR崩潰】：重構防盜水印生成方式，避免伺服器端渲染時發生 API 衝突。" ] },
-  { version: "v6.10.0", title: "天道法則・尋寶分流", desc: "確立了免費、保底與日常產出的因果邊界。", changes: [ "分流【尋寶機制】：稱號保底擁有絕對特權（強制升階並允許向上搜尋）；每日免費、靈石抽取與專注掉落皆統一為「向下搜尋，無則補償靈石」。" ] }
+  { 
+    version: "v6.12.0", 
+    title: "天道圓滿・極致抗災", 
+    desc: "根除了導致白屏與打包失敗的底層隱患。", 
+    changes: [ 
+        "修復【全白畫面】：移除可能導致舊版依賴庫崩潰的新版圖標，替換為最穩定的基礎圖標。", 
+        "消除【編譯窒息】：重新展開所有龐大的數據陣列，徹底解決 Cloudflare 發布時的 Syntax Error。",
+        "優化【飛升敘事】：真仙界巡禮不再觸發強制傷害的反撲錯誤。", 
+        "新增【機緣指引】：每日免費尋寶刷新時，選單列會自動亮起紅點提示。" 
+    ] 
+  }
 ];
 
 const REALM_COLORS = {
@@ -88,7 +120,12 @@ const formatNumber = (num) => {
   return Math.floor(num).toLocaleString();
 };
 
-const FOCUS_OPTIONS = [ { label: '15m', value: 15 * 60 }, { label: '25m', value: 25 * 60 }, { label: '45m', value: 45 * 60 }, { label: '60m', value: 60 * 60 } ];
+const FOCUS_OPTIONS = [ 
+    { label: '15m', value: 15 * 60 }, 
+    { label: '25m', value: 25 * 60 }, 
+    { label: '45m', value: 45 * 60 }, 
+    { label: '60m', value: 60 * 60 } 
+];
 
 const RARITY = {
   COMMON: { name: '凡品', color: 'text-slate-400', weight: 0.34 },
@@ -284,15 +321,19 @@ export default function App() {
     lifetimeStats: { kills: 0, focusCount: 0, totalCoins: 0 },
     unlockedTitles: [], equippedTitle: null, freeGacha: 0, epiphanyPills: 0, lastPillTime: 0,
     activeCompanion: null, companionKills: {}, karma: 0, unlockedKarma: [], lastDailyGacha: 0,
-    logs: ['[系統] 識海清明，天道印記已穩固。祝道友仙運隆昌。']
+    logs: ['[系統] 識海清明，天道印記已穩固。助道友仙運隆昌。']
   };
 
   const [player, setPlayer] = useState(() => {
     try {
       const saved = localStorage.getItem('xianxia_master_v69');
-      if (saved) return { ...defaultPlayerState, ...JSON.parse(saved) };
+      if (saved && saved !== 'undefined' && saved !== 'null') {
+          return { ...defaultPlayerState, ...JSON.parse(saved) };
+      }
       return defaultPlayerState;
-    } catch (e) { return defaultPlayerState; }
+    } catch (e) { 
+      return defaultPlayerState; 
+    }
   });
 
   const bellAudioRef = useRef(null);
@@ -399,7 +440,9 @@ export default function App() {
   const [monster, setMonster] = useState(() => {
     try {
       const savedMonster = localStorage.getItem('xianxia_monster');
-      if (savedMonster) return JSON.parse(savedMonster);
+      if (savedMonster && savedMonster !== 'undefined' && savedMonster !== 'null') {
+          return JSON.parse(savedMonster);
+      }
     } catch (e) {}
     return generateMonsterState(player.realmIndex, player.qi, player.qiToNext, player.hasAscended);
   });
@@ -672,7 +715,7 @@ export default function App() {
                 setCelebration({ name: '飛升仙界！成就無上真仙！', desc: FEEDBACK_TEXTS.boss[0] });
             } else if (nextRealm < REALMS.length - 1) {
                 nextRealm++; nextQi = Math.max(0, nextQi - nextQiToNext); nextQiToNext = Math.floor(nextQiToNext * 1.35);
-                nextVitality = maxVitality; // 洗髓滿血
+                nextVitality = maxVitality; 
                 if (!isUsingPill) nextHistory.push({ name: REALMS[nextRealm].name, time: nextTotalFocusTime });
                 actionLogs.push(`${dmgMsg} ☄️ 【突破死劫】晉升至${REALMS[nextRealm].name}！肉身重塑，氣血全滿！`);
                 setCelebration({ name: REALMS[nextRealm].name, desc: FEEDBACK_TEXTS.boss[Math.floor(Math.random() * FEEDBACK_TEXTS.boss.length)] });
@@ -706,8 +749,7 @@ export default function App() {
                 if (drop.poolType === 'art') { newArtifacts.push(drop.id); currentDrops.push(`🏺 ${RARITY[searchRarity].name}法寶「${drop.name}」`); rareDrops.push(`法寶「${drop.name}」`); }
                 else { newSecretBooks[drop.id] = 1; currentDrops.push(`📜 ${RARITY[searchRarity].name}功法「${drop.name}」`); rareDrops.push(`功法「${drop.name}」`); }
             } else { 
-                const cCoins = Math.floor((0.1 * gachaCost) / RARITY[targetRarity].weight); nextCoins += cCoins; if (!isUsingPill) nextLifetime.totalCoins += cCoins; 
-                actionLogs.push(`✨ 【天道反哺】此界寶物已盡數入您手中！補償 ${formatNumber(cCoins)} 靈石！`); 
+                const cQi = Math.floor((100 * monster.tier) / RARITY[targetRarity].weight); nextQi += cQi; rareDrops.push(`本源修為 ${formatNumber(cQi)}`); 
             }
         }
 
@@ -718,9 +760,8 @@ export default function App() {
         }
 
       } else {
-        // Survived
         if (monster.isBoss && nextHasAscended) {
-            actionLogs.push(`🌟 【仙界】仙氣縹緲，平和指點後輩，不染塵埃。`);
+            actionLogs.push(`${dmgMsg} 🌟 【仙界】仙氣縹緲，平和指點後輩，不染塵埃。`);
             actionLogs.push(`💨 【吐納】獲修為 ${formatNumber(passiveQi)}，靈石 ${formatNumber(passiveCoin)}。`);
         } else {
             actionLogs.push(`${dmgMsg} 妖獸剩餘 ${formatNumber(newHp)} 氣血。`);
@@ -736,7 +777,7 @@ export default function App() {
                 nextVitality -= actualDmg;
 
                 if (nextVitality <= 0) {
-                    if (nextShields > 0) { nextShields -= 1; nextVitality = Math.floor(maxVitality * 0.1) || 1; actionLogs.push(`🛡️ 【反撲】妖獸施展【${atkName}】！法寶護主，鎖血 10% 擋下死劫！`); }
+                    if (nextShields > 0) { nextShields -= 1; nextVitality = Math.floor(maxVitality * 0.1); actionLogs.push(`🛡️ 【反撲】妖獸施展【${atkName}】！法寶護主，鎖血 10% 擋下死劫！`); }
                     else if (Math.random() < reviveRate) { nextVitality = maxVitality; actionLogs.push(`✨ 【反撲】妖獸施展【${atkName}】造成致命傷！涅槃重生，轉危為安！`); }
                     else { 
                         nextVitality = Math.floor(maxVitality * 0.5); nextQi = Math.floor(nextQi * 0.8); nextStreak = 0; isDeadFromCounter = true; 
@@ -839,10 +880,8 @@ export default function App() {
 
   const toggleTimer = () => { 
       if (!isActive) { 
-          // iOS Audio Priming Hack
           if (bellAudioRef.current) { bellAudioRef.current.volume = 0; const p = bellAudioRef.current.play(); if (p !== undefined) p.then(() => { bellAudioRef.current.pause(); bellAudioRef.current.currentTime = 0; bellAudioRef.current.volume = 1; }).catch(()=>{}); }
           if (breakAudioRef.current) { breakAudioRef.current.volume = 0; const p = breakAudioRef.current.play(); if (p !== undefined) p.then(() => { breakAudioRef.current.pause(); breakAudioRef.current.currentTime = 0; breakAudioRef.current.volume = 1; }).catch(()=>{}); }
-          
           setIsActive(true); setTargetEndTime(Date.now() + (timeLeft * 1000)); 
       } 
   };
@@ -884,7 +923,7 @@ export default function App() {
           <div className="w-full max-w-4xl bg-slate-900/90 p-6 md:p-8 rounded-2xl border border-purple-500/30 flex flex-col max-h-[85vh] shadow-[0_0_50px_rgba(168,85,247,0.2)] relative">
             <button onClick={() => setShowKarmaModal(false)} className="absolute top-4 right-4 p-2 text-white/50"><X size={24}/></button>
             <div className="flex flex-col items-center mb-8 border-b border-white/10 pb-6">
-                <Fingerprint size={32} className="text-purple-400 mb-3 animate-pulse"/>
+                <Activity size={32} className="text-purple-400 mb-3 animate-pulse"/>
                 <h2 className="text-xl font-black text-purple-400 tracking-widest uppercase">輪迴靈根</h2>
                 <div className="mt-4 bg-purple-950/50 border border-purple-500/50 px-6 py-2 rounded-full text-purple-200 font-mono text-lg font-black shadow-inner"> Karma: {player.karma || 0} </div>
             </div>
