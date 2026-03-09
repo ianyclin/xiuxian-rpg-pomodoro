@@ -242,18 +242,15 @@ export default function App() {
   const getMultiplier = (type) => {
     let mult = 1.0;
     
-    // 基礎技能
     BASIC_SKILLS.forEach(s => { 
         if (player.basicSkills?.[s.id] > 0 && s.val?.[type]) mult += s.val[type] * player.basicSkills[s.id]; 
     });
     
-    // 祕籍 (修正為純線性，對齊文本)
     Object.entries(player.secretBooks || {}).forEach(([id, lvl]) => { 
         const book = SECRET_BOOKS.find(x => x.id === id);
         if (book?.val?.[type]) mult += book.val[type] * lvl;
     });
 
-    // 法寶 (淬鍊公式)
     (player.artifacts || []).forEach(id => { 
         const item = ARTIFACT_POOL.find(a => a.id === id);
         const lvl = player.artifactLvls?.[id] || 0;
@@ -279,7 +276,6 @@ export default function App() {
   const critRate = Math.min(0.95, rawCrit);
   const overflowCrit = Math.max(0, rawCrit - 0.95);
   
-  // 連擊上限解除封印，從 4.0 提升至 8.0 (800%)
   const streakCap = Math.min(8.0, 0.5 + (getMultiplier('streak_cap') - 1) + (overflowEvade * 0.5)); 
   const streakEff = getMultiplier('streak_eff'); 
   const streakBonusMult = Math.min(streakCap, (player.streakCount || 0) * 0.05 * streakEff);
@@ -349,7 +345,6 @@ export default function App() {
     } else {
       setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
       
-      // 確保神識最高只能減免 90% 基礎反噬，防止補血 bug
       const senseDef = Math.min(0.9, getMultiplier('sense_def') - 1);
       const rawPenalty = Math.floor((maxVitality * 0.20 + monster.tier * 50 + monster.maxHp * 0.01) * (1 / defMultiplier) * (1 - senseDef));
       const penalty = Math.min(rawPenalty, player.vitality * 0.8);
@@ -426,7 +421,6 @@ export default function App() {
       let newArtifacts = [...(player.artifacts || [])];
       let nextHasAscended = player.hasAscended;
       
-      // 強化真靈吸血觸發率至 30%
       if (isCrit && Math.random() < 0.30) {
         const lifesteal = Math.floor(maxVitality * (getMultiplier('lifesteal') - 1));
         if (lifesteal > 0) {
@@ -669,7 +663,7 @@ export default function App() {
           天道經緯 (境界全覽)
           ========================================== */}
       {showRealmGuide && (
-        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
+        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-4xl flex flex-col max-h-[80vh]">
             <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
                <h2 className="text-xl md:text-2xl font-black text-white tracking-widest uppercase flex items-center gap-3"><BookOpen className="text-emerald-500"/> 天道經緯 (境界全覽)</h2>
@@ -703,8 +697,8 @@ export default function App() {
           修行指引與祕訣
           ========================================== */}
       {showGuide && (
-        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 flex flex-col items-center justify-center font-bold mt-8">
-          <div className="w-full max-w-2xl bg-[#0a0a0a] p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh]">
+        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
+          <div className="w-full max-w-2xl bg-[#0a0a0a] p-4 sm:p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh]">
             <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
                <h2 className="text-lg md:text-xl font-black text-white tracking-widest uppercase flex items-center gap-3"><HelpCircle className="text-emerald-400"/> 修行指引與祕訣</h2>
                <button onClick={() => setShowGuide(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
@@ -764,8 +758,8 @@ export default function App() {
           屬性極限報告 (精準對接內部變數)
           ========================================== */}
       {showStatsReport && (
-        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 flex flex-col items-center justify-center font-bold mt-8">
-          <div className="w-full max-w-3xl bg-[#0a0a0a] p-6 md:p-10 rounded-2xl border border-cyan-900/50 shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
+          <div className="w-full max-w-3xl bg-[#0a0a0a] p-4 sm:p-6 md:p-10 rounded-2xl border border-cyan-900/50 shadow-2xl flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4 flex-shrink-0">
                <h2 className="text-lg md:text-xl font-black text-cyan-400 tracking-widest uppercase flex items-center gap-3"><BarChart3 size={24}/> 屬性極限與轉化報告</h2>
                <button onClick={() => setShowStatsReport(false)} className="p-4 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-all"><X size={24}/></button>
@@ -947,22 +941,22 @@ export default function App() {
           </div>
         )}
 
-        <div className={`text-7xl sm:text-9xl md:text-[12rem] font-mono leading-none font-black tracking-tighter mb-14 transition-all duration-700 ${isActive ? (mode === 'break' ? 'text-cyan-300 drop-shadow-[0_0_30px_rgba(6,182,212,0.4)]' : 'text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]') : 'text-white/30'}`}>
+        <div className={`text-[5.5rem] sm:text-8xl md:text-[12rem] font-mono leading-none font-black tracking-tighter mb-14 transition-all duration-700 ${isActive ? (mode === 'break' ? 'text-cyan-300 drop-shadow-[0_0_30px_rgba(6,182,212,0.4)]' : 'text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]') : 'text-white/30'}`}>
           {formatTime(timeLeft)}
         </div>
         
         <div className="flex justify-center gap-6 md:gap-8 font-bold">
           {!isActive ? (
-            <button onClick={toggleTimer} className={`flex items-center justify-center gap-4 px-10 md:px-16 py-5 md:py-7 hover:text-black border border-white/20 rounded-2xl text-lg md:text-xl font-black tracking-[0.5em] uppercase transition-all shadow-2xl backdrop-blur-md w-full md:w-auto ${mode === 'break' ? 'bg-cyan-900/40 text-cyan-300 hover:bg-cyan-400' : 'bg-white/10 hover:bg-white text-white'}`}>
-              <Sparkles size={24} className="fill-current animate-pulse"/> {mode === 'focus' ? '運轉周天 (蓄力)' : '開始調息 (回血)'}
+            <button onClick={toggleTimer} className={`flex items-center justify-center gap-3 sm:gap-4 px-6 sm:px-16 py-5 sm:py-7 hover:text-black border border-white/20 rounded-2xl text-base sm:text-xl font-black tracking-widest sm:tracking-[0.5em] uppercase transition-all shadow-2xl backdrop-blur-md w-full md:w-auto whitespace-nowrap ${mode === 'break' ? 'bg-cyan-900/40 text-cyan-300 hover:bg-cyan-400' : 'bg-white/10 hover:bg-white text-white'}`}>
+              <Sparkles className="fill-current animate-pulse size-5 sm:size-6"/> {mode === 'focus' ? '運轉周天 (蓄力)' : '開始調息 (回血)'}
             </button>
           ) : mode === 'focus' ? (
-            <button onClick={preCheckGiveUp} className="flex items-center justify-center gap-4 px-10 md:px-16 py-5 md:py-7 bg-rose-950/50 text-rose-400 hover:bg-rose-900/80 border border-rose-500/40 rounded-2xl text-lg md:text-xl font-black uppercase active:scale-95 transition-all shadow-2xl backdrop-blur-md w-full md:w-auto">
-              <AlertTriangle size={24} className="fill-current"/> 強行收功
+            <button onClick={preCheckGiveUp} className="flex items-center justify-center gap-3 sm:gap-4 px-6 sm:px-16 py-5 sm:py-7 bg-rose-950/50 text-rose-400 hover:bg-rose-900/80 border border-rose-500/40 rounded-2xl text-base sm:text-xl font-black tracking-widest sm:tracking-[0.5em] uppercase active:scale-95 transition-all shadow-2xl backdrop-blur-md w-full md:w-auto whitespace-nowrap">
+              <AlertTriangle className="fill-current size-5 sm:size-6"/> 強行收功
             </button>
           ) : (
-            <button onClick={handleSkipBreak} className="flex items-center justify-center gap-4 px-10 md:px-16 py-5 md:py-7 bg-cyan-950/50 text-cyan-400 hover:bg-cyan-900/80 border border-cyan-500/40 rounded-2xl text-lg md:text-xl font-black uppercase active:scale-95 transition-all shadow-2xl backdrop-blur-md w-full md:w-auto">
-              <Wind size={24} className="fill-current"/> 結束調息
+            <button onClick={handleSkipBreak} className="flex items-center justify-center gap-3 sm:gap-4 px-6 sm:px-16 py-5 sm:py-7 bg-cyan-950/50 text-cyan-400 hover:bg-cyan-900/80 border border-cyan-500/40 rounded-2xl text-base sm:text-xl font-black tracking-widest sm:tracking-[0.5em] uppercase active:scale-95 transition-all shadow-2xl backdrop-blur-md w-full md:w-auto whitespace-nowrap">
+              <Wind className="fill-current size-5 sm:size-6"/> 結束調息
             </button>
           )}
         </div>
@@ -1068,19 +1062,21 @@ export default function App() {
           </div>
         </div>
 
-        <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4">
+        <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4 w-full">
           
-          <div className="flex flex-wrap justify-center gap-4 mb-4">
-             <button onClick={() => setShowGuide(true)} className="flex items-center gap-2 text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 px-6 py-3.5 rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-               <HelpCircle size={16}/> 修行指引
+          {/* ========== 系統說明按鈕列 (優化手機網格排版) ========== */}
+          <div className="w-full max-w-md grid grid-cols-3 gap-2 sm:gap-4 mb-4 mx-auto">
+             <button onClick={() => setShowGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-6 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+               <HelpCircle size={16}/> <span className="whitespace-nowrap">修行指引</span>
              </button>
-             <button onClick={() => setShowStatsReport(true)} className="flex items-center gap-2 text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 px-6 py-3.5 rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-               <BarChart3 size={16}/> 屬性極限
+             <button onClick={() => setShowStatsReport(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-6 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+               <BarChart3 size={16}/> <span className="whitespace-nowrap">屬性極限</span>
              </button>
-             <button onClick={() => setShowRealmGuide(true)} className="flex items-center gap-2 text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 px-6 py-3.5 rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-               <BookOpen size={16}/> 境界全覽
+             <button onClick={() => setShowRealmGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-6 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+               <BookOpen size={16}/> <span className="whitespace-nowrap">境界全覽</span>
              </button>
           </div>
+          {/* ========================================== */}
 
           <p className="leading-relaxed">《凡人修仙傳》原著設定歸作者 忘語 所有</p>
           <p className="opacity-80 leading-loose">
