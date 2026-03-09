@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, BarChart3, Save, Pill, HelpCircle, Lightbulb, ShieldAlert, Award, Heart } from 'lucide-react';
+import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, BarChart3, Save, Pill, HelpCircle, ShieldAlert, Award, Heart, Copy, Download } from 'lucide-react';
 
 /**
  * ========================================================
@@ -173,11 +173,6 @@ const TITLE_DATA = [
   { id: 't_max_3', cat: 'max', req: 10, tier: 3, name: '開宗立派', desc: '「你對大道的理解已超越創造這些功法的前人，隨手一指便可為一界之尊。」', buffDesc: '連擊效率 +100%，戰力/氣血/靈石/靈氣全域 +30%', val: { streak_eff: 1.00, atk: 0.30, hp: 0.30, stone: 0.30, qi: 0.30 } }
 ];
 
-/**
- * ========================================================
- * 道侶系統 (Companions)
- * ========================================================
- */
 const COMPANIONS = [
   { id: 'c_chen', name: '陳巧倩', unlockIdx: 4, desc: '「韓師弟，你真的不明白我的心意嗎？」落雲宗師姐，對你一往情深，至死未嫁。', buffType: 'atk', buffName: '痴情劍意', buffDesc: '總戰力加成', tiers: [5, 10, 20, 30] },
   { id: 'c_dong', name: '董萱兒', unlockIdx: 6, desc: '「師兄，你看看萱兒嘛。」紅拂仙子之女，天生媚骨，後轉修魔道。', buffType: 'evade', buffName: '幻媚之身', buffDesc: '閃避率提升', tiers: [2, 4, 8, 15] },
@@ -239,6 +234,14 @@ export default function App() {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // 每次狀態更新，寫入 localStorage
+  useEffect(() => {
+    localStorage.setItem('xianxia_master_v69', JSON.stringify(player));
+    setSaveIndicator(true);
+    const timer = setTimeout(() => setSaveIndicator(false), 2000);
+    return () => clearTimeout(timer);
+  }, [player]);
 
   const availableSP = useMemo(() => {
     let totalEarned = 0;
@@ -393,6 +396,8 @@ export default function App() {
   const [showStatsReport, setShowStatsReport] = useState(false);
   const [showGuide, setShowGuide] = useState(false); 
   const [showTitles, setShowTitles] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false); // 新增存檔管理彈窗
+  const [importString, setImportString] = useState(''); // 新增匯入字串
   const [guideTab, setGuideTab] = useState('rules'); 
   const [celebration, setCelebration] = useState(null);
   const [showGiveUpWarning, setShowGiveUpWarning] = useState(false);
@@ -467,6 +472,47 @@ export default function App() {
   const pillCooldownRemaining = player.lastPillTime ? Math.max(0, 3600 - Math.floor((now - player.lastPillTime) / 1000)) : 0;
   const canUsePill = (player.epiphanyPills || 0) > 0 && pillCooldownRemaining === 0;
 
+  // 玉簡傳功：匯出與匯入邏輯
+  const getExportString = () => {
+      try {
+          const { logs, ...saveData } = player; // 移除 logs 以節省空間
+          return btoa(encodeURIComponent(JSON.stringify(saveData)));
+      } catch (e) {
+          return "【天道異常】秘文生成失敗。";
+      }
+  };
+
+  const handleExport = () => {
+      const saveStr = getExportString();
+      navigator.clipboard.writeText(saveStr).then(() => {
+          alert("【玉簡秘文】已複製至剪貼簿！\n請傳送至另一台裝置，並在該處選擇「匯入秘文」。");
+      }).catch(() => {
+          alert("【複製失敗】請手動選取秘文框內的文字並複製。");
+      });
+  };
+
+  const handleImport = () => {
+      if (!importString.trim()) {
+          alert("請先貼上秘文！");
+          return;
+      }
+      try {
+          const parsed = JSON.parse(decodeURIComponent(atob(importString.trim())));
+          if (parsed && parsed.realmIndex !== undefined) {
+              if (window.confirm("【奪舍警告】\n匯入將完全覆蓋當前裝置的進度，確定要注入神識嗎？")) {
+                  setPlayer({ ...defaultPlayerState, ...parsed, logs: ['【天道】跨界奪舍成功，神識與記憶已完美融合。'] });
+                  setImportString('');
+                  setShowSaveModal(false);
+                  alert("奪舍成功！進度已同步。");
+              }
+          } else {
+              alert("秘文殘缺，無法解析真元！");
+          }
+      } catch (e) {
+          alert("玉簡毀損，這不是正確的秘文格式！");
+      }
+  };
+
   const addLog = (text) => {
     const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
     setPlayer(p => ({ ...p, logs: [`[${timeStr}] ${text}`, ...(p.logs || [])].slice(0, 50) }));
@@ -486,7 +532,7 @@ export default function App() {
       alert("已是一介凡人，無可散功。");
       return;
     }
-    if (window.confirm("【天道警告】\n散功重修將使境界跌落一級！\n\n副作用：當前境界累積的修為將歸零。\n獲得：重置所有技能點與機緣祕籍，退還剩餘可用 SP。\n（您的生涯數據與稱號將永久保留）\n\n確認散功？")) {
+    if (window.confirm("【天道警告】\n散功重修將使境界跌落一級！\n\n副作用：當前境界累積的修為將歸零。\n獲得：重置所有技能點與機緣祕籍，退還剩餘可用 SP。\n（您的生涯數據與道侶羈絆將永久保留）\n\n確認散功？")) {
       const newRealm = player.realmIndex - 1;
       const newQiToNext = Math.floor(250 * Math.pow(1.35, newRealm));
       setPlayer(p => ({ ...p, realmIndex: newRealm, qi: 0, qiToNext: newQiToNext, basicSkills: {}, secretBooks: {}, activeCompanion: null }));
@@ -687,6 +733,16 @@ export default function App() {
 
             if (combinedPool.length === 0) {
                 for (let i = targetIdx - 1; i >= 0; i--) {
+                    combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks);
+                    if (combinedPool.length > 0) {
+                        targetRarity = RARITIES_ORDER[i];
+                        break;
+                    }
+                }
+            }
+
+            if (combinedPool.length === 0) {
+                for (let i = originalIdx + 1; i < RARITIES_ORDER.length; i++) {
                     combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks);
                     if (combinedPool.length > 0) {
                         targetRarity = RARITIES_ORDER[i];
@@ -1058,6 +1114,41 @@ export default function App() {
             <div className="flex gap-4 w-full">
               <button onClick={() => setShowGiveUpWarning(false)} className="flex-1 py-4 bg-white/10 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black transition-all border border-white/20">繼續運功</button>
               <button onClick={executeGiveUp} className="flex-1 py-4 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-sm font-black transition-all shadow-lg">強行收功</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 玉簡傳功彈窗 */}
+      {showSaveModal && (
+        <div className="fixed inset-0 z-[600] bg-black/95 backdrop-blur-2xl p-6 flex flex-col items-center justify-center font-bold mt-8">
+          <div className="w-full max-w-xl bg-slate-900/90 p-6 md:p-10 rounded-2xl border border-cyan-500/30 shadow-[0_0_50px_rgba(6,182,212,0.2)] flex flex-col animate-pop-in relative">
+            <button onClick={() => setShowSaveModal(false)} className="absolute top-4 right-4 p-2 text-white/50 hover:text-white transition-colors"><X size={20}/></button>
+            
+            <h2 className="text-xl md:text-2xl font-black text-cyan-400 tracking-widest uppercase mb-2 flex items-center gap-3"><ScrollText className="fill-current"/> 玉簡傳功 (跨裝置同步)</h2>
+            <p className="text-white/60 text-xs md:text-sm leading-relaxed mb-8">將當前境界凝聚為秘文，或注入他處傳來的神識，實現跨裝置無縫接軌。<br/>(警告：匯入秘文將完全覆蓋本機當前進度)</p>
+            
+            <div className="space-y-6">
+                <div className="bg-black/50 p-4 rounded-xl border border-white/10">
+                    <div className="flex justify-between items-center mb-3">
+                        <label className="text-emerald-400 text-sm font-black flex items-center gap-2"><Download size={16}/> 凝聚秘文 (匯出)</label>
+                        <button onClick={handleExport} className="bg-emerald-900/60 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-2 border border-emerald-500/50"><Copy size={12}/> 複製秘文</button>
+                    </div>
+                    <textarea readOnly value={getExportString()} className="w-full h-24 bg-black/80 text-white/40 text-[10px] font-mono p-3 rounded-lg border border-white/5 focus:outline-none resize-none custom-scrollbar" />
+                </div>
+                
+                <div className="bg-black/50 p-4 rounded-xl border border-white/10">
+                    <label className="text-rose-400 text-sm font-black flex items-center gap-2 mb-3"><Activity size={16}/> 注入神識 (匯入)</label>
+                    <textarea 
+                        placeholder="請在此貼上其他裝置產生的玉簡秘文..." 
+                        value={importString}
+                        onChange={(e) => setImportString(e.target.value)}
+                        className="w-full h-24 bg-black/80 text-white/90 text-xs font-mono p-3 rounded-lg border border-rose-500/30 focus:border-rose-400 focus:outline-none resize-none custom-scrollbar mb-4" 
+                    />
+                    <button onClick={handleImport} disabled={!importString.trim()} className="w-full py-4 bg-rose-900/60 hover:bg-rose-600 text-white font-black rounded-lg transition-colors disabled:opacity-30 border border-rose-500/50">
+                        確認奪舍 (覆蓋本機進度)
+                    </button>
+                </div>
             </div>
           </div>
         </div>
@@ -1629,6 +1720,12 @@ export default function App() {
              </button>
              <button onClick={() => setShowRealmGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
                <BookOpen size={16}/> <span className="whitespace-nowrap">境界全覽</span>
+             </button>
+          </div>
+
+          <div className="w-full max-w-2xl mb-8 flex justify-center">
+             <button onClick={() => setShowSaveModal(true)} className="flex items-center justify-center gap-2 text-cyan-400 hover:text-cyan-300 transition-all bg-cyan-950/40 hover:bg-cyan-900/60 py-3 px-6 rounded-full border border-cyan-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(6,182,212,0.15)] font-black tracking-widest">
+               <ScrollText size={16}/> 玉簡傳功 (進度跨裝置同步)
              </button>
           </div>
 
