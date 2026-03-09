@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, BarChart3, Save, Pill, HelpCircle, Lightbulb, ShieldAlert } from 'lucide-react';
+import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, BarChart3, Save, Pill, HelpCircle, Lightbulb, ShieldAlert, Award } from 'lucide-react';
 
 /**
  * ========================================================
@@ -68,13 +68,7 @@ const MAJOR_REALMS_DATA = [
 const REALMS = [{ name: '一介凡人', desc: '凡夫俗子，尚未引氣入體，壽元百載。', majorName: '凡人', color: 'slate', isMajor: true }];
 MAJOR_REALMS_DATA.forEach(major => {
   ['初期', '中期', '後期', '巔峰'].forEach((suffix, i) => {
-    REALMS.push({ 
-      name: `${major.name.replace('境', '')}${suffix}`, 
-      desc: major.desc, 
-      isMajor: i === 0, 
-      majorName: major.name.replace('境', ''), 
-      color: major.color 
-    });
+    REALMS.push({ name: `${major.name.replace('境', '')}${suffix}`, desc: major.desc, isMajor: i === 0, majorName: major.name.replace('境', ''), color: major.color });
   });
 });
 REALMS.push({ name: '渡劫', desc: '引動九九重雷劫，成則羽化登仙，敗則化為劫灰。', majorName: '渡劫', isMajor: true, color: 'rose' });
@@ -143,6 +137,32 @@ const RARITY_BASE_COST = { COMMON: 1000, UNCOMMON: 5000, RARE: 25000, EPIC: 1000
 
 /**
  * ========================================================
+ * 新增：稱號與成就系統數據 (Title System Data)
+ * ========================================================
+ */
+const TITLE_DATA = [
+  { id: 't_kill_1', cat: 'kill', req: 50, tier: 1, name: '同階無敵', desc: '「死在閣下手下的同階修士，已不在少數。」', buffDesc: '總戰力加成 +10%', val: { atk: 0.10 } },
+  { id: 't_kill_2', cat: 'kill', req: 200, tier: 2, name: '厲飛雨', desc: '「殺人放火厲飛雨，萬人敬仰韓天尊。道友，借個名號用用。」', buffDesc: '爆擊率 +10%，真靈吸血 +5%', val: { crit: 0.10, lifesteal: 0.05 } },
+  { id: 't_kill_3', cat: 'kill', req: 1000, tier: 3, name: '修羅煞星', desc: '「百萬屍山血海中踏出的殺道。所過之處，即便是八級化形大妖也要退避三舍。」', buffDesc: '總戰力加成 +30%，爆擊傷害 +200%', val: { atk: 0.30, crit_dmg: 2.00 } },
+  { id: 't_focus_1', cat: 'focus', req: 50, tier: 1, name: '向道之心', desc: '「資質平庸的偽靈根又如何？唯有堅如磐石的向道之心，方能走到最後。」', buffDesc: '靈氣獲取倍率 +15%', val: { qi: 0.15 } },
+  { id: 't_focus_2', cat: 'focus', req: 200, tier: 2, name: '苦修之士', desc: '「閉關動輒數十載，世間繁華不過過眼雲煙。」', buffDesc: '靈氣獲取倍率 +30%，休息回血 +10%', val: { qi: 0.30, heal_bonus: 0.10 } },
+  { id: 't_focus_3', cat: 'focus', req: 500, tier: 3, name: '歲月仙尊', desc: '「紅顏白骨，故人皆逝。你獨坐洞府，笑看滄海桑田，已與天地同壽。」', buffDesc: '靈氣獲取倍率 +80%，閃避免傷 +10%', val: { qi: 0.80, evade: 0.10 } },
+  { id: 't_coin_1', cat: 'coin', req: 1000000, tier: 1, name: '身家豐厚', desc: '「在低階散修眼中，你已經是個不折不扣的大土豪了。」', buffDesc: '靈石掉落倍率 +15%', val: { stone: 0.15 } },
+  { id: 't_coin_2', cat: 'coin', req: 10000000, tier: 2, name: '天南巨富', desc: '「靈石成山。這等身家，哪怕在天南修仙界也足以橫著走了。」', buffDesc: '靈石掉落倍率 +40%', val: { stone: 0.40 } },
+  { id: 't_coin_3', cat: 'coin', req: 500000000, tier: 3, name: '財可通神', desc: '「連靈界大乘期老怪看到你的儲物袋，也會忍不住生出殺人奪寶的心思。」', buffDesc: '靈石倍率 +150%，氣運保底 +0.5', val: { stone: 1.50, luck_floor: 0.50 } },
+  { id: 't_art_1', cat: 'artifact', req: 5, tier: 1, name: '身懷異寶', desc: '「財不露白，道友還是盡早將這些寶物收進儲物袋為妙。」', buffDesc: '氣運保底 +0.15', val: { luck_floor: 0.15 } },
+  { id: 't_art_2', cat: 'artifact', req: 15, tier: 2, name: '一身是寶', desc: '「『不可能！你區區一介散修，身家怎會比老夫還要豐厚！』」', buffDesc: '連擊上限 +50%，氣運保底 +0.3', val: { streak_cap: 0.50, luck_floor: 0.30 } },
+  { id: 't_art_3', cat: 'artifact', req: 25, tier: 3, name: '多寶天尊', desc: '「玄天之寶、造化至寶盡入你手，此界天道法則已被你徹底顛覆。」', buffDesc: '連擊上限 +150%，氣運保底 +0.8', val: { streak_cap: 1.50, luck_floor: 0.80 } },
+  { id: 't_sec_1', cat: 'secret', req: 4, tier: 1, name: '博覽群書', desc: '「藏經閣內的玉簡被你翻了個遍，對各派功法皆有涉獵。」', buffDesc: '反噬基礎減傷 +10%', val: { sense_def: 0.10 } },
+  { id: 't_sec_2', cat: 'secret', req: 9, tier: 2, name: '法體雙修', desc: '「功法龐雜卻互不衝突，靈力與肉身皆臻至化境，實力遠超同階修士。」', buffDesc: '氣血上限加成 +20%，神識減傷 +15%', val: { hp: 0.20, sense_def: 0.15 } },
+  { id: 't_sec_3', cat: 'secret', req: 13, tier: 3, name: '萬法歸一', desc: '「天下萬般神仙妙法，在你眼中皆如掌上觀紋，直指大道本源。」', buffDesc: '氣血上限 +50%，反噬與神識減傷皆 +30%', val: { hp: 0.50, sense_def: 0.30, def: 0.30 } },
+  { id: 't_max_1', cat: 'max', req: 1, tier: 1, name: '爐火純青', desc: '「將一門功法推演至極致，便足以在修仙界立足。」', buffDesc: '連擊效率倍率 +15%', val: { streak_eff: 0.15 } },
+  { id: 't_max_2', cat: 'max', req: 4, tier: 2, name: '大衍傳人', desc: '「將數門頂級功法推演至極限，即便是大衍神君在世，也要讚你一聲奇才。」', buffDesc: '連擊效率倍率 +40%，總戰力 +20%', val: { streak_eff: 0.40, atk: 0.20 } },
+  { id: 't_max_3', cat: 'max', req: 10, tier: 3, name: '開宗立派', desc: '「你對大道的理解已超越創造這些功法的前人，隨手一指便可為一界之尊。」', buffDesc: '連擊效率 +100%，戰力/氣血/靈石/靈氣全域 +30%', val: { streak_eff: 1.00, atk: 0.30, hp: 0.30, stone: 0.30, qi: 0.30 } }
+];
+
+/**
+ * ========================================================
  * 2. 主組件 (App)
  * ========================================================
  */
@@ -152,6 +172,8 @@ export default function App() {
     realmIndex: 0, qi: 0, qiToNext: 250, vitality: 100, baseMaxVitality: 100, coins: 0, baseCombat: 150, 
     artifacts: [], artifactLvls: {}, basicSkills: {}, secretBooks: {}, arrays: { qi: 0, def: 0 }, 
     streakCount: 0, streakShields: 0, luck: 1.0, totalFocusTime: 0, history: [], hasAscended: false,
+    lifetimeStats: { kills: 0, focusCount: 0, totalCoins: 0 },
+    unlockedTitles: [], equippedTitle: null, freeGacha: 0,
     logs: ['【天道印記】仙途漫漫，唯『靜心專注』方能證道。以現世之光陰，化此界之修為。摒棄雜念，祝道友仙運隆昌。'] 
   };
 
@@ -194,6 +216,50 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // 稱號解鎖檢測引擎 (Title Unlocker)
+  useEffect(() => {
+    let newlyUnlocked = [];
+    let newFreeGacha = player.freeGacha || 0;
+    
+    TITLE_DATA.forEach(t => {
+       if (!(player.unlockedTitles || []).includes(t.id)) {
+          let conditionMet = false;
+          if (t.cat === 'kill' && (player.lifetimeStats?.kills || 0) >= t.req) conditionMet = true;
+          if (t.cat === 'focus' && (player.lifetimeStats?.focusCount || 0) >= t.req) conditionMet = true;
+          if (t.cat === 'coin' && (player.lifetimeStats?.totalCoins || 0) >= t.req) conditionMet = true;
+          if (t.cat === 'artifact' && (player.artifacts?.length || 0) >= t.req) conditionMet = true;
+          if (t.cat === 'secret') {
+             const unlockedSecrets = Object.keys(player.secretBooks || {}).filter(k => player.secretBooks[k] > 0).length;
+             if (unlockedSecrets >= t.req) conditionMet = true;
+          }
+          if (t.cat === 'max') {
+             let maxCount = 0;
+             BASIC_SKILLS.forEach(s => { if ((player.basicSkills?.[s.id] || 0) >= s.maxLvl) maxCount++; });
+             SECRET_BOOKS.forEach(s => { if ((player.secretBooks?.[s.id] || 0) >= 5) maxCount++; });
+             if (maxCount >= t.req) conditionMet = true;
+          }
+          
+          if (conditionMet) {
+             newlyUnlocked.push(t.id);
+             newFreeGacha += 1;
+          }
+       }
+    });
+  
+    if (newlyUnlocked.length > 0) {
+       setPlayer(p => {
+          const updatedUnlocked = [...(p.unlockedTitles || []), ...newlyUnlocked];
+          const updatedLogs = [...p.logs];
+          newlyUnlocked.forEach(id => {
+             const titleName = TITLE_DATA.find(x => x.id === id).name;
+             const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+             updatedLogs.unshift(`[${timeStr}] 🏆 【天道恩賜】解鎖稱號「${titleName}」！獲贈萬寶樓免費尋寶 1 次！`);
+          });
+          return { ...p, unlockedTitles: updatedUnlocked, freeGacha: newFreeGacha, logs: updatedLogs.slice(0, 50) };
+       });
+    }
+  }, [player.lifetimeStats, player.artifacts, player.basicSkills, player.secretBooks]);
+
   const formatTime = (s) => `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
   
   const getMonsterName = (tier) => {
@@ -222,6 +288,7 @@ export default function App() {
   const [showRealmGuide, setShowRealmGuide] = useState(false);
   const [showStatsReport, setShowStatsReport] = useState(false);
   const [showGuide, setShowGuide] = useState(false); 
+  const [showTitles, setShowTitles] = useState(false); // 新增稱號面板狀態
   const [guideTab, setGuideTab] = useState('rules'); 
   const [celebration, setCelebration] = useState(null);
   const [showGiveUpWarning, setShowGiveUpWarning] = useState(false);
@@ -242,28 +309,40 @@ export default function App() {
   const getMultiplier = (type) => {
     let mult = 1.0;
     
+    // 基礎技能
     BASIC_SKILLS.forEach(s => { 
         if (player.basicSkills?.[s.id] > 0 && s.val?.[type]) mult += s.val[type] * player.basicSkills[s.id]; 
     });
     
+    // 祕籍 (線性)
     Object.entries(player.secretBooks || {}).forEach(([id, lvl]) => { 
         const book = SECRET_BOOKS.find(x => x.id === id);
         if (book?.val?.[type]) mult += book.val[type] * lvl;
     });
 
+    // 法寶 (淬鍊公式)
     (player.artifacts || []).forEach(id => { 
         const item = ARTIFACT_POOL.find(a => a.id === id);
         const lvl = player.artifactLvls?.[id] || 0;
         if (item?.val?.[type]) mult += item.val[type] * (1 + lvl * 0.5);
     });
     
+    // 稱號專屬被動加成 (Title Buffs)
+    if (player.equippedTitle) {
+      const activeTitle = TITLE_DATA.find(t => t.id === player.equippedTitle);
+      if (activeTitle?.val?.[type]) mult += activeTitle.val[type];
+    }
+    
+    // 劍陣共鳴
     if (type === 'atk' || type === 'streak_cap') {
       const swordCount = (player.artifacts || []).filter(id => ARTIFACT_POOL.find(a => a.id === id)?.tags?.includes('sword')).length;
       if (swordCount >= 2) mult += 0.2 * swordCount; 
     }
 
+    // 陣法加成
     if (type === 'qi' && (player.arrays?.qi || 0)) mult += player.arrays.qi * 0.05;
     if (type === 'def' && (player.arrays?.def || 0)) mult += player.arrays.def * 0.05;
+    
     return mult;
   };
 
@@ -318,7 +397,7 @@ export default function App() {
       alert("已是一介凡人，無可散功。");
       return;
     }
-    if (window.confirm("【天道警告】\n散功重修將使境界跌落一級！\n\n副作用：當前境界累積的修為將歸零。\n獲得：重置所有技能點與機緣祕籍，退還剩餘可用 SP。\n\n確認散功？")) {
+    if (window.confirm("【天道警告】\n散功重修將使境界跌落一級！\n\n副作用：當前境界累積的修為將歸零。\n獲得：重置所有技能點與機緣祕籍，退還剩餘可用 SP。\n（您的生涯數據與稱號將永久保留）\n\n確認散功？")) {
       const newRealm = player.realmIndex - 1;
       const newQiToNext = Math.floor(250 * Math.pow(1.35, newRealm));
       setPlayer(p => ({ ...p, realmIndex: newRealm, qi: 0, qiToNext: newQiToNext, basicSkills: {}, secretBooks: {} }));
@@ -421,6 +500,10 @@ export default function App() {
       let newArtifacts = [...(player.artifacts || [])];
       let nextHasAscended = player.hasAscended;
       
+      let nextLifetime = { ...(player.lifetimeStats || { kills: 0, focusCount: 0, totalCoins: 0 }) };
+      nextLifetime.focusCount += 1;
+      nextLifetime.totalCoins += passiveCoin;
+      
       if (isCrit && Math.random() < 0.30) {
         const lifesteal = Math.floor(maxVitality * (getMultiplier('lifesteal') - 1));
         if (lifesteal > 0) {
@@ -438,6 +521,8 @@ export default function App() {
         
         nextQi += killQi;
         nextCoins += killCoin;
+        nextLifetime.kills += 1;
+        nextLifetime.totalCoins += killCoin;
         
         if (Math.random() < (0.15 * currentLuck)) {
             const potential = ARTIFACT_POOL.filter(a => !newArtifacts.includes(a.id));
@@ -478,6 +563,7 @@ export default function App() {
         } else if (fortuneRoll < 0.66) {
             const extraCoin = Math.floor(passiveCoin * 3);
             nextCoins += extraCoin;
+            nextLifetime.totalCoins += extraCoin;
             fortuneLog = ` 🌈 【氣運爆發】發掘古修洞府，額外獲 ${formatNumber(extraCoin)} 靈石！`;
         } else {
             const healAmount = Math.floor(maxVitality * 0.3);
@@ -501,7 +587,8 @@ export default function App() {
           totalFocusTime: (p.totalFocusTime || 0) + focusDuration,
           artifacts: newArtifacts,
           history: nextHistory,
-          hasAscended: nextHasAscended
+          hasAscended: nextHasAscended,
+          lifetimeStats: nextLifetime
       }));
       setMode('break'); setTimeLeft(5 * 60);
 
@@ -518,7 +605,9 @@ export default function App() {
   };
 
   const handleGacha = () => {
-    if (player.coins < gachaCost) return;
+    const isFree = (player.freeGacha || 0) > 0;
+    if (!isFree && player.coins < gachaCost) return;
+    
     const currentLuck = getMultiplier('luck_floor');
     const roll = Math.random(); 
     let targetRarity = 'COMMON';
@@ -530,12 +619,27 @@ export default function App() {
     else if (roll < 0.18 * currentLuck) targetRarity = 'RARE'; 
     else if (roll < 0.4 * currentLuck) targetRarity = 'UNCOMMON';
     
+    // 如果是免費保底抽，強制將凡品、靈品提升為法寶(RARE)
+    if (isFree && ['COMMON', 'UNCOMMON'].includes(targetRarity)) {
+      targetRarity = 'RARE';
+    }
+    
     const candidates = ARTIFACT_POOL.filter(a => a.rarity === targetRarity && !(player.artifacts || []).includes(a.id));
     if (candidates.length > 0) {
-      setPlayer(p => ({ ...p, coins: p.coins - gachaCost, artifacts: [...(p.artifacts || []), candidates[0].id] }));
+      setPlayer(p => ({ 
+        ...p, 
+        coins: isFree ? p.coins : p.coins - gachaCost, 
+        freeGacha: isFree ? p.freeGacha - 1 : p.freeGacha,
+        artifacts: [...(p.artifacts || []), candidates[0].id] 
+      }));
       setCelebration({ name: candidates[0].name });
     } else { 
-      setPlayer(p => ({ ...p, coins: p.coins - gachaCost, qi: p.qi + 100 })); 
+      setPlayer(p => ({ 
+        ...p, 
+        coins: isFree ? p.coins : p.coins - gachaCost, 
+        freeGacha: isFree ? p.freeGacha - 1 : p.freeGacha,
+        qi: p.qi + 100 
+      })); 
       addLog(`[萬寶樓] 尋寶未果，獲補償修為 100 點。`); 
     }
   };
@@ -660,8 +764,53 @@ export default function App() {
       </div>
 
       {/* ==========================================
-          天道經緯 (境界全覽)
+          名號頭銜 (稱號系統 UI)
           ========================================== */}
+      {showTitles && (
+        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
+          <div className="w-full max-w-4xl bg-[#0a0a0a] p-4 sm:p-6 md:p-8 rounded-2xl border border-amber-500/30 shadow-2xl flex flex-col max-h-[85vh]">
+            <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
+               <h2 className="text-xl md:text-2xl font-black text-amber-400 tracking-widest uppercase flex items-center gap-3"><Award className="text-amber-500"/> 名號頭銜 (成就)</h2>
+               <button onClick={() => setShowTitles(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
+            </div>
+            
+            {/* 生涯數據儀表板 */}
+            <div className="flex justify-between md:justify-start gap-4 md:gap-12 mb-6 bg-black/40 p-4 rounded-xl border border-white/5 flex-shrink-0 overflow-x-auto">
+               <div className="flex flex-col"><span className="text-[10px] text-white/40 uppercase tracking-widest">累計專注</span><span className="text-white font-mono">{formatNumber(player.lifetimeStats?.focusCount || 0)} 次</span></div>
+               <div className="flex flex-col"><span className="text-[10px] text-white/40 uppercase tracking-widest">擊殺妖獸</span><span className="text-rose-400 font-mono">{formatNumber(player.lifetimeStats?.kills || 0)} 隻</span></div>
+               <div className="flex flex-col"><span className="text-[10px] text-white/40 uppercase tracking-widest">累計靈石</span><span className="text-yellow-400 font-mono">{formatNumber(player.lifetimeStats?.totalCoins || 0)}</span></div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
+               {TITLE_DATA.map(t => {
+                 const isUnlocked = (player.unlockedTitles || []).includes(t.id);
+                 const isEquipped = player.equippedTitle === t.id;
+                 return (
+                   <div key={t.id} className={`p-5 rounded-xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${isEquipped ? 'bg-amber-950/40 border-amber-500/60 shadow-[0_0_15px_rgba(245,158,11,0.2)]' : isUnlocked ? 'bg-white/5 border-white/20' : 'bg-black/60 border-white/5 opacity-50'}`}>
+                      <div className="flex-1">
+                         <div className="flex items-center gap-3 mb-1">
+                            <h4 className={`text-base font-black tracking-widest ${isUnlocked ? 'text-amber-400' : 'text-white/50'}`}>【{t.name}】</h4>
+                            {isEquipped && <span className="text-[10px] bg-amber-500 text-black px-2 py-0.5 rounded uppercase font-black tracking-widest">已裝備</span>}
+                         </div>
+                         <p className="text-xs text-white/70 italic mb-2">"{t.desc}"</p>
+                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-[11px] font-mono">
+                            <span className="text-cyan-400">條件：{t.cat === 'kill' ? '擊殺妖獸' : t.cat === 'focus' ? '運轉周天' : t.cat === 'coin' ? '獲得靈石' : t.cat === 'artifact' ? '收集法寶' : t.cat === 'secret' ? '解鎖祕籍' : '滿級功法'} {formatNumber(t.req)}</span>
+                            <span className="text-emerald-400">被動：{t.buffDesc}</span>
+                         </div>
+                      </div>
+                      {isUnlocked && !isEquipped && (
+                        <button onClick={() => setPlayer(p => ({ ...p, equippedTitle: t.id }))} className="py-3 px-6 bg-white/10 hover:bg-amber-600 hover:text-white rounded-lg text-xs font-black border border-white/20 transition-all flex-shrink-0">
+                          裝備稱號
+                        </button>
+                      )}
+                   </div>
+                 );
+               })}
+            </div>
+          </div>
+        </div>
+      )}
+
       {showRealmGuide && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-4xl flex flex-col max-h-[80vh]">
@@ -693,9 +842,6 @@ export default function App() {
         </div>
       )}
 
-      {/* ==========================================
-          修行指引與祕訣
-          ========================================== */}
       {showGuide && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-2xl bg-[#0a0a0a] p-4 sm:p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh]">
@@ -754,9 +900,6 @@ export default function App() {
         </div>
       )}
 
-      {/* ==========================================
-          屬性極限報告 (精準對接內部變數)
-          ========================================== */}
       {showStatsReport && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-3xl bg-[#0a0a0a] p-4 sm:p-6 md:p-10 rounded-2xl border border-cyan-900/50 shadow-2xl flex flex-col max-h-[90vh]">
@@ -862,7 +1005,10 @@ export default function App() {
             <div className="flex items-center gap-4 w-full md:flex-1 min-w-0">
                <Shield size={36} className={`${mode === 'break' ? 'text-cyan-400' : `text-${currentRealmData.color}-400`} flex-shrink-0`}/>
                <div className="flex flex-col justify-center flex-1 min-w-0">
-                  <h2 className="text-2xl font-black tracking-widest uppercase text-white font-bold drop-shadow-lg truncate">{currentRealmData.name}</h2>
+                  <h2 className="text-xl sm:text-2xl font-black tracking-widest uppercase text-white font-bold drop-shadow-lg truncate">
+                    {player.equippedTitle && <span className="text-amber-400 mr-2 border border-amber-500/50 bg-amber-950/50 px-2 py-0.5 rounded text-[10px] sm:text-xs tracking-widest relative -top-0.5">[{TITLE_DATA.find(t=>t.id===player.equippedTitle)?.name}]</span>}
+                    {currentRealmData.name}
+                  </h2>
                   <p className={`text-xs md:text-sm leading-tight ${mode === 'break' ? 'text-cyan-300' : `text-${currentRealmData.color}-300`} font-bold mt-2 opacity-90 italic drop-shadow-md truncate`}>{currentRealmData.desc}</p>
                </div>
             </div>
@@ -1031,10 +1177,13 @@ export default function App() {
                 </div>
                 <div className="bg-gradient-to-br from-white/10 to-transparent p-8 md:p-14 rounded-2xl border border-white/20 text-center relative overflow-hidden mt-8">
                   <h3 className="text-white font-black text-2xl uppercase mb-8 tracking-widest flex items-center justify-center gap-3"><Compass className="text-yellow-400"/> 萬寶樓尋寶</h3>
+                  {player.freeGacha > 0 && <p className="text-amber-400 text-sm font-bold mb-6 animate-pulse">您有 {player.freeGacha} 次【天道免費保底】抽獎機會！</p>}
                   <div className="flex justify-center gap-6 mb-12 overflow-x-auto pb-6 custom-scrollbar">
                      {Object.entries(RARITY).map(([k, r]) => (<div key={k} className="flex flex-col items-center min-w-[80px] opacity-80"><span className={`text-xs font-black uppercase ${r.color} drop-shadow-md`}>{r.name}</span><span className="text-sm font-mono mt-2 text-white">{(r.weight*100*getMultiplier('luck_floor')).toFixed(1)}%</span></div>))}
                   </div>
-                  <button onClick={handleGacha} disabled={player.coins < gachaCost} className="px-8 md:px-20 py-6 md:py-8 bg-white/15 hover:bg-white text-white hover:text-black font-black rounded-2xl shadow-2xl transition-all whitespace-nowrap border border-white/30 disabled:opacity-30 flex items-center justify-center gap-4 mx-auto text-base md:text-lg"><Sparkles size={24}/> 尋寶 ({formatNumber(gachaCost)} 靈石)</button>
+                  <button onClick={handleGacha} disabled={player.freeGacha <= 0 && player.coins < gachaCost} className="px-8 md:px-20 py-6 md:py-8 bg-white/15 hover:bg-white text-white hover:text-black font-black rounded-2xl shadow-2xl transition-all whitespace-nowrap border border-white/30 disabled:opacity-30 flex items-center justify-center gap-4 mx-auto text-base md:text-lg">
+                    <Sparkles size={24}/> {player.freeGacha > 0 ? '免費保底尋寶' : `尋寶 (${formatNumber(gachaCost)} 靈石)`}
+                  </button>
                 </div>
               </div>
             )}
@@ -1064,19 +1213,21 @@ export default function App() {
 
         <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4 w-full">
           
-          {/* ========== 系統說明按鈕列 (優化手機網格排版) ========== */}
-          <div className="w-full max-w-md grid grid-cols-3 gap-2 sm:gap-4 mb-4 mx-auto">
-             <button onClick={() => setShowGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-6 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+          <div className="w-full max-w-2xl grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 mx-auto">
+             <button onClick={() => setShowTitles(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-amber-400 hover:text-amber-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest relative">
+               <Award size={16}/> <span className="whitespace-nowrap">名號頭銜</span>
+               {player.freeGacha > 0 && <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded-full animate-bounce">{player.freeGacha}</span>}
+             </button>
+             <button onClick={() => setShowGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
                <HelpCircle size={16}/> <span className="whitespace-nowrap">修行指引</span>
              </button>
-             <button onClick={() => setShowStatsReport(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-6 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+             <button onClick={() => setShowStatsReport(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
                <BarChart3 size={16}/> <span className="whitespace-nowrap">屬性極限</span>
              </button>
-             <button onClick={() => setShowRealmGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-6 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+             <button onClick={() => setShowRealmGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
                <BookOpen size={16}/> <span className="whitespace-nowrap">境界全覽</span>
              </button>
           </div>
-          {/* ========================================== */}
 
           <p className="leading-relaxed">《凡人修仙傳》原著設定歸作者 忘語 所有</p>
           <p className="opacity-80 leading-loose">
