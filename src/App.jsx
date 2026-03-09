@@ -30,6 +30,16 @@ const database = getDatabase(app);
 
 const CHANGELOG_DATA = [
   {
+    version: "v3.6.0",
+    title: "天道補全與邏輯收官",
+    desc: "大道五十，天衍四九。一切漏洞皆被天道意志抹平。",
+    changes: [
+      "修復【境界跌落悖論】：對戰死劫 Boss 死亡導致修為不足時，死劫將強制消散，需重新積累底蘊。",
+      "實裝【妖獸氣血鎖定】：妖獸狀態與剩餘血量已刻入本地識海，重整網頁不再導致 Boss 滿血重生。",
+      "確實驗證所有 SP 點數發放、道侶加法疊加與傷害公式，數值達到絕對閉環。"
+    ]
+  },
+  {
     version: "v3.5.0",
     title: "萬妖朝宗與登仙大劫",
     desc: "仙凡有別，34大死劫已佈下天羅地網。",
@@ -445,8 +455,19 @@ export default function App() {
     return { name: mName, hp: nHp, maxHp: nHp, tier: nTier, atk: mAtk, sAtkName: mData.s, bAtkName: mData.b, isBoss };
   };
 
-  // 初始掛載，或重整時生成
-  const [monster, setMonster] = useState(() => generateMonsterState(player.realmIndex, player.qi, player.qiToNext));
+  // 【修復】加入本地存儲，防止 F5 刷新後 Boss 滿血復活
+  const [monster, setMonster] = useState(() => {
+    try {
+      const savedMonster = localStorage.getItem('xianxia_monster');
+      if (savedMonster) return JSON.parse(savedMonster);
+    } catch (e) {}
+    return generateMonsterState(player.realmIndex, player.qi, player.qiToNext);
+  });
+
+  useEffect(() => {
+    localStorage.setItem('xianxia_monster', JSON.stringify(monster));
+  }, [monster]);
+
   const [focusDuration, setFocusDuration] = useState(25 * 60);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [targetEndTime, setTargetEndTime] = useState(null); 
@@ -604,8 +625,7 @@ export default function App() {
   };
 
   const preCheckGiveUp = () => {
-    const isBottleneck = monster.isBoss;
-    if (isBottleneck) {
+    if (monster.isBoss) {
       setShowGiveUpWarning(true);
     } else {
       executeGiveUp();
@@ -629,6 +649,8 @@ export default function App() {
       let nextHp = player.vitality - penalty;
       let nextStreak = player.streakCount;
       let nextShields = player.streakShields;
+      let nextQi = player.qi;
+      let fellFromBreakthrough = false;
       
       if (nextHp <= 0) {
           if (nextShields > 0) {
@@ -640,9 +662,10 @@ export default function App() {
               addLog(`✨ 【涅槃重生】轉危為安！`); 
           } else { 
               nextHp = Math.floor(maxVitality * 0.5); 
-              setPlayer(p => ({ ...p, qi: Math.floor(p.qi * 0.8) })); 
+              nextQi = Math.floor(player.qi * 0.8);
               nextStreak = 0;
               addLog(`💀 【身死道消】反噬過重，氣血歸零，損失 20% 修為與連擊！`); 
+              if (monster.isBoss && nextQi < player.qiToNext) fellFromBreakthrough = true;
           }
       } else { 
           addLog(`🚨 【靈力反噬】神魂震盪，承受 ${formatNumber(penalty)} 傷害。`);
@@ -657,7 +680,13 @@ export default function App() {
           }
       }
       
-      setPlayer(p => ({ ...p, vitality: nextHp, streakCount: nextStreak, streakShields: nextShields }));
+      setPlayer(p => ({ ...p, qi: nextQi, vitality: nextHp, streakCount: nextStreak, streakShields: nextShields }));
+      
+      // 【修復悖論】如果因為強行收功死亡，導致修為跌落突破門檻，必須將 Boss 刷新回普通妖獸
+      if (fellFromBreakthrough) {
+          addLog(`📉 境界不穩，跌落玄關，宿敵消散！需重新積累底蘊。`);
+          setMonster(generateMonsterState(player.realmIndex, nextQi, player.qiToNext));
+      }
     }
     setTimeLeft(focusDuration);
   };
@@ -892,6 +921,12 @@ export default function App() {
                 killLog = `💥 妖獸未死，發動【${atkName}】反擊，造成 ${formatNumber(actualDamage)} 點傷害。`;
             }
         }
+      }
+
+      // 【修復悖論】如果被 Boss 打死且修為跌落突破門檻，必須將 Boss 刷新回普通妖獸
+      if (isDeadFromCounter && monster.isBoss && nextQi < nextQiToNext) {
+          killLog += ` 📉 境界不穩，跌落玄關，宿敵消散！`;
+          setMonster(generateMonsterState(nextRealm, nextQi, nextQiToNext));
       }
 
       let fortuneLog = '';
