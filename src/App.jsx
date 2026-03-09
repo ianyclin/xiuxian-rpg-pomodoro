@@ -183,7 +183,7 @@ export default function App() {
     artifacts: [], artifactLvls: {}, basicSkills: {}, secretBooks: {}, arrays: { qi: 0, def: 0 }, 
     streakCount: 0, streakShields: 0, luck: 1.0, totalFocusTime: 0, history: [], hasAscended: false,
     lifetimeStats: { kills: 0, focusCount: 0, totalCoins: 0 },
-    unlockedTitles: [], equippedTitle: null, freeGacha: 0,
+    unlockedTitles: [], equippedTitle: null, freeGacha: 0, epiphanyPills: 0, // 新增頓悟丹庫存
     logs: ['【天道印記】仙途漫漫，唯『靜心專注』方能證道。以現世之光陰，化此界之修為。摒棄雜念，祝道友仙運隆昌。'] 
   };
 
@@ -195,10 +195,8 @@ export default function App() {
     } catch (e) { return defaultPlayerState; }
   });
 
-  // 初始化音效引擎
   const bellAudioRef = useRef(null);
   useEffect(() => {
-    // 採用 Google 官方開源的冥想頌缽音效
     bellAudioRef.current = new Audio('https://actions.google.com/sounds/v1/alarms/meditation_bell.ogg');
   }, []);
 
@@ -485,23 +483,29 @@ export default function App() {
     return [...unownedArts, ...unownedBooks];
   };
 
-  const handleComplete = () => {
+  // 結算核心引擎 (加入頓悟丹判斷)
+  const handleComplete = (usedPill = false) => {
+    const isUsingPill = usedPill === true;
+    if (isUsingPill && (player.epiphanyPills || 0) <= 0) return;
+
     setIsActive(false); 
     setTargetEndTime(null);
     
-    // 播放出關古鐘音效 (捕捉例外以防瀏覽器 Autoplay 阻擋)
     if (bellAudioRef.current) {
-        bellAudioRef.current.play().catch(e => console.log("Audio play failed or blocked by browser:", e));
+        bellAudioRef.current.play().catch(e => console.log("Audio muted by browser:", e));
     }
     
     if (mode === 'focus') {
       setIsAttacking(true); setTimeout(() => setIsAttacking(false), 500);
 
-      try {
-        const statsRef = ref(database, 'globalStats');
-        update(statsRef, { totalFocusCount: increment(1) });
-      } catch (e) { console.error(e); }
+      try { update(ref(database, 'globalStats'), { totalFocusCount: increment(1) }); } catch (e) {}
       
+      if (isUsingPill) {
+          addLog(`💊 【歲月頓悟】吞服頓悟丹，無視天地法則，瞬間出關！`);
+      }
+
+      let nextPills = (player.epiphanyPills || 0) - (isUsingPill ? 1 : 0);
+
       const isCrit = Math.random() < critRate;
       const damageBase = Math.floor(currentCombatPower * (focusDuration / 1500));
       const actualDamage = isCrit ? Math.floor(damageBase * critDmg) : damageBase;
@@ -548,6 +552,12 @@ export default function App() {
         nextLifetime.kills += 1;
         nextLifetime.totalCoins += killCoin;
         
+        // 擊殺固定掉落頓悟丹 (10%)
+        if (Math.random() < 0.10) {
+            nextPills += 1;
+            killLog += ` 💊 搜刮妖獸巢穴，獲得【頓悟丹】x1！`;
+        }
+
         if (Math.random() < (0.20 * currentLuck)) {
             const roll = Math.random();
             let targetRarity = 'COMMON';
@@ -614,19 +624,22 @@ export default function App() {
       let fortuneLog = '';
       if (Math.random() < (0.10 * currentLuck)) {
         const fortuneRoll = Math.random();
-        if (fortuneRoll < 0.33) {
+        if (fortuneRoll < 0.25) {
             const extraQi = Math.floor(passiveQi * 2);
             nextQi += extraQi;
             fortuneLog = ` 🌈 【氣運爆發】偶遇天地靈泉，額外獲 ${formatNumber(extraQi)} 修為！`;
-        } else if (fortuneRoll < 0.66) {
+        } else if (fortuneRoll < 0.50) {
             const extraCoin = Math.floor(passiveCoin * 3);
             nextCoins += extraCoin;
             nextLifetime.totalCoins += extraCoin;
             fortuneLog = ` 🌈 【氣運爆發】發掘古修洞府，額外獲 ${formatNumber(extraCoin)} 靈石！`;
-        } else {
+        } else if (fortuneRoll < 0.75) {
             const healAmount = Math.floor(maxVitality * 0.3);
             nextVitality = Math.min(maxVitality, nextVitality + healAmount);
             fortuneLog = ` 🌈 【氣運爆發】陷入天道頓悟，氣血恢復 ${formatNumber(healAmount)}！`;
+        } else {
+            nextPills += 1;
+            fortuneLog = ` 🌈 【氣運爆發】天降機緣，獲得【頓悟丹】x1！`;
         }
       }
 
@@ -645,6 +658,7 @@ export default function App() {
           totalFocusTime: (p.totalFocusTime || 0) + focusDuration,
           artifacts: newArtifacts,
           secretBooks: newSecretBooks,
+          epiphanyPills: nextPills,
           history: nextHistory,
           hasAscended: nextHasAscended,
           lifetimeStats: nextLifetime
@@ -674,7 +688,7 @@ export default function App() {
     let accum = 0;
     const sortedRarities = Object.entries(RARITY).sort((a,b) => a[1].weight - b[1].weight);
     for (let [r, data] of sortedRarities) {
-        accum += data.weight * currentLuck; // 氣運放大權重
+        accum += data.weight * currentLuck; 
         if (roll < accum) {
             targetRarity = r;
             break;
@@ -839,9 +853,6 @@ export default function App() {
         <Save size={14} className="animate-pulse"/> 天道已同步
       </div>
 
-      {/* ==========================================
-          名號頭銜
-          ========================================== */}
       {showTitles && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-4xl bg-[#0a0a0a] p-4 sm:p-6 md:p-8 rounded-2xl border border-amber-500/30 shadow-2xl flex flex-col max-h-[85vh]">
@@ -1088,7 +1099,7 @@ export default function App() {
                </div>
             </div>
             
-            <div className="grid grid-cols-2 sm:flex sm:flex-row sm:flex-nowrap justify-start md:justify-end items-start md:items-end gap-x-4 gap-y-6 w-full md:w-auto mt-2 md:mt-0">
+            <div className="grid grid-cols-3 sm:flex sm:flex-row sm:flex-nowrap justify-start md:justify-end items-start md:items-end gap-x-4 gap-y-4 w-full md:w-auto mt-4 md:mt-0">
                <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-yellow-500 uppercase font-black flex items-center gap-1.5 mb-1"><Coins size={12}/> 靈石</span>
                  <span className="text-base text-yellow-500 font-mono font-bold drop-shadow-md">{formatNumber(player.coins)}</span>
@@ -1110,6 +1121,10 @@ export default function App() {
                    x{getMultiplier('luck_floor').toFixed(2)}
                  </span>
                </div>
+               <div className="flex flex-col items-start md:items-end font-bold">
+                 <span className="text-xs text-amber-500 uppercase font-black flex items-center gap-1.5 mb-1"><Pill size={12}/> 頓悟丹</span>
+                 <span className="text-base text-amber-500 font-mono font-bold drop-shadow-md">{formatNumber(player.epiphanyPills || 0)}</span>
+               </div>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
@@ -1119,16 +1134,12 @@ export default function App() {
                     <span>{formatNumber(player.vitality)} / {formatNumber(maxVitality)}</span>
                 </div>
                 <div className={`h-2.5 bg-black/60 rounded-full overflow-hidden shadow-inner transition-all duration-300 ${isHealing ? 'shadow-[0_0_15px_rgba(16,185,129,0.8)]' : ''}`}>
-                    {/* 加入 Math.min 防止破版 */}
                     <div className="h-full bg-rose-500 transition-all duration-1000 shadow-[0_0_10px_#f43f5e]" style={{ width: `${Math.min(100, (player.vitality/maxVitality)*100)}%` }}></div>
                 </div>
             </div>
             <div className="space-y-3 relative z-10">
               <div className="flex justify-between text-xs uppercase font-black opacity-60 tracking-widest text-white"><span>修為進度</span><span>{formatNumber(player.qi)} / {formatNumber(player.qiToNext)}</span></div>
-              <div className="h-2.5 bg-black/60 rounded-full overflow-hidden shadow-inner">
-                {/* 加入 Math.min 防止破版 */}
-                <div className={`h-full ${mode === 'break' ? 'bg-cyan-500' : activeColorClass.bg} transition-all duration-1000 shadow-[0_0_10px_currentColor]`} style={{ width: `${Math.min(100, (player.qi/player.qiToNext)*100)}%` }}></div>
-              </div>
+              <div className="h-2.5 bg-black/60 rounded-full overflow-hidden shadow-inner"><div className={`h-full ${mode === 'break' ? 'bg-cyan-500' : activeColorClass.bg} transition-all duration-1000 shadow-[0_0_10px_currentColor]`} style={{ width: `${Math.min(100, (player.qi/player.qiToNext)*100)}%` }}></div></div>
             </div>
           </div>
         </div>
@@ -1156,7 +1167,6 @@ export default function App() {
               <Compass size={18}/> {monster.name}
             </div>
             <div className="w-full max-w-xs mx-auto bg-black/60 rounded-full h-2.5 mb-1 overflow-hidden border border-white/10 shadow-inner">
-               {/* 加入 Math.min 防止妖獸血條溢出 */}
                <div className="bg-gradient-to-r from-rose-900 to-rose-500 h-full transition-all duration-500 shadow-[0_0_10px_#f43f5e]" style={{ width: `${Math.min(100, (monster.hp / monster.maxHp) * 100)}%` }}></div>
             </div>
             <div className="text-[10px] font-mono text-white/40 text-center mb-10">{formatNumber(monster.hp)} / {formatNumber(monster.maxHp)}</div>
@@ -1171,18 +1181,27 @@ export default function App() {
           {formatTime(timeLeft)}
         </div>
         
-        <div className="flex justify-center gap-6 md:gap-8 font-bold">
-          {!isActive ? (
-            <button onClick={toggleTimer} className={`flex items-center justify-center gap-3 sm:gap-4 px-6 sm:px-16 py-5 sm:py-7 hover:text-black border border-white/20 rounded-2xl text-base sm:text-xl font-black tracking-widest sm:tracking-[0.5em] uppercase transition-all shadow-2xl backdrop-blur-md w-full md:w-auto whitespace-nowrap ${mode === 'break' ? 'bg-cyan-900/40 text-cyan-300 hover:bg-cyan-400' : 'bg-white/10 hover:bg-white text-white'}`}>
-              <Sparkles className="fill-current animate-pulse size-5 sm:size-6"/> {mode === 'focus' ? '運轉周天 (蓄力)' : '開始調息 (回血)'}
-            </button>
-          ) : mode === 'focus' ? (
-            <button onClick={preCheckGiveUp} className="flex items-center justify-center gap-3 sm:gap-4 px-6 sm:px-16 py-5 sm:py-7 bg-rose-950/50 text-rose-400 hover:bg-rose-900/80 border border-rose-500/40 rounded-2xl text-base sm:text-xl font-black tracking-widest sm:tracking-[0.5em] uppercase active:scale-95 transition-all shadow-2xl backdrop-blur-md w-full md:w-auto whitespace-nowrap">
-              <AlertTriangle className="fill-current size-5 sm:size-6"/> 強行收功
-            </button>
-          ) : (
-            <button onClick={handleSkipBreak} className="flex items-center justify-center gap-3 sm:gap-4 px-6 sm:px-16 py-5 sm:py-7 bg-cyan-950/50 text-cyan-400 hover:bg-cyan-900/80 border border-cyan-500/40 rounded-2xl text-base sm:text-xl font-black tracking-widest sm:tracking-[0.5em] uppercase active:scale-95 transition-all shadow-2xl backdrop-blur-md w-full md:w-auto whitespace-nowrap">
-              <Wind className="fill-current size-5 sm:size-6"/> 結束調息
+        <div className="flex flex-col items-center justify-center gap-6">
+          <div className="flex justify-center gap-6 md:gap-8 font-bold w-full">
+            {!isActive ? (
+              <button onClick={toggleTimer} className={`flex items-center justify-center gap-3 sm:gap-4 px-6 sm:px-16 py-5 sm:py-7 hover:text-black border border-white/20 rounded-2xl text-base sm:text-xl font-black tracking-widest sm:tracking-[0.5em] uppercase transition-all shadow-2xl backdrop-blur-md w-full md:w-auto whitespace-nowrap ${mode === 'break' ? 'bg-cyan-900/40 text-cyan-300 hover:bg-cyan-400' : 'bg-white/10 hover:bg-white text-white'}`}>
+                <Sparkles className="fill-current animate-pulse size-5 sm:size-6"/> {mode === 'focus' ? '運轉周天 (蓄力)' : '開始調息 (回血)'}
+              </button>
+            ) : mode === 'focus' ? (
+              <button onClick={preCheckGiveUp} className="flex items-center justify-center gap-3 sm:gap-4 px-6 sm:px-16 py-5 sm:py-7 bg-rose-950/50 text-rose-400 hover:bg-rose-900/80 border border-rose-500/40 rounded-2xl text-base sm:text-xl font-black tracking-widest sm:tracking-[0.5em] uppercase active:scale-95 transition-all shadow-2xl backdrop-blur-md w-full md:w-auto whitespace-nowrap">
+                <AlertTriangle className="fill-current size-5 sm:size-6"/> 強行收功
+              </button>
+            ) : (
+              <button onClick={handleSkipBreak} className="flex items-center justify-center gap-3 sm:gap-4 px-6 sm:px-16 py-5 sm:py-7 bg-cyan-950/50 text-cyan-400 hover:bg-cyan-900/80 border border-cyan-500/40 rounded-2xl text-base sm:text-xl font-black tracking-widest sm:tracking-[0.5em] uppercase active:scale-95 transition-all shadow-2xl backdrop-blur-md w-full md:w-auto whitespace-nowrap">
+                <Wind className="fill-current size-5 sm:size-6"/> 結束調息
+              </button>
+            )}
+          </div>
+          
+          {/* 新增：頓悟丹按鈕 */}
+          {(player.epiphanyPills || 0) > 0 && mode === 'focus' && (
+            <button onClick={() => handleComplete(true)} className="flex items-center justify-center gap-2 px-8 py-4 bg-amber-900/50 text-amber-400 hover:bg-amber-600 hover:text-white rounded-full text-xs sm:text-sm font-black tracking-widest transition-all border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+              <Pill size={16} className="animate-pulse"/> 吞服頓悟丹，瞬間出關 (餘 {player.epiphanyPills})
             </button>
           )}
         </div>
