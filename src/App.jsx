@@ -95,7 +95,7 @@ const GUIDE_REALMS = [
 ];
 
 const ARTIFACT_POOL = [
-  { id: 'a01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (反噬減傷 +2%)', val: { def: 0.02 } },
+  { id: 'a01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (防禦減傷 +2%)', val: { def: 0.02 } },
   { id: 'a02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +4%)', val: { atk: 0.04 } },
   { id: 'a03', rarity: 'COMMON', name: '凝神蒲團', desc: '固本培元 (回血+2%，修為+2%)', val: { heal_bonus: 0.02, qi: 0.02 } },
   { id: 'a04', rarity: 'COMMON', name: '粗糙靈石袋', desc: '聚財之陣 (靈石掉落 +5%)', val: { stone: 0.05 } },
@@ -104,9 +104,10 @@ const ARTIFACT_POOL = [
   { id: 'a12', rarity: 'UNCOMMON', name: '無形針', desc: '無影無蹤 (連擊效率+10%，爆擊+10%)', val: { streak_eff: 0.10, crit: 0.10 } },
   { id: 'a13', rarity: 'UNCOMMON', name: '血玉髓', desc: '氣血滋養 (休息回血比例 +5%)', val: { heal_bonus: 0.05 } },
   { id: 'a20', rarity: 'RARE', name: '青蛟旗', desc: '妖魂鎮壓 (戰力加成 +15%)', val: { atk: 0.15 } },
-  { id: 'a21', rarity: 'RARE', name: '玄鐵飛天盾', desc: '堅不可摧 (反噬減傷 +15%)', val: { def: 0.15 } },
+  { id: 'a21', rarity: 'RARE', name: '玄鐵飛天盾', desc: '堅不可摧 (防禦減傷 +15%)', val: { def: 0.15 } },
   { id: 'a22', rarity: 'RARE', name: '碧玉葫蘆', desc: '納寶空間 (靈石掉落 +30%)', val: { stone: 0.30 } },
   { id: 'a23', rarity: 'RARE', name: '金光磚', desc: '重擊崩碎 (爆擊傷害 +25%)', val: { crit_dmg: 0.25 } },
+  { id: 'a24', rarity: 'RARE', name: '高階替身符', desc: '替死擋災 (復活機率 +5%)', val: { revive: 0.05 } },
   { id: 'a30', rarity: 'EPIC', name: '虛天鼎 (仿)', desc: '鎮壓氣運 (減傷+15%，氣運保底+0.15/級)', val: { def: 0.15, luck_floor: 0.15 } },
   { id: 'a31', rarity: 'EPIC', name: '風雷翅', desc: '迅捷如雷 (連擊效率+30%，閃避+8%)', val: { streak_eff: 0.30, evade: 0.08 } },
   { id: 'a32', rarity: 'EPIC', name: '紫羅極火', desc: '極寒之焰 (戰力+20%，爆傷+40%/級)', val: { atk: 0.20, crit_dmg: 0.40 } },
@@ -130,6 +131,7 @@ const SECRET_BOOKS = [
   { id: 's_02', rarity: 'RARE', name: '血靈鑽', desc: '爆擊加成。爆擊傷害 +40%/級', val: { crit_dmg: 0.40 } },
   { id: 's_03', rarity: 'RARE', name: '大衍決', desc: '神識預判。效率+15%，反噬基礎減傷+15%/級', val: { streak_eff: 0.15, sense_def: 0.15 } },
   { id: 's_04', rarity: 'EPIC', name: '大庚劍陣', desc: '無堅不摧。戰力+30%，連擊上限+30%/級', val: { atk: 0.30, streak_cap: 0.30 } },
+  { id: 's_14', rarity: 'EPIC', name: '三轉重元功', desc: '散功重修，法力精純。復活機率 +3%/級', val: { revive: 0.03 } },
   { id: 's_05', rarity: 'LEGENDARY', name: '元磁神光', desc: '克制五行。戰力與減傷 +20%/級', val: { atk: 0.20, def: 0.20 } },
   { id: 's_06', rarity: 'MYTHIC', name: '梵聖真魔功', desc: '法相金身。戰力+50%，減傷+10%/級', val: { atk: 0.50, def: 0.10 } },
   { id: 's_07', rarity: 'RARE', name: '辟邪神雷', desc: '至陽之雷。爆擊率+10%，爆傷+30%/級', val: { crit: 0.10, crit_dmg: 0.30 } },
@@ -282,10 +284,45 @@ export default function App() {
 
   const formatTime = (s) => `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
   
-  const getMonsterName = (tier) => {
-    const monsters = ['野狼幫眾', '墨大夫', '金光上人', '陸師兄', '黑煞教徒', '越皇化身', '鬼靈門王蟬', '血線蛟', '墨蛟', '土甲龍', '雙尾人面蠍', '溫天仁', '鐵甲煉屍', '慕蘭法士', '極陰祖師', '裂風獸風希', '六道極聖', '古魔血焰', '陰羅宗宗主', '化形毒蛟', '夜叉族守衛', '角蚩族戰尊', '六翼霜蚣', '銀甲屍王', '高階魔尊', '元剎聖祖化身', '噬金蟲王', '海王族大乘', '六極聖祖', '降臨謫仙馬良', '始印神尊', '游天鯤鵬', '真靈羅睺', '螟蟲之母'];
+  const getMonsterData = (tier) => {
+    const monsters = [
+        { name: '野狼幫眾', s: '砍刀劈砍', b: '淬毒暗器' },
+        { name: '墨大夫', s: '銀針偷襲', b: '魔銀手' },
+        { name: '金光上人', s: '符籙火彈', b: '金光磚重砸' },
+        { name: '陸師兄', s: '青風劍訣', b: '狂風絕息' },
+        { name: '黑煞教徒', s: '煞氣侵蝕', b: '血祭妖功' },
+        { name: '越皇化身', s: '血靈光波', b: '黑蛟血爪' },
+        { name: '鬼靈門王蟬', s: '幽冥鬼爪', b: '血靈大法' },
+        { name: '血線蛟', s: '血線纏繞', b: '嗜血毒液' },
+        { name: '墨蛟', s: '巨尾掃擊', b: '黑色毒火' },
+        { name: '土甲龍', s: '地刺突襲', b: '裂地衝擊' },
+        { name: '雙尾人面蠍', s: '巨螯夾擊', b: '雙尾毒針' },
+        { name: '溫天仁', s: '魔雷術', b: '八門金光鏡' },
+        { name: '鐵甲煉屍', s: '屍毒噴濺', b: '銅皮鐵骨撞' },
+        { name: '慕蘭法士', s: '初級靈術', b: '木生大術' },
+        { name: '極陰祖師', s: '玄陰魔氣', b: '天都屍火' },
+        { name: '裂風獸風希', s: '風刃亂舞', b: '裂風斬' },
+        { name: '六道極聖', s: '魔道秘術', b: '真魔附體' },
+        { name: '古魔血焰', s: '魔氣侵襲', b: '血焰魔刀' },
+        { name: '陰羅宗宗主', s: '鬼羅幡動', b: '陰羅幽火' },
+        { name: '化形毒蛟', s: '蛟龍水箭', b: '碧綠毒丹' },
+        { name: '夜叉族守衛', s: '飛叉突刺', b: '夜叉冥水' },
+        { name: '角蚩族戰尊', s: '角蚩秘術', b: '圖騰真身' },
+        { name: '六翼霜蚣', s: '極寒冰刺', b: '絕對冰封' },
+        { name: '銀甲屍王', s: '銀甲霸體', b: '千年屍毒爆' },
+        { name: '高階魔尊', s: '真魔之氣', b: '無相魔功' },
+        { name: '元剎聖祖化身', s: '黑魔匕首', b: '元剎魔域' },
+        { name: '噬金蟲王', s: '金甲衝撞', b: '無物不噬' },
+        { name: '海王族大乘', s: '覆海印', b: '驚濤駭浪' },
+        { name: '六極聖祖', s: '六極幻影', b: '六道天魔境' },
+        { name: '降臨謫仙馬良', s: '仙家法術', b: '萬靈血璽' },
+        { name: '始印神尊', s: '神尊法印', b: '滅世法則' },
+        { name: '游天鯤鵬', s: '裂空擊', b: '空間風暴' },
+        { name: '真靈羅睺', s: '幽冥之氣', b: '吞天噬地' },
+        { name: '螟蟲之母', s: '螟蟲海', b: '天道毀滅' }
+    ];
     const index = Math.min(Math.max(1, tier), monsters.length) - 1;
-    return `${monsters[index]}`;
+    return monsters[index];
   };
   
   const generateMonsterState = (realmIdx) => {
@@ -293,9 +330,24 @@ export default function App() {
     const isPeak = REALMS[realmIdx].name.includes('巔峰');
     const isFinal = realmIdx === REALMS.length - 1;
     const bossMult = isFinal ? 20 : (isPeak ? 4 : 1);
+    
     const nHp = Math.floor(120 * Math.pow(1.25, nTier - 1) * bossMult);
-    const mName = isFinal ? '【九九重劫】' : (isPeak ? `${getMonsterName(nTier)} [大瓶頸]` : getMonsterName(nTier));
-    return { name: mName, hp: nHp, maxHp: nHp, tier: nTier };
+    const mAtk = Math.floor(30 * Math.pow(1.2, nTier - 1) * (isPeak ? 2.5 : 1) * (isFinal ? 10 : 1));
+    
+    const mData = getMonsterData(nTier);
+    let mName = mData.name;
+    let sAtkName = mData.s;
+    let bAtkName = mData.b;
+    
+    if (isFinal) {
+        mName = '【九九重劫】';
+        sAtkName = '五行神雷';
+        bAtkName = '紫霄神雷劫';
+    } else if (isPeak) {
+        mName = `${mName} [大瓶頸]`;
+    }
+
+    return { name: mName, hp: nHp, maxHp: nHp, tier: nTier, atk: mAtk, sAtkName, bAtkName };
   };
 
   const [monster, setMonster] = useState(() => generateMonsterState(player.realmIndex));
@@ -357,13 +409,12 @@ export default function App() {
   const maxVitality = Math.floor(player.baseMaxVitality * getMultiplier('hp'));
   const forgeDiscount = Math.max(0.1, 1 - (getMultiplier('forge_discount') - 1)); 
 
-  // 無底洞機制 (Infinite Coin Sinks): 戰力、氣血指數升級
+  // 無底洞機制: 平滑的 x1.35 陣法升級曲線，確保大後期依然有戰略意義
   const upgCostAtk = Math.floor(1000 * Math.pow(1.15, (player.baseCombat - 100) / 100) * forgeDiscount);
   const upgCostHp = Math.floor(1000 * Math.pow(1.15, (player.baseMaxVitality - 100) / 100) * forgeDiscount);
   const healCost = Math.floor((maxVitality * 1.0 + player.realmIndex * 100) * forgeDiscount);
-  // 無底洞機制: 陣法極端指數升級 (x1.6)
-  const arrayQiCost = Math.floor(5000 * Math.pow(1.6, (player.arrays?.qi || 0)) * forgeDiscount);
-  const arrayDefCost = Math.floor(4000 * Math.pow(1.6, (player.arrays?.def || 0)) * forgeDiscount);
+  const arrayQiCost = Math.floor(5000 * Math.pow(1.35, (player.arrays?.qi || 0)) * forgeDiscount);
+  const arrayDefCost = Math.floor(4000 * Math.pow(1.35, (player.arrays?.def || 0)) * forgeDiscount);
   const gachaCost = Math.floor(5000 * Math.pow(1.15, player.realmIndex) * forgeDiscount);
 
   const pillCooldownRemaining = player.lastPillTime ? Math.max(0, 3600 - Math.floor((now - player.lastPillTime) / 1000)) : 0;
@@ -420,32 +471,36 @@ export default function App() {
       const penalty = Math.min(rawPenalty, player.vitality * 0.8);
       
       let nextHp = player.vitality - penalty;
-      
-      if (nextHp <= 0) {
-        if (Math.random() < reviveRate) { 
-          nextHp = maxVitality; 
-          addLog(`✨ 【涅槃重生】轉危為安！`); 
-        } else { 
-          nextHp = Math.floor(maxVitality * 0.5); 
-          setPlayer(p => ({ ...p, qi: Math.floor(p.qi * 0.8) })); 
-          addLog(`💀 【身死道消】反噬過重，損失 20% 當前修為與連擊！`); 
-        }
-      } else { 
-        addLog(`🚨 【靈力反噬】神魂震盪，承受 ${formatNumber(penalty)} 傷害。`); 
-      }
-
-      let nextStreak = 0;
+      let nextStreak = player.streakCount;
       let nextShields = player.streakShields;
       
-      if (player.streakCount > 0 && nextHp > 0) {
-        if (player.streakShields > 0) {
-          nextStreak = player.streakCount;
-          nextShields = player.streakShields - 1;
-          addLog(`🛡️ 【法寶護主】消耗 1 層連擊護盾抵擋反噬，連擊未中斷！`);
-        } else {
-          addLog(`📉 靈壓潰散，連擊歸零。`);
-        }
+      if (nextHp <= 0) {
+          if (nextShields > 0) {
+              nextShields -= 1;
+              nextHp = Math.floor(maxVitality * 0.1) || 1;
+              addLog(`🛡️ 【法寶護主】替身傀儡粉碎，消耗 1 層護盾，鎖血 10% 擋下死劫！`);
+          } else if (Math.random() < reviveRate) { 
+              nextHp = maxVitality; 
+              addLog(`✨ 【涅槃重生】轉危為安！`); 
+          } else { 
+              nextHp = Math.floor(maxVitality * 0.5); 
+              setPlayer(p => ({ ...p, qi: Math.floor(p.qi * 0.8) })); 
+              nextStreak = 0;
+              addLog(`💀 【身死道消】反噬過重，氣血歸零，損失 20% 修為與連擊！`); 
+          }
+      } else { 
+          addLog(`🚨 【靈力反噬】神魂震盪，承受 ${formatNumber(penalty)} 傷害。`);
+          if (nextStreak > 0) {
+              if (nextShields > 0) {
+                  nextShields -= 1;
+                  addLog(`🛡️ 【法寶護主】消耗 1 層護盾抵擋反噬，連擊未中斷！`);
+              } else {
+                  nextStreak = 0;
+                  addLog(`📉 靈壓潰散，連擊歸零。`);
+              }
+          }
       }
+      
       setPlayer(p => ({ ...p, vitality: nextHp, streakCount: nextStreak, streakShields: nextShields }));
     }
     setTimeLeft(focusDuration);
@@ -519,6 +574,10 @@ export default function App() {
       let nextBaseCombat = player.baseCombat;
       let nextBaseMaxVitality = player.baseMaxVitality;
       
+      let nextStreak = player.streakCount + 1;
+      let nextShields = maxStreakShields; 
+      let isDeadFromCounter = false;
+
       if (!isUsingPill) nextLifetime.totalCoins += passiveCoin;
       
       if (isCrit && Math.random() < 0.30) {
@@ -609,11 +668,48 @@ export default function App() {
         setMonster(generateMonsterState(nextRealm));
       } else {
         setMonster(prev => ({ ...prev, hp: newHp }));
+        
+        const isBigAttack = Math.random() < 0.20; 
+        const atkName = isBigAttack ? monster.bAtkName : monster.sAtkName;
+        
+        if (Math.random() < evadeRate) {
+            killLog = `💨 妖獸反撲！你身形如鬼魅，完美閃避【${atkName}】！`;
+        } else {
+            setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
+            const baseMod = isBigAttack ? 2.5 : 1.0;
+            const variance = 1 + (Math.random() + Math.random() + Math.random() - 1.5) * 0.4;
+            
+            const rawDamage = Math.floor(monster.atk * baseMod * variance);
+            const actualDamage = Math.max(1, Math.floor(rawDamage * (dmgTakenPct / 100)));
+            
+            nextVitality -= actualDamage;
+            
+            if (nextVitality <= 0) {
+                if (nextShields > 0) {
+                    nextShields -= 1;
+                    nextVitality = Math.floor(maxVitality * 0.1) || 1;
+                    isDeadFromCounter = false;
+                    killLog = `🛡️ 妖獸施展【${atkName}】造成致命傷！【法寶護主】替身傀儡粉碎，鎖血 10% 擋下死劫！`;
+                } else if (Math.random() < reviveRate) {
+                    nextVitality = maxVitality;
+                    isDeadFromCounter = false;
+                    killLog = `💥 妖獸餘威未減，施展【${atkName}】造成致命傷！✨ 【涅槃重生】轉危為安！`;
+                } else {
+                    nextVitality = Math.floor(maxVitality * 0.5);
+                    nextQi = Math.floor(nextQi * 0.8);
+                    nextStreak = 0;
+                    nextShields = 0;
+                    isDeadFromCounter = true;
+                    killLog = `💀 妖獸施展【${atkName}】造成 ${formatNumber(actualDamage)} 傷害！氣血歸零，損失 20% 修為與連擊！`;
+                }
+            } else {
+                killLog = `💥 妖獸未死，發動【${atkName}】反擊，造成 ${formatNumber(actualDamage)} 點傷害。`;
+            }
+        }
       }
 
-      // 七大奇遇輪盤擴充 (100% 分配)
       let fortuneLog = '';
-      if (Math.random() < (0.10 * currentLuck)) {
+      if (!isDeadFromCounter && Math.random() < (0.10 * currentLuck)) {
         const fRoll = Math.random() * 100;
         
         if (fRoll < 25) {
@@ -641,13 +737,12 @@ export default function App() {
                 fortuneLog = ` ⚡ 【天雷淬體】經脈拓寬，永久氣血上限 +5！`;
             }
         } else {
-            // 98~100 (2%) - 頂級合併機緣 (雙向圖鑑檢索)
             const roll = Math.random();
             let targetRarity = 'COMMON';
             let accum = 0;
             const sortedRarities = Object.entries(RARITY).sort((a,b) => a[1].weight - b[1].weight);
             for (let [r, data] of sortedRarities) {
-                accum += data.weight * currentLuck; // 氣運放大
+                accum += data.weight * currentLuck; 
                 if (roll < accum) {
                     targetRarity = r;
                     break;
@@ -657,7 +752,6 @@ export default function App() {
             let originalIdx = RARITIES_ORDER.indexOf(targetRarity);
             let combinedPool = getUnownedPool(targetRarity, newArtifacts, newSecretBooks);
 
-            // 1. 向下兼容
             if (combinedPool.length === 0) {
                 for (let i = originalIdx - 1; i >= 0; i--) {
                     combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks);
@@ -668,7 +762,6 @@ export default function App() {
                 }
             }
 
-            // 2. 向上越級 (僅在 2% 奇遇中生效的特權)
             if (combinedPool.length === 0) {
                 for (let i = originalIdx + 1; i < RARITIES_ORDER.length; i++) {
                     combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks);
@@ -689,7 +782,6 @@ export default function App() {
                     fortuneLog = ` 📜 【殘卷現世】機緣巧合，領悟【${RARITY[targetRarity].name}】功法「${drop.name}」！`;
                 }
             } else {
-                // 3. 全圖鑑大滿貫 - 給予造化級 (DIVINE) 的期望值補償
                 const topRarity = 'DIVINE';
                 const compCoins = Math.floor((0.1 * gachaCost) / RARITY[topRarity].weight);
                 nextCoins += compCoins;
@@ -711,8 +803,8 @@ export default function App() {
           vitality: nextVitality,
           baseCombat: nextBaseCombat,
           baseMaxVitality: nextBaseMaxVitality,
-          streakCount: p.streakCount + 1,
-          streakShields: maxStreakShields,
+          streakCount: nextStreak,
+          streakShields: nextShields,
           totalFocusTime: nextTotalFocusTime,
           artifacts: newArtifacts,
           secretBooks: newSecretBooks,
@@ -1015,8 +1107,8 @@ export default function App() {
                      <p className="text-white/70 font-bold">每次專注完成時，有 10% 基礎機率觸發奇遇（受氣運倍率加成）。可能獲得：靈氣翻倍、靈石三倍、或瞬間恢復 30% 氣血的頓悟。</p>
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Square size={18}/> 強行收功與死亡</h3>
-                     <p className="text-white/70 font-bold">中途強行收功會遭受反噬。氣血歸零若無「涅槃復活」將損失 20% 當前修為並清空連擊。請適時至洞府「煉製回春丹」。</p>
+                     <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Square size={18}/> 妖獸反撲與死亡懲罰</h3>
+                     <p className="text-white/70 font-bold">若專注結算未能擊殺妖獸，將面臨妖獸反撲。防禦與閃避屬性將決定生死。氣血歸零若無「涅槃復活」或「護盾」保護，將損失 20% 當前修為並清空連擊。請適時至洞府「煉製回春丹」。</p>
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-cyan-400 flex flex-col gap-2 shadow-inner">
                      <h3 className="text-cyan-400 text-base flex items-center gap-2 font-black"><Wind size={18}/> 吐納調息 (休息無懲罰)</h3>
@@ -1031,7 +1123,7 @@ export default function App() {
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-cyan-400 flex flex-col gap-2 shadow-inner">
                      <h3 className="text-cyan-400 text-base flex items-center gap-2 font-black"><Sword size={18}/> 劍陣共鳴與護盾</h3>
-                     <p className="text-white/70 font-bold">裝備 2 把以上「劍類」法寶，每把劍額外提升 20% 戰力與連擊上限。擁有「連擊護盾」時，強行收功不會中斷連擊倍率。</p>
+                     <p className="text-white/70 font-bold">裝備 2 把以上「劍類」法寶，每把劍額外提升 20% 戰力與連擊上限。擁有「連擊護盾」時，能為你抵擋一次致死打擊或強行收功反噬。</p>
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-500 flex flex-col gap-2 shadow-inner">
                      <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Compass size={18}/> 氣運與圖鑑保底</h3>
@@ -1231,7 +1323,7 @@ export default function App() {
             <div className="w-full max-w-xs mx-auto bg-black/60 rounded-full h-2.5 mb-1 overflow-hidden border border-white/10 shadow-inner">
                <div className="bg-gradient-to-r from-rose-900 to-rose-500 h-full transition-all duration-500 shadow-[0_0_10px_#f43f5e]" style={{ width: `${Math.min(100, (monster.hp / monster.maxHp) * 100)}%` }}></div>
             </div>
-            <div className="text-[10px] font-mono text-white/40 text-center mb-10">{formatNumber(monster.hp)} / {formatNumber(monster.maxHp)}</div>
+            <div className="text-[10px] font-mono text-white/40 text-center mb-10">氣血 {formatNumber(monster.hp)} / {formatNumber(monster.maxHp)} ｜ 戰力 {formatNumber(monster.atk)}</div>
           </>
         ) : (
           <div className="flex justify-center items-center gap-3 mb-10 text-sm md:text-base tracking-[0.6em] font-black uppercase text-cyan-400 animate-pulse">
@@ -1313,7 +1405,7 @@ export default function App() {
                     </div>
                   );})}
                   </div></div>
-                  <div><h3 className="text-white/60 text-sm font-black uppercase border-b border-white/20 pb-4 mb-8 tracking-widest">機緣祕籍 (13 種)</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                  <div><h3 className="text-white/60 text-sm font-black uppercase border-b border-white/20 pb-4 mb-8 tracking-widest">機緣祕籍 (14 種)</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                   {SECRET_BOOKS.map(book => { const lvl = player.secretBooks?.[book.id] || 0; const learned = lvl > 0; const upCost = Math.floor(10000 * Math.pow(2, lvl) * forgeDiscount); return (
                     <div key={book.id} className={`p-6 rounded-2xl border transition-all flex flex-col justify-between min-h-[16rem] ${learned ? 'bg-emerald-950/40 border-emerald-500/50 shadow-xl' : 'bg-black/60 border-white/10 opacity-60'}`}>
                         <div className="flex items-start gap-5"><div className={`p-4 rounded-xl ${learned ? 'bg-emerald-500 text-black shadow-lg' : 'bg-slate-800'}`}><BookOpen size={24}/></div><div className="flex-1"><h4 className="font-black text-base tracking-widest text-white">{book.name} {learned && <span className="text-xs opacity-60 ml-2 font-mono">Lv.{lvl}</span>}</h4><p className="text-sm opacity-70 leading-relaxed mt-2 text-white">{learned ? book.desc : '擊殺強敵機率獲得。'}</p></div></div>
@@ -1343,7 +1435,7 @@ export default function App() {
                    <h3 className="text-white/60 text-sm font-black uppercase border-b border-white/20 pb-4">陣法樞紐 (無上限)</h3>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                       <div className="bg-white/10 p-8 rounded-2xl border border-white/20 min-h-[14rem] flex flex-col justify-between shadow-inner"><div className="flex justify-between text-base text-white font-bold drop-shadow-md">聚靈大陣 <span className="opacity-60 font-mono">Lv.{player.arrays?.qi||0}</span></div><p className="text-sm opacity-70 italic mt-2">靈氣獲取提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayQiCost) setPlayer(p => ({ ...p, coins: p.coins - arrayQiCost, arrays: {...p.arrays, qi: (p.arrays?.qi||0)+1} })) }} disabled={player.coins < arrayQiCost} className="w-full py-4 mt-6 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">升級 ({formatNumber(arrayQiCost)} 靈石)</button></div>
-                      <div className="bg-white/10 p-8 rounded-2xl border border-white/20 min-h-[14rem] flex flex-col justify-between shadow-inner"><div className="flex justify-between text-base text-white font-bold drop-shadow-md">顛倒五行陣 <span className="opacity-60 font-mono">Lv.{player.arrays?.def||0}</span></div><p className="text-sm opacity-70 italic text-white mt-2">反噬減傷提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-4 mt-6 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">升級 ({formatNumber(arrayDefCost)} 靈石)</button></div>
+                      <div className="bg-white/10 p-8 rounded-2xl border border-white/20 min-h-[14rem] flex flex-col justify-between shadow-inner"><div className="flex justify-between text-base text-white font-bold drop-shadow-md">顛倒五行陣 <span className="opacity-60 font-mono">Lv.{player.arrays?.def||0}</span></div><p className="text-sm opacity-70 italic text-white mt-2">全域減傷提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-4 mt-6 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">升級 ({formatNumber(arrayDefCost)} 靈石)</button></div>
                    </div>
                 </div>
                 <div className="bg-gradient-to-br from-white/10 to-transparent p-8 md:p-14 rounded-2xl border border-white/20 text-center relative overflow-hidden mt-8">
