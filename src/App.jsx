@@ -28,6 +28,19 @@ const database = getDatabase(app);
  * ========================================================
  */
 
+const REALM_COLORS = {
+  emerald: { text: 'text-emerald-400', border: 'border-emerald-500/30', bg: 'bg-emerald-500' },
+  teal: { text: 'text-teal-400', border: 'border-teal-500/30', bg: 'bg-teal-500' },
+  blue: { text: 'text-blue-400', border: 'border-blue-500/30', bg: 'bg-blue-500' },
+  indigo: { text: 'text-indigo-400', border: 'border-indigo-500/30', bg: 'bg-indigo-500' },
+  purple: { text: 'text-purple-400', border: 'border-purple-500/30', bg: 'bg-purple-500' },
+  violet: { text: 'text-violet-400', border: 'border-violet-500/30', bg: 'bg-violet-500' },
+  amber: { text: 'text-amber-400', border: 'border-amber-500/30', bg: 'bg-amber-500' },
+  orange: { text: 'text-orange-400', border: 'border-orange-500/30', bg: 'bg-orange-500' },
+  slate: { text: 'text-slate-400', border: 'border-slate-500/30', bg: 'bg-slate-500' },
+  rose: { text: 'text-rose-400', border: 'border-rose-500/30', bg: 'bg-rose-500' }
+};
+
 const formatNumber = (num) => {
   if (num === undefined || num === null) return '0';
   if (num >= 1e16) return (num / 1e16).toFixed(2) + ' 京';
@@ -44,15 +57,18 @@ const FOCUS_OPTIONS = [
   { label: '60m', value: 60 * 60 }
 ];
 
+// 修正：平滑化機率曲線，提升高階物品的基礎獲取可能
 const RARITY = {
-  COMMON: { name: '凡品', color: 'text-slate-400', weight: 0.45 },
+  COMMON: { name: '凡品', color: 'text-slate-400', weight: 0.34 },
   UNCOMMON: { name: '靈品', color: 'text-green-400', weight: 0.30 },
-  RARE: { name: '法寶', color: 'text-blue-400', weight: 0.15 },
-  EPIC: { name: '古寶', color: 'text-purple-400', weight: 0.07 },
-  LEGENDARY: { name: '通天靈寶', color: 'text-orange-400', weight: 0.02 },
-  MYTHIC: { name: '玄天之寶', color: 'text-red-500', weight: 0.009 },
-  DIVINE: { name: '造化至寶', color: 'text-yellow-400', weight: 0.001 }
+  RARE: { name: '法寶', color: 'text-blue-400', weight: 0.20 },
+  EPIC: { name: '古寶', color: 'text-purple-400', weight: 0.10 },
+  LEGENDARY: { name: '通天靈寶', color: 'text-orange-400', weight: 0.04 },
+  MYTHIC: { name: '玄天之寶', color: 'text-red-500', weight: 0.015 },
+  DIVINE: { name: '造化至寶', color: 'text-yellow-400', weight: 0.005 }
 };
+
+const RARITIES_ORDER = ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC', 'DIVINE'];
 
 const MAJOR_REALMS_DATA = [
   { name: '煉氣境', desc: '吸納天地靈氣，洗髓易經，初窺仙道門徑。', color: 'emerald' },
@@ -135,11 +151,6 @@ const BASIC_SKILLS = [
 
 const RARITY_BASE_COST = { COMMON: 1000, UNCOMMON: 5000, RARE: 25000, EPIC: 100000, LEGENDARY: 500000, MYTHIC: 2500000, DIVINE: 10000000 };
 
-/**
- * ========================================================
- * 新增：稱號與成就系統數據 (Title System Data)
- * ========================================================
- */
 const TITLE_DATA = [
   { id: 't_kill_1', cat: 'kill', req: 50, tier: 1, name: '同階無敵', desc: '「死在閣下手下的同階修士，已不在少數。」', buffDesc: '總戰力加成 +10%', val: { atk: 0.10 } },
   { id: 't_kill_2', cat: 'kill', req: 200, tier: 2, name: '厲飛雨', desc: '「殺人放火厲飛雨，萬人敬仰韓天尊。道友，借個名號用用。」', buffDesc: '爆擊率 +10%，真靈吸血 +5%', val: { crit: 0.10, lifesteal: 0.05 } },
@@ -216,7 +227,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // 稱號解鎖檢測引擎 (Title Unlocker)
+  // 稱號解鎖檢測引擎
   useEffect(() => {
     let newlyUnlocked = [];
     let newFreeGacha = player.freeGacha || 0;
@@ -253,7 +264,7 @@ export default function App() {
           newlyUnlocked.forEach(id => {
              const titleName = TITLE_DATA.find(x => x.id === id).name;
              const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-             updatedLogs.unshift(`[${timeStr}] 🏆 【天道恩賜】解鎖稱號「${titleName}」！獲贈萬寶樓免費尋寶 1 次！`);
+             updatedLogs.unshift(`[${timeStr}] 🏆 【天道恩賜】解鎖稱號「${titleName}」！獲贈免費尋寶 1 次！`);
           });
           return { ...p, unlockedTitles: updatedUnlocked, freeGacha: newFreeGacha, logs: updatedLogs.slice(0, 50) };
        });
@@ -288,7 +299,7 @@ export default function App() {
   const [showRealmGuide, setShowRealmGuide] = useState(false);
   const [showStatsReport, setShowStatsReport] = useState(false);
   const [showGuide, setShowGuide] = useState(false); 
-  const [showTitles, setShowTitles] = useState(false); // 新增稱號面板狀態
+  const [showTitles, setShowTitles] = useState(false);
   const [guideTab, setGuideTab] = useState('rules'); 
   const [celebration, setCelebration] = useState(null);
   const [showGiveUpWarning, setShowGiveUpWarning] = useState(false);
@@ -309,37 +320,31 @@ export default function App() {
   const getMultiplier = (type) => {
     let mult = 1.0;
     
-    // 基礎技能
     BASIC_SKILLS.forEach(s => { 
         if (player.basicSkills?.[s.id] > 0 && s.val?.[type]) mult += s.val[type] * player.basicSkills[s.id]; 
     });
     
-    // 祕籍 (線性)
     Object.entries(player.secretBooks || {}).forEach(([id, lvl]) => { 
         const book = SECRET_BOOKS.find(x => x.id === id);
         if (book?.val?.[type]) mult += book.val[type] * lvl;
     });
 
-    // 法寶 (淬鍊公式)
     (player.artifacts || []).forEach(id => { 
         const item = ARTIFACT_POOL.find(a => a.id === id);
         const lvl = player.artifactLvls?.[id] || 0;
         if (item?.val?.[type]) mult += item.val[type] * (1 + lvl * 0.5);
     });
     
-    // 稱號專屬被動加成 (Title Buffs)
     if (player.equippedTitle) {
       const activeTitle = TITLE_DATA.find(t => t.id === player.equippedTitle);
       if (activeTitle?.val?.[type]) mult += activeTitle.val[type];
     }
     
-    // 劍陣共鳴
     if (type === 'atk' || type === 'streak_cap') {
       const swordCount = (player.artifacts || []).filter(id => ARTIFACT_POOL.find(a => a.id === id)?.tags?.includes('sword')).length;
       if (swordCount >= 2) mult += 0.2 * swordCount; 
     }
 
-    // 陣法加成
     if (type === 'qi' && (player.arrays?.qi || 0)) mult += player.arrays.qi * 0.05;
     if (type === 'def' && (player.arrays?.def || 0)) mult += player.arrays.def * 0.05;
     
@@ -347,6 +352,7 @@ export default function App() {
   };
 
   const currentRealmData = REALMS[player.realmIndex];
+  const activeColorClass = REALM_COLORS[currentRealmData.color] || REALM_COLORS.slate;
   
   const rawEvade = getMultiplier('evade') - 1;
   const evadeRate = Math.min(0.75, rawEvade);
@@ -468,6 +474,13 @@ export default function App() {
     addLog(`【調息結束】道友提前結束吐納，未獲取靈雨滋養。`);
   };
 
+  // 核心檢索引擎：獲取目標稀有度中，尚未擁有的「法寶+功法」合併池
+  const getUnownedPool = (rarityTarget, currentArts, currentBooks) => {
+    const unownedArts = ARTIFACT_POOL.filter(a => a.rarity === rarityTarget && !currentArts.includes(a.id)).map(a => ({...a, poolType: 'art'}));
+    const unownedBooks = SECRET_BOOKS.filter(b => b.rarity === rarityTarget && !currentBooks[b.id]).map(b => ({...b, poolType: 'book'}));
+    return [...unownedArts, ...unownedBooks];
+  };
+
   const handleComplete = () => {
     setIsActive(false); setTargetEndTime(null);
     
@@ -498,6 +511,7 @@ export default function App() {
       let nextQiToNext = player.qiToNext;
       let nextHistory = player.history;
       let newArtifacts = [...(player.artifacts || [])];
+      let newSecretBooks = { ...(player.secretBooks || {}) };
       let nextHasAscended = player.hasAscended;
       
       let nextLifetime = { ...(player.lifetimeStats || { kills: 0, focusCount: 0, totalCoins: 0 }) };
@@ -524,11 +538,49 @@ export default function App() {
         nextLifetime.kills += 1;
         nextLifetime.totalCoins += killCoin;
         
-        if (Math.random() < (0.15 * currentLuck)) {
-            const potential = ARTIFACT_POOL.filter(a => !newArtifacts.includes(a.id));
-            if (potential.length > 0) {
-                newArtifacts.push(potential[0].id);
-                killLog += ` 🎁 斬獲異寶【${potential[0].name}】！`;
+        // 核心掉落邏輯 (雙向圖鑑檢索機制，移除向上兼容)
+        if (Math.random() < (0.20 * currentLuck)) {
+            const roll = Math.random();
+            let targetRarity = 'COMMON';
+            let accum = 0;
+            const sortedRarities = Object.entries(RARITY).sort((a,b) => a[1].weight - b[1].weight);
+            for (let [r, data] of sortedRarities) {
+                accum += data.weight;
+                if (roll < accum) {
+                    targetRarity = r;
+                    break;
+                }
+            }
+
+            let targetIdx = RARITIES_ORDER.indexOf(targetRarity);
+            let combinedPool = getUnownedPool(targetRarity, newArtifacts, newSecretBooks);
+
+            // 僅向下兼容 (較不稀有)
+            if (combinedPool.length === 0) {
+                for (let i = targetIdx - 1; i >= 0; i--) {
+                    combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks);
+                    if (combinedPool.length > 0) {
+                        targetRarity = RARITIES_ORDER[i];
+                        break;
+                    }
+                }
+            }
+
+            // 取消向上越級，保護頂級寶物稀有度。若此時池子仍空，直接給 EV 補償。
+            if (combinedPool.length > 0) {
+                const drop = combinedPool[Math.floor(Math.random() * combinedPool.length)];
+                if (drop.poolType === 'art') {
+                    newArtifacts.push(drop.id);
+                    killLog += ` 🎁 斬獲【${RARITY[targetRarity].name}】法寶「${drop.name}」！`;
+                } else {
+                    newSecretBooks[drop.id] = 1;
+                    killLog += ` 📜 獲得【${RARITY[targetRarity].name}】功法「${drop.name}」！`;
+                }
+            } else {
+                // EV 補償機制 (該階與以下皆滿)
+                const compQi = Math.floor((100 * monster.tier) / RARITY[targetRarity].weight);
+                nextQi += compQi;
+                killLog += ` ✨ 擊殺珍稀妖獸，汲取本源獲得修為 ${formatNumber(compQi)}！`;
             }
         }
 
@@ -586,6 +638,7 @@ export default function App() {
           streakShields: maxStreakShields,
           totalFocusTime: (p.totalFocusTime || 0) + focusDuration,
           artifacts: newArtifacts,
+          secretBooks: newSecretBooks,
           history: nextHistory,
           hasAscended: nextHasAscended,
           lifetimeStats: nextLifetime
@@ -612,35 +665,51 @@ export default function App() {
     const roll = Math.random(); 
     let targetRarity = 'COMMON';
     
-    if (roll < 0.001 * currentLuck) targetRarity = 'DIVINE'; 
-    else if (roll < 0.01 * currentLuck) targetRarity = 'MYTHIC'; 
-    else if (roll < 0.03 * currentLuck) targetRarity = 'LEGENDARY'; 
-    else if (roll < 0.08 * currentLuck) targetRarity = 'EPIC'; 
-    else if (roll < 0.18 * currentLuck) targetRarity = 'RARE'; 
-    else if (roll < 0.4 * currentLuck) targetRarity = 'UNCOMMON';
+    if (roll < 0.005 * currentLuck) targetRarity = 'DIVINE'; 
+    else if (roll < 0.015 * currentLuck) targetRarity = 'MYTHIC'; 
+    else if (roll < 0.04 * currentLuck) targetRarity = 'LEGENDARY'; 
+    else if (roll < 0.10 * currentLuck) targetRarity = 'EPIC'; 
+    else if (roll < 0.20 * currentLuck) targetRarity = 'RARE'; 
+    else if (roll < 0.50 * currentLuck) targetRarity = 'UNCOMMON';
     
-    // 如果是免費保底抽，強制將凡品、靈品提升為法寶(RARE)
+    // 免費保底機制 (至少給 Rare 以上)
     if (isFree && ['COMMON', 'UNCOMMON'].includes(targetRarity)) {
       targetRarity = 'RARE';
     }
     
-    const candidates = ARTIFACT_POOL.filter(a => a.rarity === targetRarity && !(player.artifacts || []).includes(a.id));
-    if (candidates.length > 0) {
+    let targetIdx = RARITIES_ORDER.indexOf(targetRarity);
+    let combinedPool = getUnownedPool(targetRarity, player.artifacts || [], player.secretBooks || {});
+    
+    // 僅向下尋找
+    if (combinedPool.length === 0) {
+        for (let i = targetIdx - 1; i >= 0; i--) {
+            combinedPool = getUnownedPool(RARITIES_ORDER[i], player.artifacts || [], player.secretBooks || {});
+            if (combinedPool.length > 0) {
+                targetRarity = RARITIES_ORDER[i];
+                break;
+            }
+        }
+    }
+    
+    if (combinedPool.length > 0) {
+      const drop = combinedPool[Math.floor(Math.random() * combinedPool.length)];
       setPlayer(p => ({ 
         ...p, 
         coins: isFree ? p.coins : p.coins - gachaCost, 
         freeGacha: isFree ? p.freeGacha - 1 : p.freeGacha,
-        artifacts: [...(p.artifacts || []), candidates[0].id] 
+        artifacts: drop.poolType === 'art' ? [...(p.artifacts || []), drop.id] : p.artifacts,
+        secretBooks: drop.poolType === 'book' ? { ...(p.secretBooks || {}), [drop.id]: 1 } : p.secretBooks
       }));
-      setCelebration({ name: candidates[0].name });
+      setCelebration({ name: drop.name });
     } else { 
+      // 全圖鑑滿收集的 -30% 期望值(EV)靈石補償
+      const compCoins = Math.floor((0.1 * gachaCost) / RARITY[targetRarity].weight);
       setPlayer(p => ({ 
         ...p, 
-        coins: isFree ? p.coins : p.coins - gachaCost, 
-        freeGacha: isFree ? p.freeGacha - 1 : p.freeGacha,
-        qi: p.qi + 100 
+        coins: (isFree ? p.coins : p.coins - gachaCost) + compCoins, 
+        freeGacha: isFree ? p.freeGacha - 1 : p.freeGacha
       })); 
-      addLog(`[萬寶樓] 尋寶未果，獲補償修為 100 點。`); 
+      addLog(`[萬寶樓] 該品階與以下寶物已盡數收入囊中！天道補償 ${formatNumber(compCoins)} 靈石。`); 
     }
   };
 
@@ -764,7 +833,7 @@ export default function App() {
       </div>
 
       {/* ==========================================
-          名號頭銜 (稱號系統 UI)
+          名號頭銜
           ========================================== */}
       {showTitles && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
@@ -774,7 +843,6 @@ export default function App() {
                <button onClick={() => setShowTitles(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
             </div>
             
-            {/* 生涯數據儀表板 */}
             <div className="flex justify-between md:justify-start gap-4 md:gap-12 mb-6 bg-black/40 p-4 rounded-xl border border-white/5 flex-shrink-0 overflow-x-auto">
                <div className="flex flex-col"><span className="text-[10px] text-white/40 uppercase tracking-widest">累計專注</span><span className="text-white font-mono">{formatNumber(player.lifetimeStats?.focusCount || 0)} 次</span></div>
                <div className="flex flex-col"><span className="text-[10px] text-white/40 uppercase tracking-widest">擊殺妖獸</span><span className="text-rose-400 font-mono">{formatNumber(player.lifetimeStats?.kills || 0)} 隻</span></div>
@@ -886,8 +954,8 @@ export default function App() {
                      <p className="text-white/70 font-bold">裝備 2 把以上「劍類」法寶，每把劍額外提升 20% 戰力與連擊上限。擁有「連擊護盾」時，強行收功不會中斷連擊倍率。</p>
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Compass size={18}/> 氣運與神識感應</h3>
-                     <p className="text-white/70 font-bold">「氣運」直接乘算萬寶樓出紫金的機率與奇遇觸發率。研習《大衍決》的神識能抵銷走火入魔的基礎反噬傷害 (極限90%)。</p>
+                     <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Compass size={18}/> 氣運與圖鑑保底</h3>
+                     <p className="text-white/70 font-bold">「氣運」會放大抽獎機率。當該稀有度法寶與功法皆已集滿時，系統會向下尋找未擁有圖鑑；若向下無果，則觸發靈石與修為期望值(EV)補償。</p>
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-400 flex flex-col gap-2 shadow-inner">
                      <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Pill size={18}/> 真靈吸血機制</h3>
@@ -1000,16 +1068,16 @@ export default function App() {
           <div className="h-px w-48 bg-gradient-to-r from-transparent via-white/20 to-transparent mt-4 opacity-50"></div>
         </div>
         
-        <div className={`bg-slate-900/50 backdrop-blur-3xl p-5 md:p-8 rounded-xl border ${mode === 'break' ? 'border-cyan-500/30' : `border-${currentRealmData.color}-500/30`} relative shadow-2xl shadow-inner group transition-all duration-500`}>
+        <div className={`bg-slate-900/50 backdrop-blur-3xl p-5 md:p-8 rounded-xl border ${mode === 'break' ? 'border-cyan-500/30' : activeColorClass.border} relative shadow-2xl shadow-inner group transition-all duration-500`}>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-6 mb-6">
             <div className="flex items-center gap-4 w-full md:flex-1 min-w-0">
-               <Shield size={36} className={`${mode === 'break' ? 'text-cyan-400' : `text-${currentRealmData.color}-400`} flex-shrink-0`}/>
+               <Shield size={36} className={`${mode === 'break' ? 'text-cyan-400' : activeColorClass.text} flex-shrink-0`}/>
                <div className="flex flex-col justify-center flex-1 min-w-0">
                   <h2 className="text-xl sm:text-2xl font-black tracking-widest uppercase text-white font-bold drop-shadow-lg truncate">
                     {player.equippedTitle && <span className="text-amber-400 mr-2 border border-amber-500/50 bg-amber-950/50 px-2 py-0.5 rounded text-[10px] sm:text-xs tracking-widest relative -top-0.5">[{TITLE_DATA.find(t=>t.id===player.equippedTitle)?.name}]</span>}
                     {currentRealmData.name}
                   </h2>
-                  <p className={`text-xs md:text-sm leading-tight ${mode === 'break' ? 'text-cyan-300' : `text-${currentRealmData.color}-300`} font-bold mt-2 opacity-90 italic drop-shadow-md truncate`}>{currentRealmData.desc}</p>
+                  <p className={`text-xs md:text-sm leading-tight ${mode === 'break' ? 'text-cyan-300' : activeColorClass.text} font-bold mt-2 opacity-90 italic drop-shadow-md truncate`}>{currentRealmData.desc}</p>
                </div>
             </div>
             
@@ -1049,7 +1117,7 @@ export default function App() {
             </div>
             <div className="space-y-3 relative z-10">
               <div className="flex justify-between text-xs uppercase font-black opacity-60 tracking-widest text-white"><span>修為進度</span><span>{formatNumber(player.qi)} / {formatNumber(player.qiToNext)}</span></div>
-              <div className="h-2.5 bg-black/60 rounded-full overflow-hidden shadow-inner"><div className={`h-full ${mode === 'break' ? 'bg-cyan-500' : `bg-${currentRealmData.color}-500`} transition-all duration-1000 shadow-[0_0_10px_currentColor]`} style={{ width: `${(player.qi/player.qiToNext)*100}%` }}></div></div>
+              <div className="h-2.5 bg-black/60 rounded-full overflow-hidden shadow-inner"><div className={`h-full ${mode === 'break' ? 'bg-cyan-500' : activeColorClass.bg} transition-all duration-1000 shadow-[0_0_10px_currentColor]`} style={{ width: `${(player.qi/player.qiToNext)*100}%` }}></div></div>
             </div>
           </div>
         </div>
@@ -1179,7 +1247,7 @@ export default function App() {
                   <h3 className="text-white font-black text-2xl uppercase mb-8 tracking-widest flex items-center justify-center gap-3"><Compass className="text-yellow-400"/> 萬寶樓尋寶</h3>
                   {player.freeGacha > 0 && <p className="text-amber-400 text-sm font-bold mb-6 animate-pulse">您有 {player.freeGacha} 次【天道免費保底】抽獎機會！</p>}
                   <div className="flex justify-center gap-6 mb-12 overflow-x-auto pb-6 custom-scrollbar">
-                     {Object.entries(RARITY).map(([k, r]) => (<div key={k} className="flex flex-col items-center min-w-[80px] opacity-80"><span className={`text-xs font-black uppercase ${r.color} drop-shadow-md`}>{r.name}</span><span className="text-sm font-mono mt-2 text-white">{(r.weight*100*getMultiplier('luck_floor')).toFixed(1)}%</span></div>))}
+                     {Object.entries(RARITY).map(([k, r]) => (<div key={k} className="flex flex-col items-center min-w-[80px] opacity-80"><span className={`text-xs font-black uppercase ${r.color} drop-shadow-md`}>{r.name}</span><span className="text-sm font-mono mt-2 text-white">{(r.weight*100).toFixed(1)}%</span></div>))}
                   </div>
                   <button onClick={handleGacha} disabled={player.freeGacha <= 0 && player.coins < gachaCost} className="px-8 md:px-20 py-6 md:py-8 bg-white/15 hover:bg-white text-white hover:text-black font-black rounded-2xl shadow-2xl transition-all whitespace-nowrap border border-white/30 disabled:opacity-30 flex items-center justify-center gap-4 mx-auto text-base md:text-lg">
                     <Sparkles size={24}/> {player.freeGacha > 0 ? '免費保底尋寶' : `尋寶 (${formatNumber(gachaCost)} 靈石)`}
