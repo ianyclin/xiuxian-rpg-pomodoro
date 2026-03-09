@@ -3,7 +3,7 @@ import {
   Shield, Flame, Wind, Hammer, Box, ScrollText, Network, AlertTriangle, 
   EyeOff, Crown, RefreshCw, CloudLightning, Activity, Sparkles, Sword, 
   Compass, BookOpen, X, History, BarChart3, Pill, HelpCircle, Award, 
-  Heart, Copy, FileText 
+  Heart, Copy, FileText, Fingerprint 
 } from 'lucide-react';
 
 /**
@@ -61,9 +61,9 @@ const FEEDBACK_TEXTS = {
 };
 
 const CHANGELOG_DATA = [
-  { version: "v6.10.1", title: "抗崩潰穩定版", desc: "強化底層容錯，確保跨環境部署之穩定。", changes: [ "修復【全白畫面】：移除未定義的圖標變數，並加入日誌物件強制轉型防呆機制。", "消除【SSR崩潰】：重構防盜水印生成方式，避免伺服器端渲染時發生 API 衝突。", "優化【飛升敘事】：真仙界巡禮不再觸發強制傷害的反撲錯誤。" ] },
-  { version: "v6.10.0", title: "天道法則・尋寶分流", desc: "確立了免費、保底與日常產出的因果邊界。", changes: [ "分流【尋寶機制】：稱號保底擁有絕對特權（強制升階並允許向上搜尋）；每日免費、靈石抽取與專注掉落皆統一為「向下搜尋，無則補償靈石」。", "精算【圖鑑溢出補償】：當圖鑑全滿時，系統將根據您『最初抽到的稀有度』來補償對應的巨量靈石，不再讓好運打水漂。" ] },
-  { version: "v6.7.0", title: "天道圓滿・萬象歸一", desc: "抹平飛升與 UI 引導的最後一道裂隙。", changes: [ "新增【機緣指引】：每日 08:00 刷新時，選單列自動亮起紅點提示。" ] }
+  { version: "v6.11.0", title: "天道無漏・飛升發布版", desc: "掃除所有部署與體驗上的最後塵埃。", changes: [ "實裝【音效駭客流】：針對 iOS Safari 特性，於開始計時瞬間進行音頻預載(Audio Priming)，徹底解決鎖屏結算無聲的問題。", "優化【洗髓機制】：現在成功擊殺 Boss 突破境界時，不僅提升修為，更會觸發「肉身重塑」，氣血瞬間全滿。", "強化【非同步容錯】：為底層雲端連線加入更嚴謹的 Promise 捕捉機制，保證離線狀態絕不崩潰。" ] },
+  { version: "v6.10.1", title: "抗崩潰穩定版", desc: "確保跨環境部署之穩定。", changes: [ "修復【全白畫面】：移除未定義的圖標變數，並加入日誌物件強制轉型防呆機制。", "消除【SSR崩潰】：重構防盜水印生成方式，避免伺服器端渲染時發生 API 衝突。" ] },
+  { version: "v6.10.0", title: "天道法則・尋寶分流", desc: "確立了免費、保底與日常產出的因果邊界。", changes: [ "分流【尋寶機制】：稱號保底擁有絕對特權（強制升階並允許向上搜尋）；每日免費、靈石抽取與專注掉落皆統一為「向下搜尋，無則補償靈石」。" ] }
 ];
 
 const REALM_COLORS = {
@@ -284,7 +284,7 @@ export default function App() {
     lifetimeStats: { kills: 0, focusCount: 0, totalCoins: 0 },
     unlockedTitles: [], equippedTitle: null, freeGacha: 0, epiphanyPills: 0, lastPillTime: 0,
     activeCompanion: null, companionKills: {}, karma: 0, unlockedKarma: [], lastDailyGacha: 0,
-    logs: ['[系統] 識海清明，天道印記已穩固。助道友仙運隆昌。']
+    logs: ['[系統] 識海清明，天道印記已穩固。祝道友仙運隆昌。']
   };
 
   const [player, setPlayer] = useState(() => {
@@ -520,6 +520,90 @@ export default function App() {
     }
   };
 
+  const unlockKarmaTalent = (talentId, cost) => {
+      if ((player.karma || 0) >= cost) {
+          setPlayer(p => ({ ...p, karma: p.karma - cost, unlockedKarma: [...(p.unlockedKarma || []), talentId] }));
+      }
+  };
+
+  const handleHeal = () => {
+    if (player.coins >= healCost && player.vitality < maxVitality) {
+      const healAmount = Math.floor(maxVitality * 0.5);
+      setPlayer(p => ({ ...p, coins: p.coins - healCost, vitality: Math.min(maxVitality, p.vitality + healAmount) }));
+      setIsHealing(true); setTimeout(() => setIsHealing(false), 800);
+      addLog(`💊 【煉丹】吞服回春丹，恢復 ${formatNumber(healAmount)} 點氣血。`);
+    }
+  };
+
+  const handleRebuildBase = () => {
+    if (player.realmIndex === 0) { alert("已是一介凡人，無可散功。"); return; }
+    if (window.confirm("【天道警告】\n散功重修將使境界跌落一級！\n\n副作用：當前境界累積的修為將歸零。\n獲得：重置所有技能點與機緣祕籍，退還剩餘可用 SP。\n（您的生涯數據與道侶羈絆將永久保留）\n\n確認散功？")) {
+      const newRealm = player.realmIndex - 1;
+      const newQiToNext = Math.floor(250 * Math.pow(1.35, newRealm));
+      setPlayer(p => ({ ...p, realmIndex: newRealm, qi: 0, qiToNext: newQiToNext, basicSkills: {}, secretBooks: {}, activeCompanion: null }));
+      setMonster(generateMonsterState(newRealm, 0, newQiToNext, player.hasAscended)); 
+      addLog(`⚡ 【散功重修】自廢修為，境界跌落至 ${REALMS[newRealm].name}，經脈重塑，SP 全數返還！`);
+    }
+  };
+
+  const preCheckGiveUp = () => {
+    if (monster.isBoss && !player.hasAscended) { setShowGiveUpWarning(true); } else { executeGiveUp(); }
+  };
+
+  const executeGiveUp = () => {
+    setShowGiveUpWarning(false); setIsActive(false); setTargetEndTime(null);
+    
+    let actionLogs = [];
+    if (Math.random() < evadeRate) { 
+        actionLogs.push(`💨 【反撲】強行收功，但身法如鬼魅，成功閃避反噬！連擊不墜！`); 
+    } else {
+      setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
+      const pen = Math.min(Math.floor(maxVitality * 0.20 * (1/defMultiplier)), player.vitality * 0.8);
+      let nHp = player.vitality - pen, nS = player.streakCount, nQi = player.qi;
+      let fellFromBreakthrough = false;
+      
+      if (nHp <= 0) {
+          if (player.streakShields > 0) { 
+              nHp = Math.floor(maxVitality * 0.1); 
+              setPlayer(p => ({...p, streakShields: p.streakShields - 1})); 
+              actionLogs.push(`🛡️ 【反撲】法寶護主！強行收功險些喪命，鎖血 10% 擋下死劫！`); 
+          } else if (Math.random() < reviveRate) { 
+              nHp = maxVitality; 
+              actionLogs.push(`✨ 【反撲】強行收功致死！涅槃重生，轉危為安！`); 
+          } else { 
+              nHp = Math.floor(maxVitality * 0.5); nQi = Math.floor(player.qi * 0.8); nS = 0; 
+              actionLogs.push(`💀 【反撲】反噬過重！身死道消，損失 20% 修為與連擊！`); 
+              if (monster.isBoss && nQi < player.qiToNext && !player.hasAscended) fellFromBreakthrough = true;
+          }
+      } else { 
+          actionLogs.push(`🚨 【反撲】強行收功導致神魂震盪，承受 ${formatNumber(pen)} 傷害。`);
+          if (nS > 0) {
+              if (player.streakShields > 0) { 
+                  setPlayer(p => ({...p, streakShields: p.streakShields - 1})); 
+                  actionLogs.push(`🛡️ 【反撲】消耗 1 層護盾抵擋反噬，連擊未中斷！`); 
+              } else { 
+                  nS = 0; actionLogs.push(`📉 【反撲】靈壓潰散，連擊歸零。`); 
+              }
+          }
+      }
+      setPlayer(p => ({ ...p, qi: nQi, vitality: nHp, streakCount: nS }));
+      if (fellFromBreakthrough) {
+          actionLogs.push(`📉 【死劫】境界不穩，跌落玄關，宿敵消散！需重新積累底蘊。`);
+          setMonster(generateMonsterState(player.realmIndex, nQi, player.qiToNext, player.hasAscended));
+      }
+    }
+    setTimeLeft(focusDuration);
+    if (actionLogs.length > 0) addLog(actionLogs.reverse());
+  };
+
+  const handleSkipBreak = () => { setIsActive(false); setTargetEndTime(null); setMode('focus'); setTimeLeft(focusDuration); addLog(`[系統] 道友提前結束吐納。`); };
+
+  const getUnownedPool = (rarityTarget, currentArts, currentBooks) => {
+    const unownedArts = ARTIFACT_POOL.filter(a => a.rarity === rarityTarget && !currentArts.includes(a.id)).map(a => ({...a, poolType: 'art'}));
+    const unownedBooks = SECRET_BOOKS.filter(b => b.rarity === rarityTarget && !currentBooks[b.id]).map(b => ({...b, poolType: 'book'}));
+    return [...unownedArts, ...unownedBooks];
+  };
+
   const handleComplete = (usedPill = false) => {
     const isUsingPill = usedPill === true; setIsActive(false); setTargetEndTime(null);
     if (mode === 'focus') {
@@ -528,47 +612,79 @@ export default function App() {
           if (p !== undefined) p.catch(e => {});
       }
       setIsAttacking(true); setTimeout(() => setIsAttacking(false), 500);
-      try { update(ref(database, 'globalStats'), { totalFocusCount: increment(1) }); } catch (e) {}
+      try { update(ref(database, 'globalStats'), { totalFocusCount: increment(1) }).catch(e=>{}); } catch (e) {}
       
-      let nextPills = player.epiphanyPills || 0, nextLifetime = { ...player.lifetimeStats };
+      let nextPills = player.epiphanyPills || 0, nextLastPillTime = isUsingPill ? Date.now() : 0;
+      let nextLifetime = { ...player.lifetimeStats };
       let nextTotalFocusTime = (player.totalFocusTime || 0) + (isUsingPill ? 0 : focusDuration);
-      if (isUsingPill) { nextPills -= 1; } else { nextLifetime.focusCount += 1; }
+      let nextCompanionKills = { ...(player.companionKills || {}) };
+      let nextHistory = [...(player.history || [])];
+      let newArtifacts = [...(player.artifacts || [])];
+      let newSecretBooks = { ...(player.secretBooks || {}) };
+
+      let currentDrops = []; 
+      let actionLogs = [];
+
+      if (isUsingPill) { actionLogs.push(`💊 【歲月法則】吞服頓悟丹，瞬間出關！(不列入識海)`); nextPills -= 1; } 
+      else { nextLifetime.focusCount += 1; }
 
       const isCrit = Math.random() < critRate, damageBase = Math.floor(currentCombatPower * (focusDuration / 1500));
       const actualDamage = isCrit ? Math.floor(damageBase * critDmg) : damageBase;
       if (isCrit) { setIsCritStrike(true); setTimeout(() => setIsCritStrike(false), 600); }
 
-      const newHp = Math.max(0, monster.hp - actualDamage), timeRatio = focusDuration / 1500, curLuck = getMultiplier('luck_floor');
+      const newHp = Math.max(0, monster.hp - actualDamage);
+      const timeRatio = focusDuration / 1500, curLuck = getMultiplier('luck_floor');
       const passiveQi = Math.floor(50 * Math.pow(1.18, player.realmIndex + 1) * getMultiplier('qi') * timeRatio);
       const passiveCoin = Math.floor(50 * Math.pow(1.15, player.realmIndex + 1) * getMultiplier('stone') * curLuck * timeRatio);
 
       let nextQi = (player.qi || 0) + passiveQi, nextCoins = (player.coins || 0) + passiveCoin, nextVitality = player.vitality || maxVitality;
       let nextRealm = player.realmIndex, nextQiToNext = player.qiToNext, nextHasAscended = player.hasAscended;
       let nextStreak = (player.streakCount || 0) + 1, nextShields = maxStreakShields;
-      let isDeadFromCounter = false, isKilled = false, killedBoss = false, currentDrops = [], actionLogs = [];
+      let isDeadFromCounter = false, isKilled = false, killedBoss = false, fellFromBreakthrough = false;
 
       if (!isUsingPill) nextLifetime.totalCoins += passiveCoin;
+      
+      if (isCrit && Math.random() < 0.30) {
+        const ls = Math.floor(maxVitality * (getMultiplier('lifesteal') - 1));
+        if (ls > 0) { nextVitality = Math.min(maxVitality, nextVitality + ls); actionLogs.push(`💉 【真靈吸吮】爆擊恢復了 ${formatNumber(ls)} 氣血！`); }
+      }
+
       let dmgMsg = isCrit ? `🔥 【爆擊】造成 ${formatNumber(actualDamage)} 傷害。` : `⚔️ 【運功】造成 ${formatNumber(actualDamage)} 傷害。`;
 
       if (newHp === 0) {
         isKilled = true; killedBoss = monster.isBoss; setIsKilling(true); setTimeout(() => setIsKilling(false), 800); 
         const kQi = Math.floor(300 * Math.pow(1.18, monster.tier) * getMultiplier('qi')), kCoin = Math.floor(800 * Math.pow(1.15, monster.tier) * getMultiplier('stone') * curLuck);
-        nextQi += kQi; nextCoins += kCoin; if (!isUsingPill) { nextLifetime.kills += 1; nextLifetime.totalCoins += kCoin; }
+        nextQi += kQi; nextCoins += kCoin;
+        if (!isUsingPill) { nextLifetime.kills += 1; nextLifetime.totalCoins += kCoin; }
         
-        if (monster.isBoss && !nextHasAscended) {
-            if (monster.name.includes('九九重雷劫')) {
-                try { update(ref(database, 'globalStats'), { totalAscensions: increment(1) }); } catch(e) {}
+        let compLog = '';
+        if (player.activeCompanion) {
+            const cId = player.activeCompanion;
+            const oKills = nextCompanionKills[cId] || 0;
+            nextCompanionKills[cId] = oKills + 1;
+            if ([1, 10, 50, 100].includes(oKills+1)) compLog = `🌸 與【${COMPANIONS.find(c=>c.id===cId).name}】羈絆達到「${COMPANION_TIERS[getCompanionTier(oKills+1)].name}」！`;
+        }
+
+        if (monster.isBoss) {
+            if (monster.name.includes('九九重雷劫') && !player.hasAscended) {
+                try { update(ref(database, 'globalStats'), { totalAscensions: increment(1) }).catch(e=>{}); } catch(e) {}
                 nextHasAscended = true; actionLogs.push(`${dmgMsg} 🌌 【破空飛升】位列仙班！`);
                 setCelebration({ name: '飛升仙界！成就無上真仙！', desc: FEEDBACK_TEXTS.boss[0] });
-            } else {
+            } else if (nextRealm < REALMS.length - 1) {
                 nextRealm++; nextQi = Math.max(0, nextQi - nextQiToNext); nextQiToNext = Math.floor(nextQiToNext * 1.35);
-                actionLogs.push(`${dmgMsg} ☄️ 【突破死劫】晉升至${REALMS[nextRealm].name}！`);
+                nextVitality = maxVitality; // 洗髓滿血
+                if (!isUsingPill) nextHistory.push({ name: REALMS[nextRealm].name, time: nextTotalFocusTime });
+                actionLogs.push(`${dmgMsg} ☄️ 【突破死劫】晉升至${REALMS[nextRealm].name}！肉身重塑，氣血全滿！`);
                 setCelebration({ name: REALMS[nextRealm].name, desc: FEEDBACK_TEXTS.boss[Math.floor(Math.random() * FEEDBACK_TEXTS.boss.length)] });
             }
-        } else { actionLogs.push(`${dmgMsg} 🩸 【斬殺】成功擊敗${monster.name}！`); }
+        } else {
+            actionLogs.push(`${dmgMsg} 🩸 【斬殺】成功擊敗${monster.name}！`);
+        }
+
         actionLogs.push(`💰 【戰利品】奪得修為 ${formatNumber(passiveQi + kQi)}，靈石 ${formatNumber(passiveCoin + kCoin)}。`);
-        if (Math.random() < 0.10) { nextPills += 1; currentDrops.push('💊 頓悟丹'); actionLogs.push(`🎁 【天降機緣】獲得【頓悟丹】x1！`); }
-        
+
+        let rareDrops = [];
+        if (Math.random() < 0.10) { nextPills += 1; currentDrops.push('💊 頓悟丹'); rareDrops.push('【頓悟丹】x1'); }
         if (Math.random() < (0.20 * curLuck)) {
             let targetRarity = 'COMMON', accum = 0;
             const roll = Math.random(), sortedRarities = Object.entries(RARITY).sort((a,b) => a[1].weight - b[1].weight);
@@ -587,43 +703,99 @@ export default function App() {
 
             if (combinedPool.length > 0) {
                 const drop = combinedPool[Math.floor(Math.random() * combinedPool.length)];
-                if (drop.poolType === 'art') { newArtifacts.push(drop.id); currentDrops.push(`🏺 ${RARITY[searchRarity].name}法寶「${drop.name}」`); actionLogs.push(`🎁 【機緣】獲得法寶「${drop.name}」！`); }
-                else { newSecretBooks[drop.id] = 1; currentDrops.push(`📜 ${RARITY[searchRarity].name}功法「${drop.name}」`); actionLogs.push(`🎁 【機緣】領悟功法「${drop.name}」！`); }
+                if (drop.poolType === 'art') { newArtifacts.push(drop.id); currentDrops.push(`🏺 ${RARITY[searchRarity].name}法寶「${drop.name}」`); rareDrops.push(`法寶「${drop.name}」`); }
+                else { newSecretBooks[drop.id] = 1; currentDrops.push(`📜 ${RARITY[searchRarity].name}功法「${drop.name}」`); rareDrops.push(`功法「${drop.name}」`); }
             } else { 
                 const cCoins = Math.floor((0.1 * gachaCost) / RARITY[targetRarity].weight); nextCoins += cCoins; if (!isUsingPill) nextLifetime.totalCoins += cCoins; 
                 actionLogs.push(`✨ 【天道反哺】此界寶物已盡數入您手中！補償 ${formatNumber(cCoins)} 靈石！`); 
             }
         }
+
+        if (rareDrops.length > 0 || compLog) {
+            let dropStr = rareDrops.length > 0 ? `🎁 【天降機緣】獲得 ${rareDrops.join('、')}！` : '';
+            if (compLog) dropStr += ` ${compLog}`;
+            actionLogs.push(dropStr.trim());
+        }
+
       } else {
+        // Survived
         if (monster.isBoss && nextHasAscended) {
-            actionLogs.push(`${dmgMsg} 🌟 仙氣縹緲，平和指點後輩，不染塵埃。`);
+            actionLogs.push(`🌟 【仙界】仙氣縹緲，平和指點後輩，不染塵埃。`);
+            actionLogs.push(`💨 【吐納】獲修為 ${formatNumber(passiveQi)}，靈石 ${formatNumber(passiveCoin)}。`);
         } else {
             actionLogs.push(`${dmgMsg} 妖獸剩餘 ${formatNumber(newHp)} 氣血。`);
+            actionLogs.push(`💨 【吐納】獲修為 ${formatNumber(passiveQi)}，靈石 ${formatNumber(passiveCoin)}。`);
+
             const isBigAtk = Math.random() < 0.20, atkName = isBigAtk ? monster.bAtkName : monster.sAtkName;
-            if (Math.random() < evadeRate) actionLogs.push(`💨 【反撲】閃避了【${atkName}】！`);
-            else {
+            if (Math.random() < evadeRate) {
+                actionLogs.push(`💨 【反撲】身形如鬼魅，閃避了【${atkName}】！`);
+            } else {
                 setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
                 const rawDmg = Math.floor(monster.atk * (isBigAtk ? 2.5 : 1.0) * (1 + (Math.random() - 0.5)*0.4));
                 const actualDmg = Math.max(1, Math.floor(rawDmg * (dmgTakenPct / 100)));
                 nextVitality -= actualDmg;
+
                 if (nextVitality <= 0) {
-                    if (nextShields > 0) { nextShields -= 1; nextVitality = Math.floor(maxVitality * 0.1); actionLogs.push(`🛡️ 【反護】法寶鎖血 10%！`); }
-                    else if (Math.random() < reviveRate) { nextVitality = maxVitality; actionLogs.push(`✨ 【反護】涅槃重生！`); }
-                    else { nextVitality = Math.floor(maxVitality * 0.5); nextQi = Math.floor(nextQi * 0.8); nextStreak = 0; isDeadFromCounter = true; actionLogs.push(`💀 【反撲】不幸身死，修為損失 20%！`); }
-                } else actionLogs.push(`💥 【反撲】承受了 ${formatNumber(actualDmg)} 傷害。`);
+                    if (nextShields > 0) { nextShields -= 1; nextVitality = Math.floor(maxVitality * 0.1) || 1; actionLogs.push(`🛡️ 【反撲】妖獸施展【${atkName}】！法寶護主，鎖血 10% 擋下死劫！`); }
+                    else if (Math.random() < reviveRate) { nextVitality = maxVitality; actionLogs.push(`✨ 【反撲】妖獸施展【${atkName}】造成致命傷！涅槃重生，轉危為安！`); }
+                    else { 
+                        nextVitality = Math.floor(maxVitality * 0.5); nextQi = Math.floor(nextQi * 0.8); nextStreak = 0; isDeadFromCounter = true; 
+                        actionLogs.push(`💀 【反撲】妖獸施展【${atkName}】造成 ${formatNumber(actualDmg)} 傷害。身死道消，損失 20% 修為！`); 
+                        if (monster.isBoss && nextQi < nextQiToNext && !nextHasAscended) fellFromBreakthrough = true;
+                    }
+                } else { actionLogs.push(`💥 【反撲】妖獸施展【${atkName}】，承受了 ${formatNumber(actualDmg)} 點傷害。`); }
             }
         }
-        actionLogs.push(`💨 【吐納】獲修為 ${formatNumber(passiveQi)}，靈石 ${formatNumber(passiveCoin)}。`);
       }
-      if (!killedBoss) { const t = isKilled ? 'kill' : 'focus'; setToast({ type: t, text: FEEDBACK_TEXTS[t][Math.floor(Math.random() * FEEDBACK_TEXTS[t].length)], drops: currentDrops }); setTimeout(() => setToast(null), 5000); }
-      const nextMonster = (newHp === 0 || (isDeadFromCounter && monster.isBoss && !nextHasAscended)) ? generateMonsterState(nextRealm, nextQi, nextQiToNext, nextHasAscended) : { ...monster, hp: newHp };
+      
+      if (fellFromBreakthrough) actionLogs.push(`📉 【死劫】境界不穩，跌落玄關，宿敵消散！需重新積累底蘊。`);
+
+      if (!isDeadFromCounter && Math.random() < (0.10 * curLuck)) {
+        const fRoll = Math.random() * 100;
+        if (fRoll < 25) { const eQi = Math.floor(passiveQi * 2); nextQi += eQi; actionLogs.push(`🌈 【奇遇】偶遇靈泉，額外獲 ${formatNumber(eQi)} 修為！`); }
+        else if (fRoll < 50) { const eC = Math.floor(passiveCoin * 3); nextCoins += eC; if (!isUsingPill) nextLifetime.totalCoins += eC; actionLogs.push(`🌈 【奇遇】發現古修洞府，獲 ${formatNumber(eC)} 靈石！`); }
+        else if (fRoll < 75) { const h = Math.floor(maxVitality * 0.3); nextVitality = Math.min(maxVitality, nextVitality + h); actionLogs.push(`🌈 【奇遇】天道頓悟，恢復 ${formatNumber(h)} 氣血！`); }
+        else if (fRoll < 90) { nextPills += 1; currentDrops.push('💊 頓悟丹'); actionLogs.push(`🌈 【奇遇】天降機緣，獲【頓悟丹】x1！`); }
+        else if (fRoll < 98) { if (Math.random() < 0.5) { nextBaseCombat += 5; actionLogs.push(`⚡ 【天雷淬體】肉身脫胎換骨，永久戰力 +5！`); } else { nextBaseMaxVitality += 5; actionLogs.push(`⚡ 【天雷淬體】經脈拓寬，永久氣血上限 +5！`); } }
+        else {
+            let targetRarity = 'COMMON', accum = 0;
+            const roll = Math.random(), sortedRarities = Object.entries(RARITY).sort((a,b) => a[1].weight - b[1].weight);
+            for (let [r, data] of sortedRarities) { accum += data.weight * curLuck; if (roll < accum) { targetRarity = r; break; } }
+            let combinedPool = getUnownedPool(targetRarity, newArtifacts, newSecretBooks);
+            if (combinedPool.length === 0) { for (let i = RARITIES_ORDER.indexOf(targetRarity) - 1; i >= 0; i--) { combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks); if (combinedPool.length > 0) { targetRarity = RARITIES_ORDER[i]; break; } } }
+            if (combinedPool.length === 0) { for (let i = RARITIES_ORDER.indexOf(targetRarity) + 1; i < RARITIES_ORDER.length; i++) { combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks); if (combinedPool.length > 0) { targetRarity = RARITIES_ORDER[i]; break; } } }
+            if (combinedPool.length > 0) {
+                const drop = combinedPool[Math.floor(Math.random() * combinedPool.length)];
+                if (drop.poolType === 'art') { newArtifacts.push(drop.id); currentDrops.push(`🏺 ${RARITY[targetRarity].name}法寶「${drop.name}」`); actionLogs.push(`🏺 【異寶出世】霞光萬丈，喜獲法寶「${drop.name}」！`); }
+                else { newSecretBooks[drop.id] = 1; currentDrops.push(`📜 ${RARITY[targetRarity].name}功法「${drop.name}」`); actionLogs.push(`📜 【殘卷現世】機緣巧合，領悟功法「${drop.name}」！`); }
+            } else { const cCoins = Math.floor((0.1 * gachaCost) / RARITY[topRarity].weight); nextCoins += cCoins; if (!isUsingPill) nextLifetime.totalCoins += cCoins; actionLogs.push(`✨ 【天道反哺】此界寶物已盡數入您手中！補償 ${formatNumber(cCoins)} 靈石！`); }
+        }
+      }
+
+      if (!killedBoss) { 
+          const t = isKilled ? 'kill' : 'focus'; 
+          setToast({ type: t, text: FEEDBACK_TEXTS[t][Math.floor(Math.random() * FEEDBACK_TEXTS[t].length)], drops: currentDrops }); 
+          setTimeout(() => setToast(null), 5000); 
+      }
+
+      const nextMonster = (fellFromBreakthrough || newHp === 0 || (isDeadFromCounter && monster.isBoss && !nextHasAscended)) ? generateMonsterState(nextRealm, nextQi, nextQiToNext, nextHasAscended) : { ...monster, hp: newHp };
       setMonster(nextMonster);
-      setPlayer(p => ({ ...p, realmIndex: nextRealm, qi: nextQi, qiToNext: nextQiToNext, coins: nextCoins, vitality: nextVitality, streakCount: nextStreak, streakShields: nextShields, totalFocusTime: nextTotalFocusTime, artifacts: newArtifacts, secretBooks: newSecretBooks, epiphanyPills: nextPills, hasAscended: nextHasAscended, logs: [...actionLogs.reverse().map(m => `[${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}] ${m}`), ...(p.logs || [])].slice(0, 100) }));
+      
+      setPlayer(p => {
+          const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+          const formattedLogs = actionLogs.reverse().map(msg => `[${timeStr}] ${msg}`);
+          return { ...p, realmIndex: nextRealm, qi: nextQi, qiToNext: nextQiToNext, coins: nextCoins, vitality: nextVitality, baseCombat: nextBaseCombat, baseMaxVitality: nextBaseMaxVitality, streakCount: nextStreak, streakShields: nextShields, totalFocusTime: nextTotalFocusTime, artifacts: newArtifacts, secretBooks: newSecretBooks, epiphanyPills: nextPills, lastPillTime: nextLastPillTime, hasAscended: nextHasAscended, history: nextHistory, lifetimeStats: nextLifetime, companionKills: nextCompanionKills, logs: [...formattedLogs, ...(p.logs || [])].slice(0, 100) };
+      });
       setMode('break'); setTimeLeft(5 * 60);
+
     } else { 
       if (breakAudioRef.current) { const p = breakAudioRef.current.play(); if (p !== undefined) p.catch(e => {}); }
       setMode('focus'); setTimeLeft(focusDuration); setToast({ type: 'break', text: FEEDBACK_TEXTS['break'][Math.floor(Math.random() * FEEDBACK_TEXTS['break'].length)] }); setTimeout(() => setToast(null), 5000);
-      setPlayer(p => ({ ...p, vitality: Math.min(maxVitality, p.vitality + Math.floor(maxVitality * healPct)), streakShields: maxStreakShields }));
+      setPlayer(p => {
+          const h = Math.floor(maxVitality * healPct);
+          const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+          return { ...p, vitality: Math.min(maxVitality, p.vitality + h), streakShields: maxStreakShields, logs: [`[${timeStr}] 🌧️ 【靈雨降臨】吐納調息圓滿，恢復了 ${formatNumber(h)} 氣血。`, ...(p.logs || [])].slice(0, 100) };
+      });
     }
   };
 
@@ -665,39 +837,15 @@ export default function App() {
     }
   };
 
-  const preCheckGiveUp = () => { if (monster.isBoss && !player.hasAscended) { setShowGiveUpWarning(true); } else { executeGiveUp(); } };
-
-  const executeGiveUp = () => {
-    setShowGiveUpWarning(false); setIsActive(false); setTargetEndTime(null);
-    let actionLogs = [];
-    if (Math.random() < evadeRate) { actionLogs.push(`💨 【反撲】強行收功，但身法如鬼魅，成功閃避反噬！連擊不墜！`); } 
-    else {
-      setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
-      const pen = Math.min(Math.floor(maxVitality * 0.20 * (1/defMultiplier)), player.vitality * 0.8);
-      let nHp = player.vitality - pen, nS = player.streakCount, nQi = player.qi, fellFromBreakthrough = false;
-      if (nHp <= 0) {
-          if (player.streakShields > 0) { nHp = Math.floor(maxVitality * 0.1); setPlayer(p => ({...p, streakShields: p.streakShields - 1})); actionLogs.push(`🛡️ 【反撲】法寶護主！強行收功險些喪命，鎖血 10% 擋下死劫！`); } 
-          else if (Math.random() < reviveRate) { nHp = maxVitality; actionLogs.push(`✨ 【反撲】強行收功致死！涅槃重生，轉危為安！`); } 
-          else { nHp = Math.floor(maxVitality * 0.5); nQi = Math.floor(player.qi * 0.8); nS = 0; actionLogs.push(`💀 【反撲】反噬過重！身死道消，損失 20% 修為與連擊！`); if (monster.isBoss && nQi < player.qiToNext && !player.hasAscended) fellFromBreakthrough = true; }
-      } else { 
-          actionLogs.push(`🚨 【反撲】強行收功導致神魂震盪，承受 ${formatNumber(pen)} 傷害。`);
-          if (nS > 0) { if (player.streakShields > 0) { setPlayer(p => ({...p, streakShields: p.streakShields - 1})); actionLogs.push(`🛡️ 【反撲】消耗 1 層護盾抵擋反噬，連擊未中斷！`); } else { nS = 0; actionLogs.push(`📉 【反撲】靈壓潰散，連擊歸零。`); } }
-      }
-      setPlayer(p => ({ ...p, qi: nQi, vitality: nHp, streakCount: nS }));
-      if (fellFromBreakthrough) { actionLogs.push(`📉 【死劫】境界不穩，跌落玄關，宿敵消散！需重新積累底蘊。`); setMonster(generateMonsterState(player.realmIndex, nQi, player.qiToNext, player.hasAscended)); }
-    }
-    setTimeLeft(focusDuration); if (actionLogs.length > 0) addLog(actionLogs.reverse());
+  const toggleTimer = () => { 
+      if (!isActive) { 
+          // iOS Audio Priming Hack
+          if (bellAudioRef.current) { bellAudioRef.current.volume = 0; const p = bellAudioRef.current.play(); if (p !== undefined) p.then(() => { bellAudioRef.current.pause(); bellAudioRef.current.currentTime = 0; bellAudioRef.current.volume = 1; }).catch(()=>{}); }
+          if (breakAudioRef.current) { breakAudioRef.current.volume = 0; const p = breakAudioRef.current.play(); if (p !== undefined) p.then(() => { breakAudioRef.current.pause(); breakAudioRef.current.currentTime = 0; breakAudioRef.current.volume = 1; }).catch(()=>{}); }
+          
+          setIsActive(true); setTargetEndTime(Date.now() + (timeLeft * 1000)); 
+      } 
   };
-
-  const handleHeal = () => {
-    if (player.coins >= healCost && player.vitality < maxVitality) {
-      const healAmount = Math.floor(maxVitality * 0.5);
-      setPlayer(p => ({ ...p, coins: p.coins - healCost, vitality: Math.min(maxVitality, p.vitality + healAmount) }));
-      setIsHealing(true); setTimeout(() => setIsHealing(false), 800); addLog(`💊 【煉丹】吞服回春丹，恢復 ${formatNumber(healAmount)} 點氣血。`);
-    }
-  };
-
-  const toggleTimer = () => { if (!isActive) { setIsActive(true); setTargetEndTime(Date.now() + (timeLeft * 1000)); } };
 
   return (
     <div className={`min-h-screen text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-colors duration-500 ${isActive ? 'justify-center py-4 bg-[#020617]' : 'pt-10'} ${isCollapsing ? 'bg-red-950/80 animate-shake' : isKilling ? 'bg-emerald-950/60' : isCritStrike ? 'bg-rose-900/40' : ''}`} style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&q=80")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }} data-v="eGlhbnhpYV9pbmRleDNiYW9mYW4=">
@@ -736,7 +884,7 @@ export default function App() {
           <div className="w-full max-w-4xl bg-slate-900/90 p-6 md:p-8 rounded-2xl border border-purple-500/30 flex flex-col max-h-[85vh] shadow-[0_0_50px_rgba(168,85,247,0.2)] relative">
             <button onClick={() => setShowKarmaModal(false)} className="absolute top-4 right-4 p-2 text-white/50"><X size={24}/></button>
             <div className="flex flex-col items-center mb-8 border-b border-white/10 pb-6">
-                <Activity size={32} className="text-purple-400 mb-3 animate-pulse"/>
+                <Fingerprint size={32} className="text-purple-400 mb-3 animate-pulse"/>
                 <h2 className="text-xl font-black text-purple-400 tracking-widest uppercase">輪迴靈根</h2>
                 <div className="mt-4 bg-purple-950/50 border border-purple-500/50 px-6 py-2 rounded-full text-purple-200 font-mono text-lg font-black shadow-inner"> Karma: {player.karma || 0} </div>
             </div>
