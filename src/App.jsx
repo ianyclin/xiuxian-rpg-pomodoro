@@ -30,6 +30,15 @@ const database = getDatabase(app);
 
 const CHANGELOG_DATA = [
   {
+    version: "v2.6.0",
+    title: "法寶排序與視覺優化",
+    desc: "識海清明，神兵利器盡收眼底。",
+    changes: [
+      "實裝【雙層排序法則】：法寶庫與功法祕籍現在會自動將「已解鎖」的項目強制置頂。",
+      "優化【品階降序】：同為解鎖或未解鎖的法寶，將嚴格按照「造化至凡品」的高低順序排列，方便檢視底蘊。"
+    ]
+  },
+  {
     version: "v2.5.0",
     title: "萬寶擴編與機率突變",
     desc: "上古遺寶大量現世，天地法則重新洗牌。",
@@ -509,6 +518,30 @@ export default function App() {
   const [isCritStrike, setIsCritStrike] = useState(false); 
   const [isKilling, setIsKilling] = useState(false); 
   const [isHealing, setIsHealing] = useState(false); 
+
+  // ----------------------------------------------------
+  // 新增：法寶與功法的雙層排序快取 (解鎖置頂 -> 稀有度降序)
+  // ----------------------------------------------------
+  const sortedArtifacts = useMemo(() => {
+    const weight = { 'COMMON': 1, 'UNCOMMON': 2, 'RARE': 3, 'EPIC': 4, 'LEGENDARY': 5, 'MYTHIC': 6, 'DIVINE': 7 };
+    return [...ARTIFACT_POOL].sort((a, b) => {
+      const ownedA = (player.artifacts || []).includes(a.id) ? 1 : 0;
+      const ownedB = (player.artifacts || []).includes(b.id) ? 1 : 0;
+      if (ownedA !== ownedB) return ownedB - ownedA; // 第一優先：解鎖置頂
+      return weight[b.rarity] - weight[a.rarity];    // 第二優先：稀有度降序
+    });
+  }, [player.artifacts]);
+
+  const sortedSecretBooks = useMemo(() => {
+    const weight = { 'COMMON': 1, 'UNCOMMON': 2, 'RARE': 3, 'EPIC': 4, 'LEGENDARY': 5, 'MYTHIC': 6, 'DIVINE': 7 };
+    return [...SECRET_BOOKS].sort((a, b) => {
+      const ownedA = (player.secretBooks?.[a.id] > 0) ? 1 : 0;
+      const ownedB = (player.secretBooks?.[b.id] > 0) ? 1 : 0;
+      if (ownedA !== ownedB) return ownedB - ownedA; // 第一優先：解鎖置頂
+      return weight[b.rarity] - weight[a.rarity];    // 第二優先：稀有度降序
+    });
+  }, [player.secretBooks]);
+  // ----------------------------------------------------
 
   // 修改：移除法寶的等級加成，單次獲取即巔峰
   const getMultiplier = (type) => {
@@ -1689,7 +1722,7 @@ export default function App() {
                   );})}
                   </div></div>
                   <div><h3 className="text-white/60 text-sm font-black uppercase border-b border-white/20 pb-4 mb-8 tracking-widest">機緣祕籍 (14 種)</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                  {SECRET_BOOKS.map(book => { const lvl = player.secretBooks?.[book.id] || 0; const learned = lvl > 0; const upCost = Math.floor(10000 * Math.pow(2, lvl) * forgeDiscount); return (
+                  {sortedSecretBooks.map(book => { const lvl = player.secretBooks?.[book.id] || 0; const learned = lvl > 0; const upCost = Math.floor(10000 * Math.pow(2, lvl) * forgeDiscount); return (
                     <div key={book.id} className={`p-6 rounded-2xl border transition-all flex flex-col justify-between min-h-[16rem] ${learned ? 'bg-emerald-950/40 border-emerald-500/50 shadow-xl' : 'bg-black/60 border-white/10 opacity-60'}`}>
                         <div className="flex items-start gap-5"><div className={`p-4 rounded-xl ${learned ? 'bg-emerald-500 text-black shadow-lg' : 'bg-slate-800'}`}><BookOpen size={24}/></div><div className="flex-1"><h4 className="font-black text-base tracking-widest text-white">{book.name} {learned && <span className="text-xs opacity-60 ml-2 font-mono">Lv.{lvl}</span>}</h4><p className="text-sm opacity-70 leading-relaxed mt-2 text-white">{learned ? book.desc : '擊殺強敵機率獲得。'}</p></div></div>
                         {learned && lvl < 5 && <button onClick={() => handleUpgradeSecret(book.id)} disabled={player.coins < upCost || availableSP < 1} className="mt-6 w-full py-4 bg-white/10 hover:bg-emerald-600 text-white rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">參悟升級 (${formatNumber(upCost)} 靈石 + 1 SP)</button>}
@@ -1807,7 +1840,7 @@ export default function App() {
             )}
             {activeTab === 'artifacts' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 animate-pop-in pb-10">
-                {ARTIFACT_POOL.map(art => {
+                {sortedArtifacts.map(art => {
                   const unlocked = (player.artifacts || []).includes(art.id);
                   return unlocked ? (
                     <div key={art.id} className={`p-8 rounded-2xl border bg-black/60 border-white/20 flex flex-col justify-center shadow-inner min-h-[14rem]`}>
