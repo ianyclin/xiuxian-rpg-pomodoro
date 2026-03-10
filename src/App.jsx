@@ -1049,7 +1049,7 @@ if (elapsedTime <= 60) {
       return { drop: finalDrop, coins: compensationCoins, log: mutationLog, finalRarity: currentTargetRarity };
   };
 
-  const handleComplete = (usedPill = false) => {
+const handleComplete = (usedPill = false) => {
     const isUsingPill = usedPill === true;
     
     setIsActive(false); 
@@ -1115,7 +1115,7 @@ if (elapsedTime <= 60) {
         }
       }
 
-let compLog = '';
+      let compLog = '';
       if (player.activeCompanion) {
           const compId = player.activeCompanion;
           const oldExp = nextCompanionKills[compId] || 0; 
@@ -1127,11 +1127,9 @@ let compLog = '';
           const oldTier = getCompanionTier(oldExp);
           const newTier = getCompanionTier(newExp);
           
-          // 修正 1：安全鎖定矩陣索引 (防止新 tier 超出矩陣長度)
+          // 安全鎖定矩陣索引
           const tierIdx = Math.max(0, Math.min(newTier, compData.quotes.length - 1));
           const quotePool = compData.quotes[tierIdx];
-          
-          // 隨機抽取該階級內的一句台詞
           const randomQuote = quotePool[Math.floor(Math.random() * quotePool.length)];
           
           if (newTier > oldTier) {
@@ -1149,7 +1147,6 @@ let compLog = '';
                   `歲月無聲，【${compData.name}】為你護法 ${addedExp} 載，默契暗生。`,
                   `洞中無日月，你與【${compData.name}】論道 ${addedExp} 載，情誼漸深。`
               ];
-              // 修正 2：修復語法錯誤，完整補上陣列的結尾括號與 sysMsg 變數
               const sysMsg = normalMsgs[Math.floor(Math.random() * normalMsgs.length)];
               compLog = ` 🍵 【${compData.name}】：「${randomQuote}」 (${sysMsg})`;
           }
@@ -1235,7 +1232,6 @@ let compLog = '';
                 }
                 
                 const quoteMsg = FEEDBACK_TEXTS.boss[Math.floor(Math.random() * FEEDBACK_TEXTS.boss.length)];
-                // 組合突破與結緣資訊 (修正：確保抽取的是字串，而非陣列)
                 setCelebration({ 
                     name: REALMS[nextRealm].name, 
                     quote: newCompanion ? `「${newCompanion.quotes[0][Math.floor(Math.random() * newCompanion.quotes[0].length)]}」` : quoteMsg, 
@@ -1243,13 +1239,11 @@ let compLog = '';
                 });
                 killLog = `☄️ 【突破瓶頸】晉升至${REALMS[nextRealm].name}！` + killLog;
             }
-        }
         } else {
             killLog = `⚔️ 【擊殺】奪得修為 ${formatNumber(killQi)}！` + killLog;
             if (nextQi >= nextQiToNext) {
                 killLog += ` ⚡ 修為圓滿！死劫即將降臨，準備突破！`;
             }
-            // 觸發擊殺 Toast
             const msg = FEEDBACK_TEXTS.kill[Math.floor(Math.random() * FEEDBACK_TEXTS.kill.length)];
             showToast('kill', msg, collectedDrops);
         }
@@ -1265,20 +1259,11 @@ let compLog = '';
             const msg = FEEDBACK_TEXTS.focus[Math.floor(Math.random() * FEEDBACK_TEXTS.focus.length)];
             collectedDrops.push(`💨 完美閃避妖獸反撲`);
             showToast('focus', msg, collectedDrops);
-// --- 替換 handleComplete 內的 else 區塊 ---
-      } else {
-        const isBigAttack = Math.random() < 0.20; 
-        const atkName = isBigAttack ? monster.bAtkName : monster.sAtkName;
-        let nextMonsterHp = newHp; 
-        
-        if (Math.random() < evadeRate) {
-            killLog = `💨 妖獸反撲！你身形如鬼魅，完美閃避【${atkName}】！`;
         } else {
             setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
             const baseMod = isBigAttack ? 2.5 : 1.0;
             const variance = 1 + (Math.random() + Math.random() + Math.random() - 1.5) * 0.4;
             
-            // 妖獸同步蓄力 (一分鐘防呆後開始計算)
             let enemyTimeScale = 1.0;
             if (timeRatio > 1.0) { 
                 if (player.realmIndex === 2) enemyTimeScale = 1.0 + (timeRatio - 1.0) * 0.4;
@@ -1299,25 +1284,35 @@ let compLog = '';
                 if (nextShields > 0) {
                     nextShields -= 1;
                     nextVitality = Math.floor(maxVitality * 0.1) || 1;
+                    isDeadFromCounter = false;
+                    killLog = `🛡️ 妖獸施展【${atkName}】${scaleLog}造成致命傷！【法寶護主】替身傀儡粉碎，鎖血 10% 擋下死劫！`;
                     showToast('danger', '妖獸反撲，觸發護主！', [`鎖血 10% 擋下死劫`]);
                 } else if (Math.random() < reviveRate) {
                     nextVitality = maxVitality;
+                    isDeadFromCounter = false;
+                    killLog = `💥 妖獸餘威未減，施展【${atkName}】${scaleLog}造成致命傷！✨ 【涅槃重生】轉危為安！`;
                     showToast('danger', '妖獸反撲造成致命傷！', [`✨ 觸發涅槃重生`]);
                 } else {
                     nextVitality = Math.floor(maxVitality * 0.5);
                     nextQi = Math.floor(nextQi * 0.8); 
                     nextStreak = 0;
+                    nextShields = 0;
+                    isDeadFromCounter = true;
+                    
                     if (monster.isBoss && nextQi < nextQiToNext) {
                         nextMonsterHp = -1; 
+                        killLog = `💀 施展【${atkName}】${scaleLog}造成 ${formatNumber(actualDamage)} 傷害！氣血歸零！📉 【境界跌落】修為受損，死劫消散！需重新歷練。`;
                     } else {
                         nextMonsterHp = monster.maxHp; 
+                        killLog = `💀 施展【${atkName}】${scaleLog}造成 ${formatNumber(actualDamage)} 傷害！氣血歸零，損失 20% 修為與連擊！(妖獸趁機恢復了氣血)`;
                     }
                     showToast('danger', '💀 境界不穩，靈力崩潰！', [`承受致命反撲，損失 20% 修為`]);
                 }
             } else {
                 killLog = `💥 妖獸未死，發動【${atkName}】${scaleLog}反擊，造成 ${formatNumber(actualDamage)} 點傷害。`;
                 const msg = FEEDBACK_TEXTS.focus[Math.floor(Math.random() * FEEDBACK_TEXTS.focus.length)];
-                showToast('focus', msg, [`💥 承受反撲：${formatNumber(actualDamage)} 傷害`]);
+                collectedDrops.push(`💥 承受反撲：${formatNumber(actualDamage)} 傷害`);
+                showToast('focus', msg, collectedDrops);
             }
         }
         
