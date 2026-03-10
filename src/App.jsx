@@ -29,14 +29,16 @@ const database = getDatabase(app);
  */
 
 const CHANGELOG_DATA = [
-  {
+{
     version: "v3.3.0",
-    title: "天命所歸：氣運感應",
-    desc: "冥冥中自有天意，氣運滔天者，自能逢凶化吉。",
+    title: "天命所歸與萬法歸宗",
+    desc: "冥冥中自有天意，萬法皆可成大道。",
     changes: [
-      "實裝【天機牽引】：氣運 (Luck) 現在會對『爆擊率』、『閃避率』與『復活率』產生些微正向修正，氣運越高，戰鬥 RNG 的上限越高。",
-      "修補【時空漏洞】：鑄造『神識鎖 (Session Lock)』，徹底封印因瀏覽器切換分頁或快速點擊導致的重複日誌與多次結算 Bug。",
-      "優化【識海反饋】：修復結緣彈窗在矩陣語錄模式下的渲染異常，確保佳人絮語準確傳達。"
+      "實裝【天機牽引】：溢出的氣運現在會轉化為『爆擊率』、『閃避率』與『復活率』的微幅加成。",
+      "實裝【機緣免費】：搜刮或奇遇獲得的功法第一級不再扣除 SP，唯有後續參悟需消耗心神。",
+      "擴充【天道藏經閣】：新增《化劫大法》、《血靈大法》等 6 部原著絕學，配合屬性溢出衍生極限流派。",
+      "優化【潛能顯化】：實裝『可用 / 總量』的 SP 顯示介面，不再盲目修煉。",
+      "修補【時空漏洞】：鑄造『神識鎖 (Session Lock)』，徹底封印因切換分頁導致的重複結算 Bug。"
     ]
   },
   {
@@ -324,6 +326,13 @@ const SECRET_BOOKS = [
   { id: 's_11', rarity: 'DIVINE', name: '涅槃金身', desc: '不死不滅。復活機率 +8%/級', val: { revive: 0.08 } },
   { id: 's_12', rarity: 'RARE', name: '百脈煉寶訣', desc: '肉身融寶。洞府成本 -5%/級', val: { forge_discount: 0.05 } },
   { id: 's_13', rarity: 'EPIC', name: '明清靈目', desc: '看破虛妄。氣運保底 +0.1/級', val: { luck_floor: 0.10 } },
+// --- 新增 6 部原著絕學 ---
+  { id: 's_15', rarity: 'EPIC', name: '劍影分光術', desc: '極限劍修。戰力+15%，連擊效率+15%/級', val: { atk: 0.15, streak_eff: 0.15 } },
+  { id: 's_16', rarity: 'LEGENDARY', name: '疾風九變', desc: '極致身法。閃避率+6%，連擊上限+20%/級', val: { evade: 0.06, streak_cap: 0.20 } },
+  { id: 's_17', rarity: 'UNCOMMON', name: '玄陰經', desc: '捨棄防禦。爆擊率+5%，防禦-3%/級', val: { crit: 0.05, def: -0.03 } },
+  { id: 's_18', rarity: 'RARE', name: '血靈大法', desc: '魔道吸血。吸血+3%，爆傷+20%/級', val: { lifesteal: 0.03, crit_dmg: 0.20 } },
+  { id: 's_19', rarity: 'EPIC', name: '托天魔功', desc: '肉身成聖。防禦+12%，氣血+10%/級', val: { def: 0.12, hp: 0.10 } },
+  { id: 's_20', rarity: 'MYTHIC', name: '化劫大法', desc: '天道護主。滿級賦予 1 層護盾，復活+2%/級', val: { streak_shield: 0.20, revive: 0.02 } }
 ];
 
 const BASIC_SKILLS = [
@@ -649,19 +658,22 @@ export default function App() {
       localStorage.setItem('xianxia_monster_v69', JSON.stringify(monster));
   }, [monster]);
 
-  const availableSP = useMemo(() => {
-    let totalEarned = 0;
+const totalSP = useMemo(() => {
+    let total = 0;
     for (let i = 1; i <= player.realmIndex; i++) {
-      if (REALMS[i]?.isMajor) {
-        totalEarned += 5; 
-      } else {
-        totalEarned += 3; 
-      }
+      total += REALMS[i]?.isMajor ? 5 : 3;
     }
+    return total;
+  }, [player.realmIndex]);
+
+  const availableSP = useMemo(() => {
     const basicSpent = Object.values(player.basicSkills || {}).reduce((a, b) => a + b, 0);
-    const secretSpent = Object.values(player.secretBooks || {}).reduce((a, b) => a + b, 0);
-    return Math.max(0, totalEarned - (basicSpent + secretSpent));
-  }, [player.realmIndex, player.basicSkills, player.secretBooks]);
+    // 機緣祕籍：只有「超過 1 級」的部分才扣 SP (第 1 級視為撿到的機緣)
+    const secretSpent = Object.values(player.secretBooks || {}).reduce((a, b) => {
+      return a + (b > 0 ? b - 1 : 0); 
+    }, 0);
+    return Math.max(0, totalSP - basicSpent - secretSpent);
+  }, [totalSP, player.basicSkills, player.secretBooks]);
 
   const [saveIndicator, setSaveIndicator] = useState(false);
   const [globalStats, setGlobalStats] = useState({ focus: 0, ascensions: 0 });
@@ -2030,7 +2042,9 @@ const handleComplete = (usedPill = false) => {
                </div>
                <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-cyan-400 uppercase font-black flex items-center gap-1.5 mb-1"><Zap size={12}/> SP</span>
-                 <span className="text-base text-cyan-400 font-mono font-bold drop-shadow-md">{formatNumber(availableSP)}</span>
+<span className="text-base text-cyan-400 font-mono font-bold drop-shadow-md">
+  {formatNumber(availableSP)} <span className="text-[10px] opacity-40">/ {totalSP}</span>
+</span>
                </div>
                <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-rose-500 uppercase font-black flex items-center gap-1.5 mb-1"><Sword size={12}/> 連擊</span>
@@ -2155,7 +2169,7 @@ const handleComplete = (usedPill = false) => {
                       凡俗根基 (SP 研習)
                     </h3>
                     <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
-                      <span className="text-cyan-400 font-mono">可用 SP: {formatNumber(availableSP)}</span>
+                      <span className="text-cyan-400 font-mono">可用 SP: {formatNumber(availableSP)} / {totalSP})</span>
                       <button onClick={handleRebuildBase} className="px-4 py-2.5 bg-rose-900/40 hover:bg-rose-700 text-rose-300 hover:text-white rounded-lg text-xs font-black border border-rose-500/50 transition-all flex items-center gap-2 shadow-lg">
                         <RefreshCw size={14} /> 散功重修 (退SP)
                       </button>
