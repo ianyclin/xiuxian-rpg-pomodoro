@@ -289,12 +289,14 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // 每次狀態更新，寫入 localStorage
+  // 每次狀態更新，寫入 localStorage (加入防抖機制)
   useEffect(() => {
-    localStorage.setItem('xianxia_master_v69', JSON.stringify(player));
-    setSaveIndicator(true);
-    const timer = setTimeout(() => setSaveIndicator(false), 2000);
-    return () => clearTimeout(timer);
+    const debounceTimer = setTimeout(() => {
+      localStorage.setItem('xianxia_master_v69', JSON.stringify(player));
+      setSaveIndicator(true);
+      setTimeout(() => setSaveIndicator(false), 2000);
+    }, 1000); // 延遲 1 秒寫入，避免頻繁 I/O 阻塞主執行緒
+    return () => clearTimeout(debounceTimer);
   }, [player]);
 
   const availableSP = useMemo(() => {
@@ -451,7 +453,7 @@ export default function App() {
   const [showGuide, setShowGuide] = useState(false); 
   const [showTitles, setShowTitles] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
-  const [showChangelog, setShowChangelog] = useState(false); // 新增天道紀元狀態
+  const [showChangelog, setShowChangelog] = useState(false);
   const [importString, setImportString] = useState(''); 
   const [guideTab, setGuideTab] = useState('rules'); 
   const [celebration, setCelebration] = useState(null);
@@ -795,8 +797,9 @@ export default function App() {
                 }
             }
 
+            // 修改：將 originalIdx 改為 targetIdx
             if (combinedPool.length === 0) {
-                for (let i = originalIdx + 1; i < RARITIES_ORDER.length; i++) {
+                for (let i = targetIdx + 1; i < RARITIES_ORDER.length; i++) {
                     combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks);
                     if (combinedPool.length > 0) {
                         targetRarity = RARITIES_ORDER[i];
@@ -1085,12 +1088,17 @@ export default function App() {
     } 
   };
 
+  // 修改：計時器背景防卡死
   useEffect(() => {
     const syncTime = () => {
       if (isActive && targetEndTime && !showGiveUpWarning) {
-        const remaining = Math.max(0, Math.floor((targetEndTime - Date.now()) / 1000));
-        setTimeLeft(remaining); 
-        if (remaining === 0) handleComplete(false);
+        const remaining = Math.floor((targetEndTime - Date.now()) / 1000);
+        if (remaining <= 0) {
+          setTimeLeft(0);
+          handleComplete(false);
+        } else {
+          setTimeLeft(remaining);
+        }
       }
     };
     if (isActive && !showGiveUpWarning) {
