@@ -2007,74 +2007,45 @@ const handleComplete = (usedPill = false) => {
             </div>
             
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-                <div className="space-y-4">
-                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 font-mono tracking-widest flex items-center gap-2"><ChevronsUp size={14}/> 基礎倍率 (BASE MULTIPLIERS)</h3>
-                  <div className="flex justify-between text-sm items-center"><span className="text-slate-300 font-bold">總戰力加成</span><span className="text-rose-400 font-mono font-black text-base">x{getMultiplier('atk').toFixed(2)}</span></div>
-                  <div className="flex justify-between text-sm items-center"><span className="text-slate-300 font-bold">氣血上限加成</span><span className="text-emerald-400 font-mono font-black text-base">x{getMultiplier('hp').toFixed(2)}</span></div>
-                  <div className="flex justify-between text-sm items-center"><span className="text-slate-300 font-bold">靈氣獲取倍率</span><span className="text-cyan-400 font-mono font-black text-base">x{getMultiplier('qi').toFixed(2)}</span></div>
-                  <div className="flex justify-between text-sm items-center"><span className="text-slate-300 font-bold">靈石掉落倍率</span><span className="text-yellow-400 font-mono font-black text-base">x{getMultiplier('stone').toFixed(2)}</span></div>
+<div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 pb-8">
+                
+                {/* --- 基礎倍率區 --- */}
+                <div className="space-y-2">
+                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><ChevronsUp size={14}/> 基礎倍率 (MULTIPLIERS)</h3>
+                  {renderStatRow('總戰力加成', 'atk', `x${getMultiplier('atk').toFixed(2)}`, null, 'text-rose-400')}
+                  {renderStatRow('氣血上限加成', 'hp', `x${getMultiplier('hp').toFixed(2)}`, null, 'text-emerald-400')}
+                  {renderStatRow('靈氣獲取倍率', 'qi', `x${getMultiplier('qi').toFixed(2)}`, null, 'text-cyan-400')}
+                  {renderStatRow('靈石掉落倍率', 'stone', `x${getMultiplier('stone').toFixed(2)}`, null, 'text-yellow-400')}
                 </div>
                 
-                <div className="space-y-4">
-                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 font-mono tracking-widest flex items-center gap-2"><Flame size={14}/> 戰鬥極限 (COMBAT CAPS)</h3>
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-slate-300 font-bold flex flex-col">爆擊率 <span className="text-[10px] text-purple-400/70 font-mono">(溢出&gt;95% 轉爆傷)</span></span>
-                    <span className="text-purple-400 font-mono font-black text-base">{(critRate * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-slate-300 font-bold flex flex-col">爆擊傷害 <span className="text-[10px] text-white/30 font-mono">(極限 2000%)</span></span>
-                    <span className="text-rose-400 font-mono font-black text-base">{(critDmg * 100).toFixed(0)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-slate-300 font-bold flex flex-col">連擊增傷上限 <span className="text-[10px] text-white/30 font-mono">(極限 +800%)</span></span>
-                    <span className="text-rose-400 font-mono font-black text-base">+{((streakCap - 0.5) * 100).toFixed(0)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-slate-300 font-bold">連擊效率倍率</span>
-                    <span className="text-rose-400 font-mono font-black text-base">x{streakEff.toFixed(2)}</span>
-                  </div>
+                {/* --- 戰鬥極限區 --- */}
+                <div className="space-y-2">
+                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><Flame size={14}/> 戰鬥極限 (COMBAT CAPS)</h3>
+                  {renderStatRow('爆擊率', 'crit', `${(critRate * 100).toFixed(1)}%`, '(溢出>95% 轉爆傷)', 'text-purple-400')}
+                  {renderStatRow('爆擊傷害', 'crit_dmg', `${(critDmg * 100).toFixed(0)}%`, '(極限 2000%)', 'text-rose-400')}
+                  {renderStatRow('連擊增傷上限', 'streak_cap', `+${((streakCap - 0.5) * 100).toFixed(0)}%`, '(極限 +800%)', 'text-rose-400')}
+                  {renderStatRow('連擊效率倍率', 'streak_eff', `x${streakEff.toFixed(2)}`, null, 'text-rose-400')}
                 </div>
 
-                <div className="space-y-4">
-                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 font-mono tracking-widest flex items-center gap-2"><Shield size={14}/> 生存防禦 (SURVIVAL & DEFENSE)</h3>
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-slate-300 font-bold flex flex-col">閃避免傷率 <span className="text-[10px] text-emerald-400/70 font-mono">(溢出&gt;75% 轉連擊)</span></span>
-                    <span className="text-emerald-400 font-mono font-black text-base">{(evadeRate * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold">涅槃復活率 <span className="text-[10px] text-white/30 ml-1 font-mono">(極限 65%)</span></span>
-                     <span className="text-emerald-400 font-mono font-black text-base">{(reviveRate * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold">反噬承傷比例 <span className="text-[10px] text-white/30 ml-1 font-mono">(1 / Def)</span></span>
-                     <span className="text-yellow-500 font-mono font-black text-base">{dmgTakenPct.toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold">神識感應減傷 <span className="text-[10px] text-white/30 ml-1 font-mono">(極限 90%)</span></span>
-                     <span className="text-cyan-400 font-mono font-black text-base">{((Math.min(0.9, getMultiplier('sense_def') - 1)) * 100).toFixed(1)}%</span>
-                  </div>
+                {/* --- 生存防禦區 --- */}
+                <div className="space-y-2">
+                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><Shield size={14}/> 生存防禦 (DEFENSE)</h3>
+                  {renderStatRow('閃避免傷率', 'evade', `${(evadeRate * 100).toFixed(1)}%`, '(溢出>75% 轉連擊)', 'text-emerald-400')}
+                  {renderStatRow('涅槃復活率', 'revive', `${(reviveRate * 100).toFixed(1)}%`, '(極限 65%)', 'text-emerald-400')}
+                  {renderStatRow('反噬承傷比例', 'def', `${dmgTakenPct.toFixed(1)}%`, '(由顛倒五行與防禦力計算)', 'text-yellow-500')}
+                  {renderStatRow('神識感應減傷', 'sense_def', `${((Math.min(0.9, getMultiplier('sense_def') - 1)) * 100).toFixed(1)}%`, '(無視空間鎖定，極限 90%)', 'text-cyan-400')}
                 </div>
 
-                <div className="space-y-4">
-                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 font-mono tracking-widest flex items-center gap-2"><Compass size={14}/> 機緣經濟 (FORTUNE & ECONOMY)</h3>
-                  <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold flex flex-col">氣運保底倍率 <span className="text-[10px] text-white/30 font-mono">(乘算奇遇與抽獎)</span></span>
-                     <span className="text-yellow-400 font-mono font-black text-base">x{getMultiplier('luck_floor').toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold">洞府成本折扣 <span className="text-[10px] text-white/30 ml-1 font-mono">(極限降至 10%)</span></span>
-                     <span className="text-yellow-500 font-mono font-black text-base">{(forgeDiscount * 100).toFixed(0)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold">真靈吸血比例 <span className="text-[10px] text-white/30 ml-1 font-mono">(爆擊時 30% 觸發)</span></span>
-                     <span className="text-rose-400 font-mono font-black text-base">{((getMultiplier('lifesteal') - 1) * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                     <span className="text-slate-300 font-bold">休息回血比例 <span className="text-[10px] text-white/30 ml-1 font-mono">(極限 80%)</span></span>
-                     <span className="text-emerald-400 font-mono font-black text-base">{(healPct * 100).toFixed(1)}%</span>
-                  </div>
+                {/* --- 機緣經濟區 --- */}
+                <div className="space-y-2">
+                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><Compass size={14}/> 機緣經濟 (ECONOMY)</h3>
+                  {renderStatRow('氣運保底倍率', 'luck_floor', `x${getMultiplier('luck_floor').toFixed(2)}`, '(乘算奇遇與抽獎)', 'text-yellow-400')}
+                  {renderStatRow('洞府成本折扣', 'forge_discount', `${(forgeDiscount * 100).toFixed(0)}%`, '(極限降至 10%)', 'text-yellow-500')}
+                  {renderStatRow('真靈吸血比例', 'lifesteal', `${((getMultiplier('lifesteal') - 1) * 100).toFixed(1)}%`, '(爆擊時 30% 機率觸發)', 'text-rose-400')}
+                  {renderStatRow('休息回血比例', 'heal_bonus', `${(healPct * 100).toFixed(1)}%`, '(極限 80%)', 'text-emerald-400')}
                 </div>
+
+              </div>
 
               </div>
             </div>
