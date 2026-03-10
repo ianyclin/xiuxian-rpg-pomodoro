@@ -30,6 +30,15 @@ const database = getDatabase(app);
 
 const CHANGELOG_DATA = [
   {
+    version: "v3.2.1",
+    title: "識海史記擴容",
+    desc: "筆耕不輟，錄仙途點滴。",
+    changes: [
+      "優化【修記容量】：日誌保留上限由 50 則提升至 200 則，詳盡記錄修行點滴。",
+      "校準【資訊雙軌制】：掉落物高光展示與日誌記錄同步實裝，重要機緣絕不遺漏。"
+    ]
+  },
+  {
     version: "v3.2.0",
     title: "階層式心流反饋",
     desc: "斬妖除魔，法寶現世，一切了然於胸。",
@@ -640,7 +649,7 @@ export default function App() {
              const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
              updatedLogs.unshift(`[${timeStr}] 🏆 【天道恩賜】解鎖稱號「${titleName}」！獲贈免費尋寶 1 次！`);
           });
-          return { ...p, unlockedTitles: updatedUnlocked, freeGacha: newFreeGacha, logs: updatedLogs.slice(0, 50) };
+          return { ...p, unlockedTitles: updatedUnlocked, freeGacha: newFreeGacha, logs: updatedLogs.slice(0, 200) };
        });
     }
   }, [player.lifetimeStats, player.artifacts, player.basicSkills, player.secretBooks]);
@@ -802,7 +811,7 @@ export default function App() {
 
   const addLog = (text) => {
     const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    setPlayer(p => ({ ...p, logs: [`[${timeStr}] ${text}`, ...(p.logs || [])].slice(0, 50) }));
+    setPlayer(p => ({ ...p, logs: [`[${timeStr}] ${text}`, ...(p.logs || [])].slice(0, 200) }));
   };
 
   const handleHeal = () => {
