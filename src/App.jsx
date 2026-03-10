@@ -2093,29 +2093,33 @@ const handleComplete = (usedPill = false) => {
           <div className="h-px w-48 bg-gradient-to-r from-transparent via-white/20 to-transparent mt-4 opacity-50"></div>
         </div>
         
-        <div className={`bg-slate-900/50 backdrop-blur-3xl p-5 md:p-8 rounded-xl border ${activeColorClass.border} relative shadow-2xl shadow-inner group transition-all duration-500`}>
+{/* --- 狀態主面板：已移除 group 避免誤觸 --- */}
+        <div className={`bg-slate-900/50 backdrop-blur-3xl p-5 md:p-8 rounded-xl border ${activeColorClass.border} relative shadow-2xl transition-all duration-500`}>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-6 mb-6">
             <div className="flex items-center gap-4 w-full md:flex-1 min-w-0">
-               <Shield size={36} className={`${activeColorClass.text} flex-shrink-0`}/>
-               <div className="flex flex-col justify-center flex-1 min-w-0">
-                  <h2 className="text-xl sm:text-2xl font-black tracking-widest uppercase text-white font-bold drop-shadow-lg truncate flex items-center flex-wrap">
+                <Shield size={36} className={`${activeColorClass.text} flex-shrink-0`}/>
+                <div className="flex flex-col justify-center flex-1 min-w-0">
+                   <h2 className="text-xl sm:text-2xl font-black tracking-widest uppercase text-white drop-shadow-lg truncate flex items-center flex-wrap">
                     {player.equippedTitle && <span className="text-amber-400 mr-2 border border-amber-500/50 bg-amber-950/50 px-2 py-0.5 rounded text-[10px] sm:text-xs tracking-widest relative -top-0.5">[{TITLE_DATA.find(t=>t.id===player.equippedTitle)?.name}]</span>}
                     {currentRealmData.name}
                   </h2>
-                  {/* --- ✨ 插入點：將綜合靈壓放在境界名稱正下方 --- */}
+                  
+                  {/* 綜合靈壓：靜態顯示，不再被遮擋 */}
                   <div className="flex items-center gap-2 mt-1">
                      <span className="text-[10px] text-white/50 uppercase tracking-widest">綜合靈壓</span>
                      <span className="text-sm font-mono font-black text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.8)] flex items-center gap-1.5"><Activity size={12}/> {formatNumber(comprehensiveCP)}</span>
                   </div>
-                  {/* ------------------------------------------------ */}
+
+                  {/* 命格標籤：純淨顯示，無彈窗 */}
                   <div className="flex flex-wrap items-center gap-2 mt-3">
-                    <div className={`group relative flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-white/10 bg-black/40 text-[10px] sm:text-xs tracking-widest font-black transition-all ${currentFate.color} cursor-help`}>
+                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-white/10 bg-black/40 text-[10px] sm:text-xs tracking-widest font-black ${currentFate.color}`}>
                       <Clover size={14} className="fill-current"/> 
                       {currentFate.name}
-                      <div className="absolute bottom-full left-0 mb-2 hidden group-hover:flex bg-black/90 border border-white/20 p-2.5 rounded-lg text-[10px] text-white whitespace-nowrap z-[100] shadow-2xl items-center gap-1">
-                        <Info size={12} className="text-cyan-400"/> 天機勘破：x{luckVal.toFixed(2)}
-                      </div>
                     </div>
+                  </div>
+                </div>
+            </div>
+          </div>
 
                     {player.activeCompanion && (
                       <span className="text-pink-400 border border-pink-500/50 bg-pink-950/50 px-2.5 py-1 rounded-md text-[10px] sm:text-xs tracking-widest flex items-center gap-1.5 whitespace-nowrap">
