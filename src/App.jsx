@@ -1162,7 +1162,9 @@ const handleComplete = (usedPill = false) => {
       let nextBaseCombat = player.baseCombat;
       let nextBaseMaxVitality = player.baseMaxVitality;
       
-      let nextStreak = player.streakCount + 1;
+      // 修正後：依據專注時長，給予對應的連擊層數 (15m=1, 25m=2, 45m=3, 60m=4)
+      const addedStreak = Math.round(focusDuration / 900);
+      let nextStreak = player.streakCount + addedStreak;
       let nextShields = maxStreakShields; 
       let isDeadFromCounter = false;
 
