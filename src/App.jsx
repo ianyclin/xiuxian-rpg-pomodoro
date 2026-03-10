@@ -901,13 +901,17 @@ const pillCooldownRemaining = player.lastPillTime ? Math.max(0, 3600 - Math.floo
     return Math.floor(offense * defense);
   }, [currentCombatPower, critRate, critDmg, maxVitality, dmgTakenPct, evadeRate]);
 
-// 🔮 靜態神識感應：呼吸律動版
-const combatPrediction = useMemo(() => {
+// 🔮 靜態神識感應：全屬性 + 連擊倍率連動版
+const combatPrediction = React.useMemo(() => {
   if (!monster || !finalStats) return null;
 
-  const baseDmg = finalStats.totalCombat; 
-  const minDmg = baseDmg * 1; 
-  const maxDmg = baseDmg * 4; 
+  // 1. 核心算式：將「全屬性面板戰力」乘上「當前連擊倍率」
+  // 這裡確保了你的每一把飛劍、每一本心法、以及你的專注連擊，都算進了天機推演中！
+  const actualCombatPower = finalStats.totalCombat * (comboMultiplier || 1); 
+
+  // 2. 換算專注時長的保底與極限輸出 (假設 15m=1x, 60m=4x)
+  const minDmg = actualCombatPower * 1; 
+  const maxDmg = actualCombatPower * 4; 
 
   // --- 1. 極度威脅 (死氣逼人) ---
   if (maxDmg < monster.hp * 0.8) {
@@ -917,7 +921,6 @@ const combatPrediction = useMemo(() => {
       color: "text-rose-400",
       bg: "bg-rose-950/40",
       border: "border-rose-500/50",
-      // 強烈呼吸：紅色光暈閃爍
       animate: "animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.3)]",
       icon: "💀"
     };
@@ -931,7 +934,6 @@ const combatPrediction = useMemo(() => {
       color: "text-slate-400",
       bg: "bg-slate-900/40",
       border: "border-slate-700/50",
-      // 微弱呼吸：極慢的透明度變化
       animate: "opacity-80 hover:opacity-100 transition-opacity duration-1000",
       icon: "🍃"
     };
@@ -944,12 +946,13 @@ const combatPrediction = useMemo(() => {
     color: "text-amber-400",
     bg: "bg-amber-950/40",
     border: "border-amber-600/40",
-    // 紊亂呼吸：黃色光暈律動
     animate: "animate-pulse shadow-[0_0_10px_rgba(251,191,36,0.2)]",
     icon: "☯️"
   };
 
-}, [monster, finalStats.totalCombat]);
+// ⚠️ 關鍵：依賴陣列加入了 comboMultiplier。
+// 這樣當你完成一個番茄鐘，連擊數上升時，UI 上的威脅感會立刻實時降級！
+}, [monster, finalStats.totalCombat, comboMultiplier]);
 
   const getExportString = () => {
       try {
