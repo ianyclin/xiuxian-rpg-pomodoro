@@ -30,6 +30,16 @@ const database = getDatabase(app);
 
 const CHANGELOG_DATA = [
   {
+    version: "v2.7.0",
+    title: "天道命格與神識勘破",
+    desc: "天機不可洩漏，命數自有定論。",
+    changes: [
+      "新增【命格系統】：氣運加成不再顯示生硬數字，轉化為「凡骨俗胎」至「天道化身」等七階命格。",
+      "優化【身分排版】：將命格與道侶標籤移至境界名稱下方，凝聚角色養成感，並釋放資源欄空間。",
+      "新增【神識勘破】：滑鼠懸停或點擊命格稱號時，方可窺探隱藏的精確氣運加成倍率。"
+    ]
+  },
+  {
     version: "v2.6.0",
     title: "法寶排序與視覺優化",
     desc: "識海清明，神兵利器盡收眼底。",
@@ -45,17 +55,7 @@ const CHANGELOG_DATA = [
     changes: [
       "重構【法寶機制】：拔除法寶升級系統，獲取即為完全體，基礎數值大幅提升。",
       "擴編【萬寶圖鑑】：法寶總數擴充至 85 件，嚴格對標原著法器至造化至寶階級。",
-      "實裝【連鎖突變演算法】：抽滿該階級圖鑑時，80%轉化為靈石，20%機率引發突變躍升至下一階級。",
-      "校準【多寶稱號】：因應圖鑑擴充，收集稱號門檻上調至 15 / 40 / 75 件。"
-    ]
-  },
-  {
-    version: "v2.0.0",
-    title: "紅顏道侶與玉簡傳功",
-    desc: "天地異變，仙途不再孤單；神識突破空間限制。",
-    changes: [
-      "新增【仙途伴侶】：結識原著8位紅顏知己，同行雙修獲得專屬增益。",
-      "新增【玉簡傳功】：支援跨裝置進度匯出與匯入 (Base64 防呆加密)。"
+      "實裝【連鎖突變演算法】：抽滿該階級圖鑑時，80%轉化為靈石，20%機率引發突變躍升至下一階級。"
     ]
   }
 ];
@@ -72,6 +72,17 @@ const REALM_COLORS = {
   slate: { text: 'text-slate-400', border: 'border-slate-500/30', bg: 'bg-slate-500' },
   rose: { text: 'text-rose-400', border: 'border-rose-500/30', bg: 'bg-rose-500' }
 };
+
+// 天道命格區間表
+const LUCK_FATES = [
+  { min: 5.51, name: '【天道化身】', color: 'text-white animate-pulse drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]' },
+  { min: 5.01, name: '【此界之主】', color: 'text-rose-500 drop-shadow-[0_0_5px_rgba(244,63,94,0.5)]' },
+  { min: 4.01, name: '【天命所歸】', color: 'text-amber-400' },
+  { min: 2.81, name: '【氣運加身】', color: 'text-purple-400' },
+  { min: 1.81, name: '【百靈護體】', color: 'text-blue-400' },
+  { min: 1.21, name: '【偶有機緣】', color: 'text-emerald-400' },
+  { min: 0.00, name: '【凡骨俗胎】', color: 'text-slate-400' },
+];
 
 const formatNumber = (num) => {
   if (num === undefined || num === null) return '0';
@@ -127,10 +138,9 @@ const GUIDE_REALMS = [
 ];
 
 // ==========================================
-// 萬寶錄 85+ 擴編 (拔除等級制，數值一步到位)
+// 萬寶錄 85+ 擴編
 // ==========================================
 const ARTIFACT_POOL = [
-  // COMMON (25件) - 基礎過渡
   { id: 'a_c01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (防禦減傷 +5%)', val: { def: 0.05 } },
   { id: 'a_c02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +5%)', val: { atk: 0.05 } },
   { id: 'a_c03', rarity: 'COMMON', name: '凝神蒲團', desc: '固本培元 (回血+3%，修為+3%)', val: { heal_bonus: 0.03, qi: 0.03 } },
@@ -157,7 +167,6 @@ const ARTIFACT_POOL = [
   { id: 'a_c24', rarity: 'COMMON', name: '引路蜂', desc: '尋寶靈蟲 (靈石掉落 +6%)', val: { stone: 0.06 } },
   { id: 'a_c25', rarity: 'COMMON', name: '烏龍奪', desc: '詭異兵器 (爆傷+15%)', val: { crit_dmg: 0.15 } },
 
-  // UNCOMMON (20件) - 單項特化
   { id: 'a_u01', rarity: 'UNCOMMON', name: '神風舟', desc: '御風而行 (閃避率 +8%)', val: { evade: 0.08 } },
   { id: 'a_u02', rarity: 'UNCOMMON', name: '金蚨子母刃', desc: '奇門暗器 (戰力+12%，爆擊+5%)', val: { atk: 0.12, crit: 0.05 }, tags: ['sword'] },
   { id: 'a_u03', rarity: 'UNCOMMON', name: '無形針', desc: '無影無蹤 (連擊效率+15%，爆擊+5%)', val: { streak_eff: 0.15, crit: 0.05 } },
@@ -179,7 +188,6 @@ const ARTIFACT_POOL = [
   { id: 'a_u19', rarity: 'UNCOMMON', name: '攝魂鈴', desc: '神識攻擊 (反噬減傷 +12%)', val: { sense_def: 0.12 } },
   { id: 'a_u20', rarity: 'UNCOMMON', name: '高級儲物袋', desc: '極大空間 (靈石掉落 +20%)', val: { stone: 0.20 } },
 
-  // RARE (15件) - 結丹期主力
   { id: 'a_r01', rarity: 'RARE', name: '青蛟旗', desc: '妖魂鎮壓 (戰力加成 +25%)', val: { atk: 0.25 } },
   { id: 'a_r02', rarity: 'RARE', name: '金光磚', desc: '重擊崩碎 (爆擊傷害 +40%)', val: { crit_dmg: 0.40 } },
   { id: 'a_r03', rarity: 'RARE', name: '碧玉葫蘆', desc: '納寶空間 (靈石掉落 +40%)', val: { stone: 0.40 } },
@@ -196,7 +204,6 @@ const ARTIFACT_POOL = [
   { id: 'a_r14', rarity: 'RARE', name: '噬炎刀', desc: '吞噬火焰 (吸血 +5%)', val: { lifesteal: 0.05 } },
   { id: 'a_r15', rarity: 'RARE', name: '高階替身符', desc: '替死擋災 (復活機率 +8%)', val: { revive: 0.08 } },
 
-  // EPIC (12件) - 元嬰期古寶
   { id: 'a_e01', rarity: 'EPIC', name: '虛天鼎 (仿)', desc: '鎮壓氣運 (減傷+20%，氣運保底+0.3)', val: { def: 0.20, luck_floor: 0.30 } },
   { id: 'a_e02', rarity: 'EPIC', name: '風雷翅', desc: '迅捷如雷 (連擊效率+50%，閃避+12%)', val: { streak_eff: 0.50, evade: 0.12 } },
   { id: 'a_e03', rarity: 'EPIC', name: '紫羅極火', desc: '極寒之焰 (戰力+40%，爆傷+60%)', val: { atk: 0.40, crit_dmg: 0.60 } },
@@ -210,7 +217,6 @@ const ARTIFACT_POOL = [
   { id: 'a_e11', rarity: 'EPIC', name: '萬年靈乳', desc: '瞬間恢復 (復活機率 +12%)', val: { revive: 0.12 } },
   { id: 'a_e12', rarity: 'EPIC', name: '太玄八卦圖', desc: '推演天機 (反噬減傷+40%，連擊上限+30%)', val: { sense_def: 0.40, streak_cap: 0.30 } },
 
-  // LEGENDARY (8件) - 通天靈寶
   { id: 'a_l01', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖 (連擊上限+80%，閃避+18%)', val: { streak_cap: 0.80, evade: 0.18 } },
   { id: 'a_l02', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣核心 (戰力+80%，連擊效率+80%)', val: { atk: 0.80, streak_eff: 0.80 }, tags: ['sword'] },
   { id: 'a_l03', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '元嬰後期戰力 (氣血+120%，護盾+2)', val: { hp: 1.20, streak_shield: 2.0 } }, 
@@ -220,14 +226,12 @@ const ARTIFACT_POOL = [
   { id: 'a_l07', rarity: 'LEGENDARY', name: '五子同心魔', desc: '極凶之物 (戰力+110%，反噬防禦-20%)', val: { atk: 1.10, sense_def: -0.20 } },
   { id: 'a_l08', rarity: 'LEGENDARY', name: '成熟噬金蟲群', desc: '無物不噬 (戰力+100%，爆傷+120%)', val: { atk: 1.00, crit_dmg: 1.20 } },
 
-  // MYTHIC (5件) - 玄天之寶
   { id: 'a_m01', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '斬裂法則 (戰力+200%，爆傷+250%)', val: { atk: 2.00, crit_dmg: 2.50 }, tags: ['sword'] },
   { id: 'a_m02', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +150%)', val: { atk: 1.50, def: 1.50 } },
   { id: 'a_m03', rarity: 'MYTHIC', name: '虛天大鼎', desc: '鼎鎮山河 (減傷+120%，折扣-50%，氣運保底+0.8)', val: { def: 1.20, forge_discount: 0.50, luck_floor: 0.8 } },
   { id: 'a_m04', rarity: 'MYTHIC', name: '玄天如意刃', desc: '空間切割 (連擊上限+150%，爆傷+150%)', val: { streak_cap: 1.50, crit_dmg: 1.50 }, tags: ['sword'] },
   { id: 'a_m05', rarity: 'MYTHIC', name: '萬靈血璽', desc: '血祭一界 (戰力+250%，復活+15%，護盾+3)', val: { atk: 2.50, revive: 0.15, streak_shield: 3.0 } },
 
-  // DIVINE (3件) - 造化至寶
   { id: 'a_d01', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+500%，靈石+300%)', val: { qi: 5.00, stone: 3.00 } },
   { id: 'a_d02', rarity: 'DIVINE', name: '游天鯤鵬翎', desc: '跨越界域 (閃避+25%，連擊效率+200%)', val: { evade: 0.25, streak_eff: 2.00 } },
   { id: 'a_d03', rarity: 'DIVINE', name: '金闕玉書', desc: '仙界天書 (靈石+600%，氣運保底+1.5)', val: { stone: 6.00, luck_floor: 1.50 } }
@@ -259,7 +263,6 @@ const BASIC_SKILLS = [
 
 const RARITY_BASE_COST = { COMMON: 1000, UNCOMMON: 5000, RARE: 25000, EPIC: 100000, LEGENDARY: 500000, MYTHIC: 2500000, DIVINE: 10000000 };
 
-// 調整稱號解鎖門檻
 const TITLE_DATA = [
   { id: 't_kill_1', cat: 'kill', req: 50, tier: 1, name: '同階無敵', desc: '「死在閣下手下的同階修士，已不在少數。」', buffDesc: '總戰力加成 +10%', val: { atk: 0.10 } },
   { id: 't_kill_2', cat: 'kill', req: 200, tier: 2, name: '厲飛雨', desc: '「殺人放火厲飛雨，萬人敬仰韓天尊。道友，借個名號用用。」', buffDesc: '爆擊率 +10%，真靈吸血 +5%', val: { crit: 0.10, lifesteal: 0.05 } },
@@ -270,7 +273,6 @@ const TITLE_DATA = [
   { id: 't_coin_1', cat: 'coin', req: 1000000, tier: 1, name: '身家豐厚', desc: '「在低階散修眼中，你已經是個不折不扣的大土豪了。」', buffDesc: '靈石掉落倍率 +15%', val: { stone: 0.15 } },
   { id: 't_coin_2', cat: 'coin', req: 10000000, tier: 2, name: '天南巨富', desc: '「靈石成山。這等身家，哪怕在天南修仙界也足以橫著走了。」', buffDesc: '靈石掉落倍率 +40%', val: { stone: 0.40 } },
   { id: 't_coin_3', cat: 'coin', req: 500000000, tier: 3, name: '財可通神', desc: '「連靈界大乘期老怪看到你的儲物袋，也會忍不住生出殺人奪寶的心思。」', buffDesc: '靈石倍率 +150%，氣運保底 +0.5', val: { stone: 1.50, luck_floor: 0.50 } },
-  // 修改：圖鑑收集門檻上調為 15 / 40 / 75
   { id: 't_art_1', cat: 'artifact', req: 15, tier: 1, name: '身懷異寶', desc: '「財不露白，道友還是盡早將這些寶物收進儲物袋為妙。」', buffDesc: '氣運保底 +0.15', val: { luck_floor: 0.15 } },
   { id: 't_art_2', cat: 'artifact', req: 40, tier: 2, name: '一身是寶', desc: '「『不可能！你區區一介散修，身家怎會比老夫還要豐厚！』」', buffDesc: '連擊上限 +50%，氣運保底 +0.3', val: { streak_cap: 0.50, luck_floor: 0.30 } },
   { id: 't_art_3', cat: 'artifact', req: 75, tier: 3, name: '多寶天尊', desc: '「玄天之寶、造化至寶盡入你手，此界天道法則已被你徹底顛覆。」', buffDesc: '連擊上限 +150%，氣運保底 +0.8', val: { streak_cap: 1.50, luck_floor: 0.80 } },
@@ -520,7 +522,7 @@ export default function App() {
   const [isHealing, setIsHealing] = useState(false); 
 
   // ----------------------------------------------------
-  // 新增：法寶與功法的雙層排序快取 (解鎖置頂 -> 稀有度降序)
+  // 法寶與功法的雙層排序快取 (解鎖置頂 -> 稀有度降序)
   // ----------------------------------------------------
   const sortedArtifacts = useMemo(() => {
     const weight = { 'COMMON': 1, 'UNCOMMON': 2, 'RARE': 3, 'EPIC': 4, 'LEGENDARY': 5, 'MYTHIC': 6, 'DIVINE': 7 };
@@ -543,14 +545,13 @@ export default function App() {
   }, [player.secretBooks]);
   // ----------------------------------------------------
 
-  // 修改：移除法寶的等級加成，單次獲取即巔峰
   const getMultiplier = (type) => {
     let mult = 1.0;
     BASIC_SKILLS.forEach(s => { if (player.basicSkills?.[s.id] > 0 && s.val?.[type]) mult += s.val[type] * player.basicSkills[s.id]; });
     Object.entries(player.secretBooks || {}).forEach(([id, lvl]) => { const book = SECRET_BOOKS.find(x => x.id === id); if (book?.val?.[type]) mult += book.val[type] * lvl; });
     (player.artifacts || []).forEach(id => { 
         const item = ARTIFACT_POOL.find(a => a.id === id); 
-        if (item?.val?.[type]) mult += item.val[type]; // 移除 *(1 + lvl*0.5)
+        if (item?.val?.[type]) mult += item.val[type];
     });
     if (player.equippedTitle) { const activeTitle = TITLE_DATA.find(t => t.id === player.equippedTitle); if (activeTitle?.val?.[type]) mult += activeTitle.val[type]; }
     if (type === 'atk' || type === 'streak_cap') { const swordCount = (player.artifacts || []).filter(id => ARTIFACT_POOL.find(a => a.id === id)?.tags?.includes('sword')).length; if (swordCount >= 2) mult += 0.2 * swordCount; }
@@ -577,6 +578,10 @@ export default function App() {
 
   const currentRealmData = REALMS[player.realmIndex];
   const activeColorClass = REALM_COLORS[currentRealmData.color] || REALM_COLORS.slate;
+
+  // 動態天道命格計算
+  const luckVal = getMultiplier('luck_floor');
+  const currentFate = LUCK_FATES.find(f => luckVal >= f.min) || LUCK_FATES[LUCK_FATES.length - 1];
   
   const rawEvade = getMultiplier('evade') - 1;
   const evadeRate = Math.min(0.75, rawEvade);
@@ -742,7 +747,7 @@ export default function App() {
     setTargetEndTime(null);
     setMode('focus');
     setTimeLeft(focusDuration);
-    addLog(`【調息結束】道友提前結束吐納，未獲取靈雨滋養。`);
+    addLog(`【調息結束】道友提前結束吐納，未獲取靈氣滋養。`);
   };
 
   const getUnownedPool = (rarityTarget, currentArts, currentBooks) => {
@@ -751,7 +756,6 @@ export default function App() {
     return [...unownedArts, ...unownedBooks];
   };
 
-  // 新增：連鎖突變演算法 (Cascading Mutation Engine)
   const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
       let currentTargetRarity = initialRarity;
       let finalDrop = null;
@@ -764,7 +768,6 @@ export default function App() {
               finalDrop = pool[Math.floor(Math.random() * pool.length)];
               break;
           } else {
-              // 該階級已滿，獲取 80% 價值補償
               let compValue = Math.floor((baseCost * 0.8) / RARITY[currentTargetRarity].weight);
               compensationCoins += compValue;
               mutationLog += `【${RARITY[currentTargetRarity].name}】圖鑑已滿，化為 ${formatNumber(compValue)} 靈石。`;
@@ -773,7 +776,6 @@ export default function App() {
                   mutationLog += `天道極限！`;
                   break;
               }
-              // 20% 機率突變至下一階級
               if (Math.random() < 0.20) {
                   let idx = RARITIES_ORDER.indexOf(currentTargetRarity);
                   currentTargetRarity = RARITIES_ORDER[idx + 1];
@@ -786,7 +788,7 @@ export default function App() {
       return { drop: finalDrop, coins: compensationCoins, log: mutationLog, finalRarity: currentTargetRarity };
   };
 
-const handleComplete = (usedPill = false) => {
+  const handleComplete = (usedPill = false) => {
     const isUsingPill = usedPill === true;
     
     setIsActive(false); 
@@ -826,9 +828,8 @@ const handleComplete = (usedPill = false) => {
 
       const newHp = Math.max(0, monster.hp - actualDamage);
       const timeRatio = focusDuration / 1500;
-      const currentLuck = getMultiplier('luck_floor');
       const passiveQi = Math.floor(50 * Math.pow(1.18, player.realmIndex + 1) * getMultiplier('qi') * timeRatio);
-      const passiveCoin = Math.floor(50 * Math.pow(1.15, player.realmIndex + 1) * getMultiplier('stone') * currentLuck * timeRatio);
+      const passiveCoin = Math.floor(50 * Math.pow(1.15, player.realmIndex + 1) * getMultiplier('stone') * luckVal * timeRatio);
 
       let nextQi = player.qi + passiveQi;
       let nextCoins = player.coins + passiveCoin;
@@ -861,7 +862,7 @@ const handleComplete = (usedPill = false) => {
       if (newHp === 0) {
         setIsKilling(true); setTimeout(() => setIsKilling(false), 800); 
         const killQi = Math.floor(300 * Math.pow(1.18, monster.tier) * getMultiplier('qi'));
-        const killCoin = Math.floor(800 * Math.pow(1.15, monster.tier) * getMultiplier('stone') * currentLuck);
+        const killCoin = Math.floor(800 * Math.pow(1.15, monster.tier) * getMultiplier('stone') * luckVal);
         
         nextQi += killQi;
         nextCoins += killCoin;
@@ -888,8 +889,7 @@ const handleComplete = (usedPill = false) => {
             killLog += ` 💊 搜刮妖獸巢穴，獲得【頓悟丹】x1！`;
         }
 
-        // 修復漏洞2：掉落判定乘上時間倍率 timeRatio
-        if (Math.random() < (0.20 * currentLuck * timeRatio)) {
+        if (Math.random() < (0.20 * luckVal * timeRatio)) {
             const roll = Math.random();
             let targetRarity = 'COMMON';
             let accum = 0;
@@ -940,7 +940,7 @@ const handleComplete = (usedPill = false) => {
       } else {
         const isBigAttack = Math.random() < 0.20; 
         const atkName = isBigAttack ? monster.bAtkName : monster.sAtkName;
-        let nextMonsterHp = newHp; // 預設妖獸血量下降
+        let nextMonsterHp = newHp; 
         
         if (Math.random() < evadeRate) {
             killLog = `💨 妖獸反撲！你身形如鬼魅，完美閃避【${atkName}】！`;
@@ -970,7 +970,6 @@ const handleComplete = (usedPill = false) => {
                     nextStreak = 0;
                     nextShields = 0;
                     isDeadFromCounter = true;
-                    // 修復漏洞1：玩家真實死亡，重置妖獸血量，防止無限堆屍
                     nextMonsterHp = monster.maxHp; 
                     killLog = `💀 妖獸施展【${atkName}】造成 ${formatNumber(actualDamage)} 傷害！氣血歸零，損失 20% 修為與連擊！(妖獸趁機恢復了所有氣血)`;
                 }
@@ -978,13 +977,11 @@ const handleComplete = (usedPill = false) => {
                 killLog = `💥 妖獸未死，發動【${atkName}】反擊，造成 ${formatNumber(actualDamage)} 點傷害。`;
             }
         }
-        // 更新妖獸血量
         setMonster(prev => ({ ...prev, hp: nextMonsterHp }));
       }
 
       let fortuneLog = '';
-      // 修復漏洞2：奇遇判定乘上時間倍率 timeRatio
-      if (!isDeadFromCounter && Math.random() < (0.10 * currentLuck * timeRatio)) {
+      if (!isDeadFromCounter && Math.random() < (0.10 * luckVal * timeRatio)) {
         const fRoll = Math.random() * 100;
         
         if (fRoll < 25) {
@@ -1017,7 +1014,7 @@ const handleComplete = (usedPill = false) => {
             let accum = 0;
             const sortedRarities = Object.entries(RARITY).sort((a,b) => a[1].weight - b[1].weight);
             for (let [r, data] of sortedRarities) {
-                accum += data.weight * currentLuck; // 抽獎不吃時間加成，只吃氣運
+                accum += data.weight * luckVal; 
                 if (roll < accum) {
                     targetRarity = r;
                     break;
@@ -1085,14 +1082,13 @@ const handleComplete = (usedPill = false) => {
     const isFree = (player.freeGacha || 0) > 0;
     if (!isFree && player.coins < gachaCost) return;
     
-    const currentLuck = getMultiplier('luck_floor');
     const roll = Math.random(); 
     let targetRarity = 'COMMON';
     
     let accum = 0;
     const sortedRarities = Object.entries(RARITY).sort((a,b) => a[1].weight - b[1].weight);
     for (let [r, data] of sortedRarities) {
-        accum += data.weight * currentLuck; 
+        accum += data.weight * luckVal; 
         if (roll < accum) {
             targetRarity = r;
             break;
@@ -1103,7 +1099,6 @@ const handleComplete = (usedPill = false) => {
       targetRarity = 'RARE';
     }
     
-    // 使用連鎖突變演算法
     const result = resolveDropWithMutation(targetRarity, player.artifacts || [], player.secretBooks || {}, gachaCost);
 
     setPlayer(p => {
@@ -1559,19 +1554,32 @@ const handleComplete = (usedPill = false) => {
                   <h2 className="text-xl sm:text-2xl font-black tracking-widest uppercase text-white font-bold drop-shadow-lg truncate flex items-center flex-wrap">
                     {player.equippedTitle && <span className="text-amber-400 mr-2 border border-amber-500/50 bg-amber-950/50 px-2 py-0.5 rounded text-[10px] sm:text-xs tracking-widest relative -top-0.5">[{TITLE_DATA.find(t=>t.id===player.equippedTitle)?.name}]</span>}
                     {currentRealmData.name}
-                    
+                  </h2>
+                  
+                  {/* 新增：命格與道侶的左側身分標籤區 */}
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
+                    <div className={`group relative flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-white/10 bg-black/40 text-[10px] sm:text-xs tracking-widest font-black transition-all ${currentFate.color} cursor-help`}>
+                      <Clover size={14} className="fill-current"/> 
+                      {currentFate.name}
+                      <div className="absolute bottom-full left-0 mb-2 hidden group-hover:flex bg-black/90 border border-white/20 p-2.5 rounded-lg text-[10px] text-white whitespace-nowrap z-[100] shadow-2xl items-center gap-1">
+                        <Info size={12} className="text-cyan-400"/> 天機勘破：x{luckVal.toFixed(2)}
+                      </div>
+                    </div>
+
                     {player.activeCompanion && (
-                      <span className="ml-3 text-pink-400 border border-pink-500/50 bg-pink-950/50 px-2 py-0.5 rounded text-[10px] sm:text-xs tracking-widest relative -top-0.5 flex items-center gap-1.5 whitespace-nowrap mt-2 sm:mt-0">
-                        <Heart size={12} className="fill-current animate-pulse"/> 
+                      <span className="text-pink-400 border border-pink-500/50 bg-pink-950/50 px-2.5 py-1 rounded-md text-[10px] sm:text-xs tracking-widest flex items-center gap-1.5 whitespace-nowrap">
+                        <Heart size={14} className="fill-current animate-pulse"/> 
                         {COMPANIONS.find(c=>c.id===player.activeCompanion)?.name} ({getCompanionTier(player.companionKills?.[player.activeCompanion]||0) >= 0 ? COMPANION_TIERS[getCompanionTier(player.companionKills?.[player.activeCompanion]||0)].name : '未結緣'})
                       </span>
                     )}
-                  </h2>
+                  </div>
+                  
                   <p className={`text-xs md:text-sm leading-tight ${mode === 'break' ? 'text-cyan-300' : activeColorClass.text} font-bold mt-2 opacity-90 italic drop-shadow-md truncate`}>{currentRealmData.desc}</p>
                </div>
             </div>
             
-            <div className="grid grid-cols-3 sm:flex sm:flex-row sm:flex-nowrap justify-start md:justify-end items-start md:items-end gap-x-4 gap-y-4 w-full md:w-auto mt-4 md:mt-0">
+            {/* 修改：右側數據列改為 grid-cols-2 (原本為 grid-cols-3) 並移除氣運格 */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-row sm:flex-nowrap justify-start md:justify-end items-start md:items-end gap-x-4 gap-y-4 w-full md:w-auto mt-4 md:mt-0">
                <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-yellow-500 uppercase font-black flex items-center gap-1.5 mb-1"><Coins size={12}/> 靈石</span>
                  <span className="text-base text-yellow-500 font-mono font-bold drop-shadow-md">{formatNumber(player.coins)}</span>
@@ -1585,12 +1593,6 @@ const handleComplete = (usedPill = false) => {
                  <span className={`text-base text-rose-500 font-mono font-bold drop-shadow-md transition-all duration-500 flex items-center gap-1 ${comboMultiplier > 2.0 ? 'text-rose-300 scale-110 animate-pulse drop-shadow-[0_0_10px_rgba(244,63,94,0.8)]' : ''}`}>
                    x{comboMultiplier.toFixed(2)}
                    {maxStreakShields > 0 && <span className="text-cyan-400 text-xs ml-1 flex items-center">🛡️{player.streakShields}</span>}
-                 </span>
-               </div>
-               <div className="flex flex-col items-start md:items-end font-bold">
-                 <span className="text-xs text-emerald-400 uppercase font-black flex items-center gap-1.5 mb-1"><Clover size={12}/> 氣運</span>
-                 <span className={`text-base text-emerald-400 font-mono font-bold drop-shadow-md transition-all duration-500 ${getMultiplier('luck_floor') > 1.5 ? 'text-yellow-400 scale-110 animate-bounce drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : ''}`}>
-                   x{getMultiplier('luck_floor').toFixed(2)}
                  </span>
                </div>
                <div className="flex flex-col items-start md:items-end font-bold">
@@ -1899,7 +1901,7 @@ const handleComplete = (usedPill = false) => {
             <span className="sm:ml-3">with Gemini</span>
           </p>
           
-<div className="flex w-full max-w-md justify-center gap-3 mt-4">
+          <div className="flex w-full max-w-md justify-center gap-3 mt-4">
               <button 
                 onClick={() => setShowChangelog(true)} 
                 className="flex-1 sm:flex-none opacity-60 hover:opacity-100 transition-all border border-white/30 py-3 px-2 sm:px-6 rounded-2xl text-xs tracking-widest hover:bg-emerald-900/60 hover:border-emerald-500/60 hover:text-emerald-200 flex flex-col items-center justify-center gap-1.5"
