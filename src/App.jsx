@@ -30,6 +30,16 @@ const database = getDatabase(app);
 
 const CHANGELOG_DATA = [
   {
+    version: "v3.3.0",
+    title: "天命所歸：氣運感應",
+    desc: "冥冥中自有天意，氣運滔天者，自能逢凶化吉。",
+    changes: [
+      "實裝【天機牽引】：氣運 (Luck) 現在會對『爆擊率』、『閃避率』與『復活率』產生些微正向修正，氣運越高，戰鬥 RNG 的上限越高。",
+      "修補【時空漏洞】：鑄造『神識鎖 (Session Lock)』，徹底封印因瀏覽器切換分頁或快速點擊導致的重複日誌與多次結算 Bug。",
+      "優化【識海反饋】：修復結緣彈窗在矩陣語錄模式下的渲染異常，確保佳人絮語準確傳達。"
+    ]
+  },
+  {
     version: "v3.2.5",
     title: "心流與史記",
     desc: "溫故而知新，每一次吐納皆是修行。",
@@ -798,16 +808,25 @@ export default function App() {
     return mult;
   };
 
-  const currentRealmData = REALMS[player.realmIndex];
+const currentRealmData = REALMS[player.realmIndex];
   const activeColorClass = REALM_COLORS[currentRealmData.color] || REALM_COLORS.slate;
 
   const luckVal = getMultiplier('luck_floor');
   const currentFate = LUCK_FATES.find(f => luckVal >= f.min) || LUCK_FATES[LUCK_FATES.length - 1];
   
-  const rawEvade = getMultiplier('evade') - 1;
+  // --- 新增：天道庇護 (運氣轉化為實戰 RNG 屬性微加成) ---
+  const extraLuck = Math.max(0, luckVal - 1.0);
+  const luckCritBonus = extraLuck * 0.015;  // 每多 1 點氣運，+1.5% 爆擊率
+  const luckEvadeBonus = extraLuck * 0.01;  // 每多 1 點氣運，+1.0% 閃避率
+  const luckReviveBonus = extraLuck * 0.005; // 每多 1 點氣運，+0.5% 復活率
+  // -----------------------------------------------------
+
+  // 將微加成融合進原始數值中
+  const rawEvade = getMultiplier('evade') - 1 + luckEvadeBonus;
   const evadeRate = Math.min(0.75, rawEvade);
   const overflowEvade = Math.max(0, rawEvade - 0.75);
-  const rawCrit = getMultiplier('crit') - 1;
+  
+  const rawCrit = getMultiplier('crit') - 1 + luckCritBonus;
   const critRate = Math.min(0.95, rawCrit);
   const overflowCrit = Math.max(0, rawCrit - 0.95);
   
@@ -818,10 +837,10 @@ export default function App() {
   
   const maxStreakShields = Math.floor(getMultiplier('streak_shield') - 1);
   const critDmg = Math.min(20.0, 1.5 + (getMultiplier('crit_dmg') - 1) + (overflowCrit * 3.0));
-  const reviveRate = Math.min(0.65, getMultiplier('revive') - 1);   
+  const reviveRate = Math.min(0.65, getMultiplier('revive') - 1 + luckReviveBonus);   
   const healPct = Math.min(0.80, 0.35 + (getMultiplier('heal_bonus') - 1));
   const defMultiplier = getMultiplier('def');
-  const dmgTakenPct = (1 / defMultiplier) * 100; 
+  const dmgTakenPct = (1 / defMultiplier) * 100;
 
   const currentCombatPower = Math.floor(player.baseCombat * getMultiplier('atk') * comboMultiplier);
   const maxVitality = Math.floor(player.baseMaxVitality * getMultiplier('hp'));
