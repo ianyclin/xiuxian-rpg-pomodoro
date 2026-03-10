@@ -1077,7 +1077,7 @@ const handleComplete = (usedPill = false) => {
         vitality: Math.min(maxVitality, p.vitality + heal),
         streakShields: maxStreakShields 
       }));
-      addLog(`🌧️ 【靈雨降臨】吐納調息圓滿，恢復了 ${formatNumber(heal)} 氣血。`); 
+      addLog(`🧘‍♂️ 【周天圓滿】吐納調息結束，靈氣滋養受損經脈，恢復了 ${formatNumber(heal)} 氣血。`); 
     }
   };
 
