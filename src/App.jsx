@@ -30,6 +30,15 @@ const database = getDatabase(app);
 
 const CHANGELOG_DATA = [
   {
+    version: "v3.2.2",
+    title: "仙緣初綻",
+    desc: "驀然回首，那人卻在，燈火闌珊處。",
+    changes: [
+      "新增【結緣提示】：首次突破至可認識道侶的境界時，將在突破彈窗中高光展示佳人身影。",
+      "優化【突破文案】：若突破時伴隨結緣，彈窗語錄將優先抽取道侶的初次見面語。"
+    ]
+  },
+  {
     version: "v3.2.1",
     title: "識海史記擴容",
     desc: "筆耕不輟，錄仙途點滴。",
@@ -1163,10 +1172,22 @@ export default function App() {
                 nextQiToNext = Math.floor(nextQiToNext * 1.35);
                 if (!isUsingPill) nextHistory = [...nextHistory, { name: REALMS[nextRealm].name, time: nextTotalFocusTime }];
                 
+                const newCompanion = COMPANIONS.find(c => c.unlockIdx === nextRealm);
+                if (newCompanion) {
+                    collectedDrops.unshift(`🌸 結識紅緣：【${newCompanion.name}】`);
+                    addLog(`🏆 【仙緣】突破之際，你與【${newCompanion.name}】意外結識，可前往「道侶紅顏」邀其同行。`);
+                }
+                
                 const quoteMsg = FEEDBACK_TEXTS.boss[Math.floor(Math.random() * FEEDBACK_TEXTS.boss.length)];
-                setCelebration({ name: REALMS[nextRealm].name, quote: quoteMsg, drops: collectedDrops });
+                // 組合突破與結緣資訊
+                setCelebration({ 
+                    name: REALMS[nextRealm].name, 
+                    quote: newCompanion ? `「${newCompanion.quotes[0]}」` : quoteMsg, 
+                    drops: collectedDrops 
+                });
                 killLog = `☄️ 【突破瓶頸】晉升至${REALMS[nextRealm].name}！` + killLog;
             }
+        }
         } else {
             killLog = `⚔️ 【擊殺】奪得修為 ${formatNumber(killQi)}！` + killLog;
             if (nextQi >= nextQiToNext) {
