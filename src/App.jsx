@@ -30,6 +30,16 @@ const database = getDatabase(app);
 
 const CHANGELOG_DATA = [
   {
+    version: "v3.2.4",
+    title: "歲月情深：矩陣語錄與防呆優化",
+    desc: "一語一契機，情隨歲月深，羈絆演化萬千。",
+    changes: [
+      "實裝【矩陣隨機語錄】：道侶在不同羈絆階級擁有獨立語錄庫，隨機抽選，徹底告別重複台詞。",
+      "優化【結緣慶典】：境界突破若伴隨新紅顏結識，彈窗將優先展示佳人的「初次見面語」。",
+      "調整【氣機牽引 2.0】：防呆期由 10 秒延長至 1 分鐘，給予更寬裕的戰略反悔時間。"
+    ]
+  },
+  {
     version: "v3.2.2",
     title: "仙緣初綻",
     desc: "驀然回首，那人卻在，燈火闌珊處。",
@@ -902,9 +912,9 @@ export default function App() {
     
     const elapsedTime = focusDuration - timeLeft;
 
-    if (elapsedTime <= 10) {
-        showToast('focus', '【神識收攏】開陣未滿 10 秒，無傷退回。');
-        addLog(`💨 【神識收攏】開陣未滿 10 秒，靈氣尚未入體，無傷退回。`);
+if (elapsedTime <= 60) {
+        showToast('focus', '【神識收攏】開陣未滿 1 分鐘，無傷退回。');
+        addLog(`💨 【神識收攏】開陣未滿 1 分鐘，靈氣尚未入體，無傷退回。`);
         setTimeLeft(focusDuration);
         return; 
     }
@@ -1117,8 +1127,11 @@ let compLog = '';
           const oldTier = getCompanionTier(oldExp);
           const newTier = getCompanionTier(newExp);
           
-          // 矩陣雙重隨機化：先鎖定當前階級的語錄庫，再從庫中隨機抽一句
-          const quotePool = compData.quotes[newTier] || compData.quotes[compData.quotes.length - 1];
+          // 修正 1：安全鎖定矩陣索引 (防止新 tier 超出矩陣長度)
+          const tierIdx = Math.max(0, Math.min(newTier, compData.quotes.length - 1));
+          const quotePool = compData.quotes[tierIdx];
+          
+          // 隨機抽取該階級內的一句台詞
           const randomQuote = quotePool[Math.floor(Math.random() * quotePool.length)];
           
           if (newTier > oldTier) {
@@ -1136,6 +1149,7 @@ let compLog = '';
                   `歲月無聲，【${compData.name}】為你護法 ${addedExp} 載，默契暗生。`,
                   `洞中無日月，你與【${compData.name}】論道 ${addedExp} 載，情誼漸深。`
               ];
+              // 修正 2：修復語法錯誤，完整補上陣列的結尾括號與 sysMsg 變數
               const sysMsg = normalMsgs[Math.floor(Math.random() * normalMsgs.length)];
               compLog = ` 🍵 【${compData.name}】：「${randomQuote}」 (${sysMsg})`;
           }
