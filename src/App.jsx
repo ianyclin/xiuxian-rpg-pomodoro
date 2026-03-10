@@ -2207,9 +2207,9 @@ const handleComplete = (usedPill = false) => {
             </div>
 
             {/* --- ✨ 新增：妖獸挑釁語錄在這裡！ --- */}
-            <div className="text-xs md:text-sm text-rose-200/70 italic font-bold mb-4 tracking-widest drop-shadow-md px-4">
-              「{monster.quote}」
-            </div>
+<div className="text-xs md:text-sm text-rose-200/70 italic font-bold mb-4 tracking-widest drop-shadow-md px-4 leading-relaxed">
+  「{monster.quote || '（惡狠狠的直盯著你，彷彿要將你生脫活剝...）'}」
+</div>
             {/* ------------------------------------- */}
 
             <div className="w-full max-w-xs mx-auto bg-black/60 rounded-full h-2.5 mb-1 overflow-hidden border border-white/10 shadow-inner">
