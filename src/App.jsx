@@ -922,17 +922,32 @@ const currentRealmData = REALMS[player.realmIndex];
     }
   };
 
-  const handleRebuildBase = () => {
+const handleRebuildBase = () => {
     if (player.realmIndex === 0) {
       alert("已是一介凡人，無可散功。");
       return;
     }
-    if (window.confirm("【天道警告】\n散功重修將使境界跌落一級！\n\n副作用：當前境界累積的修為將歸零。\n獲得：重置所有技能點與機緣祕籍，退還剩餘可用 SP。\n（您的生涯數據與道侶羈絆將永久保留）\n\n確認散功？")) {
+    if (window.confirm("【天道警告】\n散功重修將使境界跌落一級！\n\n副作用：當前境界累積的修為將歸零。\n獲得：重置基礎技能，機緣祕籍保留並降回 Lv.1，退還升級所耗的 SP。\n（您的生涯數據與道侶羈絆將永久保留）\n\n確認散功？")) {
       const newRealm = player.realmIndex - 1;
       const newQiToNext = Math.floor(250 * Math.pow(1.35, newRealm));
-      setPlayer(p => ({ ...p, realmIndex: newRealm, qi: 0, qiToNext: newQiToNext, basicSkills: {}, secretBooks: {}, activeCompanion: null }));
+      
+      // 核心修正：將所有已學會的祕籍降回 Lv.1，保留圖鑑不消失！
+      const resetSecrets = Object.keys(player.secretBooks || {}).reduce((acc, key) => {
+          acc[key] = 1; 
+          return acc;
+      }, {});
+
+      setPlayer(p => ({ 
+        ...p, 
+        realmIndex: newRealm, 
+        qi: 0, 
+        qiToNext: newQiToNext, 
+        basicSkills: {}, 
+        secretBooks: resetSecrets, // 套用不滅法則
+        activeCompanion: null 
+      }));
       setMonster(generateMonsterState(newRealm, 0, newQiToNext));
-      addLog(`⚡ 【散功重修】自廢修為，境界跌落至 ${REALMS[newRealm].name}，經脈重塑，SP 全數返還！`);
+      addLog(`⚡ 【散功重修】自廢修為，境界跌落至 ${REALMS[newRealm].name}，祕籍降至首級，SP 全數返還！`);
     }
   };
 
