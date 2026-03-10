@@ -2085,7 +2085,7 @@ const handleComplete = (usedPill = false) => {
         </div>
       )}
 
-      <div className={`w-full max-w-4xl mb-6 transition-all duration-500 z-10 font-bold px-2 md:px-0 mt-10 ${isActive ? 'hidden' : 'block'}`}>
+<div className={`w-full max-w-4xl mb-6 transition-all duration-500 z-10 font-bold px-2 md:px-0 mt-10 ${isActive ? 'hidden' : 'block'}`}>
         <div className="flex flex-col items-center mb-8 h-10 justify-center">
           <h1 className="text-lg md:text-xl font-extralight tracking-[1.2em] text-white/30 uppercase font-bold drop-shadow-md">
             凡人修仙專注
@@ -2093,33 +2093,34 @@ const handleComplete = (usedPill = false) => {
           <div className="h-px w-48 bg-gradient-to-r from-transparent via-white/20 to-transparent mt-4 opacity-50"></div>
         </div>
         
-{/* --- 狀態主面板：已移除 group 避免誤觸 --- */}
+        {/* --- 狀態主面板 --- */}
         <div className={`bg-slate-900/50 backdrop-blur-3xl p-5 md:p-8 rounded-xl border ${activeColorClass.border} relative shadow-2xl transition-all duration-500`}>
+          
+          {/* 頂部資訊區塊 (左側：境界與靈壓 / 右側：資源數據) */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-6 mb-6">
+            
+            {/* --- 左側：境界、靈壓、命格、道侶 --- */}
             <div className="flex items-center gap-4 w-full md:flex-1 min-w-0">
                 <Shield size={36} className={`${activeColorClass.text} flex-shrink-0`}/>
+                
                 <div className="flex flex-col justify-center flex-1 min-w-0">
-                   <h2 className="text-xl sm:text-2xl font-black tracking-widest uppercase text-white drop-shadow-lg truncate flex items-center flex-wrap">
+                  <h2 className="text-xl sm:text-2xl font-black tracking-widest uppercase text-white drop-shadow-lg truncate flex items-center flex-wrap">
                     {player.equippedTitle && <span className="text-amber-400 mr-2 border border-amber-500/50 bg-amber-950/50 px-2 py-0.5 rounded text-[10px] sm:text-xs tracking-widest relative -top-0.5">[{TITLE_DATA.find(t=>t.id===player.equippedTitle)?.name}]</span>}
                     {currentRealmData.name}
                   </h2>
                   
-                  {/* 綜合靈壓：靜態顯示，不再被遮擋 */}
+                  {/* 綜合靈壓 */}
                   <div className="flex items-center gap-2 mt-1">
                      <span className="text-[10px] text-white/50 uppercase tracking-widest">綜合靈壓</span>
                      <span className="text-sm font-mono font-black text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.8)] flex items-center gap-1.5"><Activity size={12}/> {formatNumber(comprehensiveCP)}</span>
                   </div>
 
-                  {/* 命格標籤：純淨顯示，無彈窗 */}
+                  {/* 標籤群：命格與道侶 */}
                   <div className="flex flex-wrap items-center gap-2 mt-3">
                     <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-white/10 bg-black/40 text-[10px] sm:text-xs tracking-widest font-black ${currentFate.color}`}>
                       <Clover size={14} className="fill-current"/> 
                       {currentFate.name}
                     </div>
-                  </div>
-                </div>
-            </div>
-          </div>
 
                     {player.activeCompanion && (
                       <span className="text-pink-400 border border-pink-500/50 bg-pink-950/50 px-2.5 py-1 rounded-md text-[10px] sm:text-xs tracking-widest flex items-center gap-1.5 whitespace-nowrap">
@@ -2129,21 +2130,28 @@ const handleComplete = (usedPill = false) => {
                     )}
                   </div>
                   
-                  <p className={`text-xs md:text-sm leading-tight ${activeColorClass.text} font-bold mt-2 opacity-90 italic drop-shadow-md truncate`}>{currentRealmData.desc}</p>
-               </div>
+                  {/* 境界描述 */}
+                  <p className={`text-xs md:text-sm leading-tight ${activeColorClass.text} font-bold mt-2 opacity-90 italic drop-shadow-md truncate`}>
+                    {currentRealmData.desc}
+                  </p>
+                </div>
             </div>
-            
+
+            {/* --- 右側：靈石、SP、連擊、頓悟丹 --- */}
             <div className="grid grid-cols-2 sm:flex sm:flex-row sm:flex-nowrap justify-start md:justify-end items-start md:items-end gap-x-4 gap-y-4 w-full md:w-auto mt-4 md:mt-0">
+               
                <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-yellow-500 uppercase font-black flex items-center gap-1.5 mb-1"><Coins size={12}/> 靈石</span>
                  <span className="text-base text-yellow-500 font-mono font-bold drop-shadow-md">{formatNumber(player.coins)}</span>
                </div>
+               
                <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-cyan-400 uppercase font-black flex items-center gap-1.5 mb-1"><Zap size={12}/> SP</span>
-<span className="text-base text-cyan-400 font-mono font-bold drop-shadow-md">
-  {formatNumber(availableSP)} <span className="text-[10px] opacity-40">/ {totalSP}</span>
-</span>
+                 <span className="text-base text-cyan-400 font-mono font-bold drop-shadow-md">
+                   {formatNumber(availableSP)} <span className="text-[10px] opacity-40">/ {totalSP}</span>
+                 </span>
                </div>
+               
                <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-rose-500 uppercase font-black flex items-center gap-1.5 mb-1"><Sword size={12}/> 連擊</span>
                  <span className={`text-base text-rose-500 font-mono font-bold drop-shadow-md transition-all duration-500 flex items-center gap-1 ${comboMultiplier > 2.0 ? 'text-rose-300 scale-110 animate-pulse drop-shadow-[0_0_10px_rgba(244,63,94,0.8)]' : ''}`}>
@@ -2151,10 +2159,12 @@ const handleComplete = (usedPill = false) => {
                    {maxStreakShields > 0 && <span className="text-cyan-400 text-xs ml-1 flex items-center">🛡️{player.streakShields}</span>}
                  </span>
                </div>
+               
                <div className="flex flex-col items-start md:items-end font-bold">
                  <span className="text-xs text-amber-500 uppercase font-black flex items-center gap-1.5 mb-1"><Pill size={12}/> 頓悟丹</span>
                  <span className="text-base text-amber-500 font-mono font-bold drop-shadow-md">{formatNumber(player.epiphanyPills || 0)}</span>
                </div>
+
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
