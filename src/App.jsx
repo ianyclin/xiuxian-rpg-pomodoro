@@ -30,12 +30,22 @@ const database = getDatabase(app);
 
 const CHANGELOG_DATA = [
   {
+    version: "v3.2.0",
+    title: "階層式心流反饋",
+    desc: "斬妖除魔，法寶現世，一切了然於胸。",
+    changes: [
+      "實裝【動態浮動橫幅 (Toast)】：日常運功與休息結算將以非阻擋式橫幅呈現，停留後自動消散，保護您的心流體驗。",
+      "新增【掉落高光展示】：打寶、奇遇與頓悟丹等重要收穫，將直接以醒目大字展示於橫幅，不再錯過機緣。",
+      "擴充【沉浸式語錄】：新增數十種專注、戰鬥與突破的動態文案，讓每一次結算都充滿修仙意境。"
+    ]
+  },
+  {
     version: "v3.1.0",
     title: "天道法則：氣機與歲月",
     desc: "修仙無歲月，寒盡不知年。生死一線間，方顯真神通。",
     changes: [
       "重構【道侶羈絆】：不再計算冰冷的擊殺數，改為「相伴載數(專注分鐘數)」，並加入豐富的原著互動語錄。",
-      "實裝【氣機牽引】：【結丹期】起，強行收功將依據「已流逝時間」產生反噬加成，撐得越久放棄越致命。",
+      "實裝【氣機牽引】：【結丹期】起，強行收功將依據「已流逝時間」產生反噬加成，起步 1.2 倍基礎懲罰，撐得越久放棄越致命 (10秒防呆期)。",
       "實裝【妖獸同步蓄力】：【築基期】起，長時長專注將導致妖獸同步吸收靈氣，反撲傷害暴增。",
       "優化【天道指引】：全面重寫新手教學與進階秘訣，解密時長戰略與屬性流派。"
     ]
@@ -58,18 +68,24 @@ const CHANGELOG_DATA = [
       "實裝【禪定模式】：一旦開始運轉周天，所有與當前專注無關的境界、法寶、狀態將全數隱藏。",
       "優化【視覺置中】：螢幕將只剩下最純粹的計時器與陣眼，幫助道友心無旁騖地衝擊瓶頸。"
     ]
-  },
-  {
-    version: "v2.7.0",
-    title: "天道命格與神識勘破",
-    desc: "天機不可洩漏，命數自有定論。",
-    changes: [
-      "新增【命格系統】：氣運加成不再顯示生硬數字，轉化為「凡骨俗胎」至「天道化身」等七階命格。",
-      "優化【身分排版】：將命格與道侶標籤移至境界名稱下方，凝聚角色養成感，並釋放資源欄空間。",
-      "新增【神識勘破】：滑鼠懸停或點擊命格稱號時，方可窺探隱藏的精確氣運加成倍率。"
-    ]
   }
 ];
+
+// 新增：沉浸式結算語錄
+const FEEDBACK_TEXTS = {
+  focus: [
+    "劍光閃爍，在妖獸身上留下一道深深的血痕。", "法寶轟擊，震退了眼前的強敵！", "攻勢如潮，妖獸的氣息隨之衰弱了幾分。", "真元激盪，這一擊結結實實地打在了妖獸的破綻上。", "趁其不備，凌厲的殺招狠狠命中了目標。", "激烈交鋒！你的法術成功穿透了它的防禦。", "靈力爆發，妖獸的護體靈光被你強行撕裂。", "一番纏鬥，妖獸的動作明顯遲緩了下來。", "抓住破綻，連續的猛攻讓妖獸連連後退。", "氣血翻湧，你的一擊讓妖獸發出了痛苦的嘶吼。"
+  ],
+  break: [
+    "靈氣運轉一個周天，神清氣爽。", "心無旁騖，道心更堅定了一分。", "摒棄雜念，真元如臂使指。", "吐納之間，修為暗暗增長。", "一念不生，萬法無咎。", "神識清明，對天地法則的感悟加深了。", "氣沉丹田，經脈中的靈力越發凝實。", "歲月如梭，唯有苦修方能證得大道。", "不驕不躁，平心靜氣地完成了一次循環。", "周天圓滿，將外界喧囂盡數隔絕。"
+  ],
+  kill: [
+    "劍氣如虹，妖血染紅了大地！", "雷霆手段，瞬間將妖邪斬化為飛灰！", "區區妖物，也敢擋我修仙之路！", "真元爆發，摧枯拉朽般粉碎了敵人的防禦。", "身法如電，在妖獸來不及反應前取其首級。"
+  ],
+  boss: [
+    "逆天改命！硬生生踏破了這生死玄關！", "天道不公，我便逆天！死劫已破！", "千百次生死邊緣的試探，終於斬滅此瓶頸！", "縱使九死一生，也絕不退縮半步！境界突破！", "宿敵伏誅！從今往後，此界再無人能阻我！"
+  ]
+};
 
 const REALM_COLORS = {
   emerald: { text: 'text-emerald-400', border: 'border-emerald-500/30', bg: 'bg-emerald-500' },
@@ -84,7 +100,6 @@ const REALM_COLORS = {
   rose: { text: 'text-rose-400', border: 'border-rose-500/30', bg: 'bg-rose-500' }
 };
 
-// 天道命格區間表
 const LUCK_FATES = [
   { min: 5.51, name: '【天道化身】', color: 'text-white animate-pulse drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]' },
   { min: 5.01, name: '【此界之主】', color: 'text-rose-500 drop-shadow-[0_0_5px_rgba(244,63,94,0.5)]' },
@@ -338,7 +353,6 @@ const COMPANIONS = [
   }
 ];
 
-// 道侶門檻改為時間制：相伴分鐘(載)
 const COMPANION_TIERS = [
   { req: 1, name: '初識' },
   { req: 250, name: '相知' },
@@ -565,6 +579,14 @@ export default function App() {
 
   const [saveIndicator, setSaveIndicator] = useState(false);
   const [globalStats, setGlobalStats] = useState({ focus: 0, ascensions: 0 });
+
+  // 新增：階層式反饋 Toast 狀態
+  const [toast, setToast] = useState(null);
+
+  const showToast = (type, msg, drops = []) => {
+    setToast({ type, msg, drops });
+    setTimeout(() => setToast(null), 4500);
+  };
 
   useEffect(() => {
     const statsRef = ref(database, 'globalStats');
@@ -815,22 +837,22 @@ export default function App() {
     }
   };
 
-const executeGiveUp = () => {
+  const executeGiveUp = () => {
     setShowGiveUpWarning(false);
     setIsActive(false); 
     setTargetEndTime(null);
     
     const elapsedTime = focusDuration - timeLeft;
 
-    // 1. 新增：10 秒防呆寬限期 (Grace Period)
     if (elapsedTime <= 10) {
+        showToast('focus', '【神識收攏】開陣未滿 10 秒，無傷退回。');
         addLog(`💨 【神識收攏】開陣未滿 10 秒，靈氣尚未入體，無傷退回。`);
         setTimeLeft(focusDuration);
-        return; // 直接中斷，無任何懲罰
+        return; 
     }
     
-    // 2. 正常反噬與閃避判定
     if (Math.random() < evadeRate) { 
+      showToast('focus', '💨 【羅煙閃避】成功閃避反噬！連擊不墜！');
       addLog(`💨 【羅煙閃避】成功閃避反噬！連擊不墜！`); 
     } else {
       setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
@@ -838,16 +860,13 @@ const executeGiveUp = () => {
       const senseDef = Math.min(0.9, getMultiplier('sense_def') - 1);
       let rawPenalty = Math.floor((maxVitality * 0.20 + monster.tier * 50 + monster.maxHp * 0.01) * (1 / defMultiplier) * (1 - senseDef));
       
-      // 3. 實裝道友的「半數保底」氣機牽引邏輯
-      // 進度比例：至少以 50% (0.5) 計算，超過 50% 則按實際比例計算
       const progressRatio = Math.max(0.5, elapsedTime / focusDuration);
       let penaltyMult = 1.0;
       
-      // 依境界套用牽引係數 (結丹期以上才會有極致的走火入魔)
       if (player.realmIndex === 2) {
-          penaltyMult = 1.0 + (progressRatio * 0.5); // 築基期：最高 1.5 倍
+          penaltyMult = 1.0 + (progressRatio * 0.5); 
       } else if (player.realmIndex >= 3) {
-          penaltyMult = 1.0 + (progressRatio * 1.5); // 結丹以上：起步至少 1.75倍 (1 + 0.5*1.5)，最高 2.5倍
+          penaltyMult = 1.0 + (progressRatio * 1.5); 
       }
 
       rawPenalty = Math.floor(rawPenalty * penaltyMult);
@@ -859,7 +878,6 @@ const executeGiveUp = () => {
       
       let logMsg = `🚨 【靈力反噬】神魂震盪，承受 ${formatNumber(penalty)} 傷害。`;
       if (penaltyMult > 1.0) {
-          // 若觸發半數保底，文案提示「底蘊反噬」
           const isFloorTriggered = (elapsedTime / focusDuration) < 0.5;
           const cause = isFloorTriggered ? '陣法崩潰(半數保底)' : '靈氣暴走';
           logMsg = `🚨 【氣機牽引】強行收功導致${cause} (反噬加劇 ${(penaltyMult * 100 - 100).toFixed(0)}%)，承受 ${formatNumber(penalty)} 傷害。`;
@@ -870,9 +888,11 @@ const executeGiveUp = () => {
               nextShields -= 1;
               nextHp = Math.floor(maxVitality * 0.1) || 1;
               addLog(`🛡️ 【法寶護主】替身傀儡粉碎，消耗 1 層護盾，鎖血 10% 擋下死劫！`);
+              showToast('focus', '🛡️ 觸發【法寶護主】抵擋致命反噬！', [`消耗 1 層護盾，鎖血 10%`]);
           } else if (Math.random() < reviveRate) { 
               nextHp = maxVitality; 
               addLog(`✨ 【涅槃重生】轉危為安！`); 
+              showToast('focus', '✨ 觸發【涅槃重生】轉危為安！', [`氣血完全恢復`]);
           } else { 
               nextHp = Math.floor(maxVitality * 0.5); 
               
@@ -891,6 +911,7 @@ const executeGiveUp = () => {
               
               nextStreak = 0;
               addLog(`💀 【身死道消】反噬過重，氣血歸零，損失 20% 修為與連擊！`); 
+              showToast('danger', '💀 【身死道消】反噬過重！', [`損失 20% 修為與連擊數`]);
           }
       } else { 
           addLog(logMsg);
@@ -898,10 +919,14 @@ const executeGiveUp = () => {
               if (nextShields > 0) {
                   nextShields -= 1;
                   addLog(`🛡️ 【法寶護主】消耗 1 層護盾抵擋反噬，連擊未中斷！`);
+                  showToast('danger', '【強行收功】靈力反噬！', [`承受 ${formatNumber(penalty)} 傷害`, `🛡️ 護盾抵擋，連擊未斷`]);
               } else {
                   nextStreak = 0;
                   addLog(`📉 靈壓潰散，連擊歸零。`);
+                  showToast('danger', '【強行收功】靈氣暴走！', [`承受 ${formatNumber(penalty)} 傷害`, `📉 連擊歸零`]);
               }
+          } else {
+              showToast('danger', '【強行收功】靈氣暴走！', [`承受 ${formatNumber(penalty)} 傷害`]);
           }
       }
       
@@ -947,7 +972,7 @@ const executeGiveUp = () => {
               if (Math.random() < 0.20) {
                   let idx = RARITIES_ORDER.indexOf(currentTargetRarity);
                   currentTargetRarity = RARITIES_ORDER[idx + 1];
-                  mutationLog += `✨機緣爆發，靈光躍升至【${RARITY[currentTargetRarity].name}】！`;
+                  mutationLog += `✨機緣爆發，躍升至【${RARITY[currentTargetRarity].name}】！`;
               } else {
                   break;
               }
@@ -961,6 +986,7 @@ const executeGiveUp = () => {
     
     setIsActive(false); 
     setTargetEndTime(null);
+    let collectedDrops = []; // 收集本次專注的所有掉落物與高光資訊
     
     if (mode === 'focus') {
       if (focusEndAudioRef.current) focusEndAudioRef.current.play().catch(() => {});
@@ -1021,7 +1047,7 @@ const executeGiveUp = () => {
         }
       }
 
-let compLog = '';
+      let compLog = '';
       if (player.activeCompanion) {
           const compId = player.activeCompanion;
           const oldExp = nextCompanionKills[compId] || 0; 
@@ -1033,28 +1059,24 @@ let compLog = '';
           const oldTier = getCompanionTier(oldExp);
           const newTier = getCompanionTier(newExp);
           
-          // 隨機抽取一句道侶專屬對話
           const randomQuote = compData.quotes[Math.floor(Math.random() * compData.quotes.length)];
           
           if (newTier > oldTier) {
-              // 突破羈絆的系統隨機描述 (移除多餘的符號，交由前綴統一處理)
               const tierMsgs = [
                   `歷經歲月洗禮，你與【${compData.name}】的羈絆產生質變，達到「${COMPANION_TIERS[newTier].name}」！`,
                   `仙途崎嶇，【${compData.name}】對你的心意越發堅定，羈絆突破至「${COMPANION_TIERS[newTier].name}」！`,
                   `朝夕相處之下，【${compData.name}】眼中波光流轉，你們的羈絆達到了「${COMPANION_TIERS[newTier].name}」！`
               ];
               const sysMsg = tierMsgs[Math.floor(Math.random() * tierMsgs.length)];
-              // 組合：對話在前，系統描述在後
               compLog = ` 🌸 【${compData.name}】：「${randomQuote}」 (${sysMsg})`;
+              collectedDrops.push(`🌸 羈絆升級：【${compData.name}】達到「${COMPANION_TIERS[newTier].name}」`);
           } else {
-              // 日常共修的系統隨機描述
               const normalMsgs = [
                   `大道漫漫，與【${compData.name}】共修 ${addedExp} 載，彼此氣息越發交融。`,
                   `歲月無聲，【${compData.name}】為你護法 ${addedExp} 載，默契暗生。`,
                   `洞中無日月，你與【${compData.name}】論道 ${addedExp} 載，情誼漸深。`
               ];
               const sysMsg = normalMsgs[Math.floor(Math.random() * normalMsgs.length)];
-              // 組合：日常使用茶杯圖示
               compLog = ` 🍵 【${compData.name}】：「${randomQuote}」 (${sysMsg})`;
           }
       }
@@ -1077,6 +1099,7 @@ let compLog = '';
         if (Math.random() < 0.10) {
             nextPills += 1;
             killLog += ` 💊 搜刮巢穴，獲得【頓悟丹】x1！`;
+            collectedDrops.push(`💊 獲得【頓悟丹】x1`);
         }
 
         if (Math.random() < (0.20 * luckVal * timeRatio)) {
@@ -1103,10 +1126,15 @@ let compLog = '';
                 if (drop.poolType === 'art') {
                     newArtifacts.push(drop.id);
                     killLog += ` 🎁 斬獲【${RARITY[result.finalRarity].name}】法寶「${drop.name}」！`;
+                    collectedDrops.push(`🎁 ${RARITY[result.finalRarity].name}法寶：${drop.name}`);
                 } else {
                     newSecretBooks[drop.id] = 1;
                     killLog += ` 📜 獲得【${RARITY[result.finalRarity].name}】功法「${drop.name}」！`;
+                    collectedDrops.push(`📜 ${RARITY[result.finalRarity].name}功法：${drop.name}`);
                 }
+            }
+            if (result.coins > 0) {
+                collectedDrops.push(`💰 突變補償：${formatNumber(result.coins)} 靈石`);
             }
         }
 
@@ -1117,13 +1145,17 @@ let compLog = '';
                 try { update(ref(database, 'globalStats'), { totalAscensions: increment(1) }); } catch(e) {}
                 nextHasAscended = true;
                 killLog = `🌌 【破空飛升】位列仙班！ ` + killLog;
-                setCelebration({ name: '飛升仙界！成就真仙！' });
+                
+                const quoteMsg = FEEDBACK_TEXTS.boss[Math.floor(Math.random() * FEEDBACK_TEXTS.boss.length)];
+                setCelebration({ name: '飛升仙界！成就真仙！', quote: quoteMsg, drops: collectedDrops });
             } else if (nextRealm < REALMS.length - 1) {
                 nextRealm++;
                 nextQi -= nextQiToNext;
                 nextQiToNext = Math.floor(nextQiToNext * 1.35);
                 if (!isUsingPill) nextHistory = [...nextHistory, { name: REALMS[nextRealm].name, time: nextTotalFocusTime }];
-                setCelebration({ name: REALMS[nextRealm].name });
+                
+                const quoteMsg = FEEDBACK_TEXTS.boss[Math.floor(Math.random() * FEEDBACK_TEXTS.boss.length)];
+                setCelebration({ name: REALMS[nextRealm].name, quote: quoteMsg, drops: collectedDrops });
                 killLog = `☄️ 【突破瓶頸】晉升至${REALMS[nextRealm].name}！` + killLog;
             }
         } else {
@@ -1131,6 +1163,9 @@ let compLog = '';
             if (nextQi >= nextQiToNext) {
                 killLog += ` ⚡ 修為圓滿！死劫即將降臨，準備突破！`;
             }
+            // 觸發擊殺 Toast
+            const msg = FEEDBACK_TEXTS.kill[Math.floor(Math.random() * FEEDBACK_TEXTS.kill.length)];
+            showToast('kill', msg, collectedDrops);
         }
         
         setMonster(generateMonsterState(nextRealm, nextQi, nextQiToNext));
@@ -1141,6 +1176,9 @@ let compLog = '';
         
         if (Math.random() < evadeRate) {
             killLog = `💨 妖獸反撲！你身形如鬼魅，完美閃避【${atkName}】！`;
+            const msg = FEEDBACK_TEXTS.focus[Math.floor(Math.random() * FEEDBACK_TEXTS.focus.length)];
+            collectedDrops.push(`💨 完美閃避妖獸反撲`);
+            showToast('focus', msg, collectedDrops);
         } else {
             setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
             const baseMod = isBigAttack ? 2.5 : 1.0;
@@ -1148,8 +1186,8 @@ let compLog = '';
             
             let enemyTimeScale = 1.0;
             if (timeRatio > 1.0) { 
-                if (player.realmIndex === 2) enemyTimeScale = 1.0 + (timeRatio - 1.0) * 0.4; // 築基期
-                else if (player.realmIndex >= 3) enemyTimeScale = 1.0 + (timeRatio - 1.0) * 0.8; // 結丹以上
+                if (player.realmIndex === 2) enemyTimeScale = 1.0 + (timeRatio - 1.0) * 0.4;
+                else if (player.realmIndex >= 3) enemyTimeScale = 1.0 + (timeRatio - 1.0) * 0.8;
             }
             
             if (monster.isBoss && enemyTimeScale > 1.0) {
@@ -1168,10 +1206,12 @@ let compLog = '';
                     nextVitality = Math.floor(maxVitality * 0.1) || 1;
                     isDeadFromCounter = false;
                     killLog = `🛡️ 妖獸施展【${atkName}】${scaleLog}造成致命傷！【法寶護主】替身傀儡粉碎，鎖血 10% 擋下死劫！`;
+                    showToast('danger', '妖獸反撲，觸發護主！', [`鎖血 10% 擋下死劫`]);
                 } else if (Math.random() < reviveRate) {
                     nextVitality = maxVitality;
                     isDeadFromCounter = false;
                     killLog = `💥 妖獸餘威未減，施展【${atkName}】${scaleLog}造成致命傷！✨ 【涅槃重生】轉危為安！`;
+                    showToast('danger', '妖獸反撲造成致命傷！', [`✨ 觸發涅槃重生`]);
                 } else {
                     nextVitality = Math.floor(maxVitality * 0.5);
                     nextQi = Math.floor(nextQi * 0.8); 
@@ -1186,9 +1226,13 @@ let compLog = '';
                         nextMonsterHp = monster.maxHp; 
                         killLog = `💀 施展【${atkName}】${scaleLog}造成 ${formatNumber(actualDamage)} 傷害！氣血歸零，損失 20% 修為與連擊！(妖獸趁機恢復了氣血)`;
                     }
+                    showToast('danger', '💀 境界不穩，靈力崩潰！', [`承受致命反撲，損失 20% 修為`]);
                 }
             } else {
                 killLog = `💥 妖獸未死，發動【${atkName}】${scaleLog}反擊，造成 ${formatNumber(actualDamage)} 點傷害。`;
+                const msg = FEEDBACK_TEXTS.focus[Math.floor(Math.random() * FEEDBACK_TEXTS.focus.length)];
+                collectedDrops.push(`💥 承受反撲：${formatNumber(actualDamage)} 傷害`);
+                showToast('focus', msg, collectedDrops);
             }
         }
         
@@ -1207,25 +1251,31 @@ let compLog = '';
             const extraQi = Math.floor(passiveQi * 2);
             nextQi += extraQi;
             fortuneLog = ` 🌈 【偶遇靈泉】額外獲 ${formatNumber(extraQi)} 修為！`;
+            collectedDrops.push(`🌈 靈泉：修為 +${formatNumber(extraQi)}`);
         } else if (fRoll < 50) {
             const extraCoin = Math.floor(passiveCoin * 3);
             nextCoins += extraCoin;
             if (!isUsingPill) nextLifetime.totalCoins += extraCoin;
             fortuneLog = ` 🌈 【古修洞府】額外獲 ${formatNumber(extraCoin)} 靈石！`;
+            collectedDrops.push(`🌈 洞府：靈石 +${formatNumber(extraCoin)}`);
         } else if (fRoll < 75) {
             const healAmount = Math.floor(maxVitality * 0.3);
             nextVitality = Math.min(maxVitality, nextVitality + healAmount);
             fortuneLog = ` 🌈 【天道頓悟】氣血恢復 ${formatNumber(healAmount)}！`;
+            collectedDrops.push(`🌈 頓悟：氣血恢復 ${formatNumber(healAmount)}`);
         } else if (fRoll < 90) {
             nextPills += 1;
             fortuneLog = ` 🌈 【天降機緣】獲得【頓悟丹】x1！`;
+            collectedDrops.push(`🌈 機緣：頓悟丹 x1`);
         } else if (fRoll < 98) {
             if (Math.random() < 0.5) {
                 nextBaseCombat += 5;
                 fortuneLog = ` ⚡ 【天雷淬體】肉身脫胎換骨，永久基礎戰力 +5！`;
+                collectedDrops.push(`⚡ 淬體：基礎戰力 +5`);
             } else {
                 nextBaseMaxVitality += 5;
                 fortuneLog = ` ⚡ 【天雷淬體】經脈拓寬，永久氣血上限 +5！`;
+                collectedDrops.push(`⚡ 淬體：氣血上限 +5`);
             }
         } else {
             const roll = Math.random();
@@ -1251,10 +1301,15 @@ let compLog = '';
                 if (drop.poolType === 'art') {
                     newArtifacts.push(drop.id);
                     fortuneLog += ` 🏺 【異寶出世】霞光萬丈，喜獲【${RARITY[result.finalRarity].name}】法寶「${drop.name}」！`;
+                    collectedDrops.push(`🏺 ${RARITY[result.finalRarity].name}法寶：${drop.name}`);
                 } else {
                     newSecretBooks[drop.id] = 1;
                     fortuneLog += ` 📜 【殘卷現世】機緣巧合，領悟【${RARITY[result.finalRarity].name}】功法「${drop.name}」！`;
+                    collectedDrops.push(`📜 ${RARITY[result.finalRarity].name}功法：${drop.name}`);
                 }
+            }
+            if (result.coins > 0) {
+                collectedDrops.push(`💰 突變補償：${formatNumber(result.coins)} 靈石`);
             }
         }
       }
@@ -1295,6 +1350,8 @@ let compLog = '';
         streakShields: maxStreakShields 
       }));
       addLog(`🧘‍♂️ 【周天圓滿】吐納調息結束，靈氣滋養受損經脈，恢復了 ${formatNumber(heal)} 氣血。`); 
+      const msg = FEEDBACK_TEXTS.break[Math.floor(Math.random() * FEEDBACK_TEXTS.break.length)];
+      showToast('break', msg, [`🧘‍♂️ 恢復了 ${formatNumber(heal)} 氣血`]);
     }
   };
 
@@ -1339,7 +1396,8 @@ let compLog = '';
     });
 
     if (result.drop) {
-        setCelebration({ name: result.drop.name });
+        // 保留抽獎的 Celebration 作為拆盲盒的樂趣
+        setCelebration({ name: result.drop.name, quote: '機緣已至，重寶出世！', drops: [`${RARITY[result.finalRarity].name} ${result.drop.poolType === 'art' ? '法寶' : '功法'}`] });
         addLog(`[萬寶樓] ${result.log ? result.log + ' ' : ''}獲得【${RARITY[result.finalRarity].name}】${result.drop.poolType === 'art' ? '法寶' : '功法'}「${result.drop.name}」！`);
     } else {
         addLog(`[萬寶樓] ${result.log}`);
@@ -1440,7 +1498,35 @@ let compLog = '';
         .custom-scrollbar::-webkit-scrollbar { width: 3px; height: 3px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* Toast 下降動畫 */
+        @keyframes slideDown { 0% { transform: translate(-50%, -20px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
+        .animate-slide-down { animation: slideDown 0.4s ease-out forwards; }
       `}</style>
+
+      {/* 新增：非阻擋式動態橫幅 (Toast) */}
+      {toast && (
+        <div className={`fixed top-12 left-1/2 -translate-x-1/2 z-[700] px-6 py-5 rounded-2xl shadow-2xl border backdrop-blur-xl flex flex-col items-center text-center w-[90%] max-w-md transition-all duration-300 animate-slide-down pointer-events-none ${
+          toast.type === 'kill' ? 'bg-rose-950/90 border-rose-500/50 shadow-[0_0_30px_rgba(244,63,94,0.4)]' :
+          toast.type === 'focus' ? 'bg-slate-900/90 border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.3)]' :
+          toast.type === 'break' ? 'bg-cyan-950/90 border-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.3)]' :
+          'bg-red-950/95 border-red-500 shadow-[0_0_40px_rgba(239,68,68,0.5)]'
+        }`}>
+          <h3 className={`text-sm md:text-base font-black tracking-widest ${
+              toast.type === 'kill' ? 'text-rose-100' :
+              toast.type === 'focus' ? 'text-amber-100' :
+              toast.type === 'break' ? 'text-cyan-100' : 'text-white'
+          } ${toast.drops && toast.drops.length > 0 ? 'mb-3' : ''}`}>{toast.msg}</h3>
+          
+          {toast.drops && toast.drops.length > 0 && (
+            <div className="w-full bg-black/40 rounded-xl p-3 border border-white/5 flex flex-col gap-1.5">
+              {toast.drops.map((d, i) => (
+                <div key={i} className="text-sm font-black text-yellow-400 drop-shadow-md">{d}</div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {showGiveUpWarning && (
         <div className="fixed inset-0 z-[600] bg-black/95 backdrop-blur-2xl p-6 flex flex-col items-center justify-center font-bold">
@@ -1757,10 +1843,27 @@ let compLog = '';
       )}
 
       {celebration && (
-        <div className="fixed inset-0 z-[300] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-12 cursor-pointer font-bold mt-8" onClick={() => setCelebration(null)}>
+        <div className="fixed inset-0 z-[800] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-12 cursor-pointer font-bold animate-pop-in" onClick={() => setCelebration(null)}>
           <Crown size={80} className="text-yellow-500/80 mb-6 animate-bounce" />
-          <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-widest">{celebration.name.includes('成就真仙') ? '渡劫成功' : '突破瓶頸'}</h2>
-          <p className="text-xl text-emerald-400 font-light tracking-widest">【{celebration.name}】</p>
+          <h2 className="text-3xl md:text-5xl font-black text-white mb-2 uppercase tracking-widest text-center leading-tight">
+            {celebration.name.includes('成就真仙') ? '渡劫成功' : celebration.name.includes('法寶') || celebration.name.includes('功法') ? '機緣出世' : '突破瓶頸'}
+          </h2>
+          <p className="text-xl md:text-2xl text-emerald-400 font-light tracking-widest mb-8">【{celebration.name}】</p>
+          
+          {celebration.quote && (
+             <p className="text-lg md:text-xl text-white/80 italic font-bold max-w-2xl text-center mb-8 leading-relaxed">「{celebration.quote}」</p>
+          )}
+          
+          {celebration.drops && celebration.drops.length > 0 && (
+             <div className="flex flex-col items-center gap-3 mt-4 bg-black/40 p-6 rounded-2xl border border-yellow-500/30 shadow-[0_0_30px_rgba(234,179,8,0.2)]">
+                <span className="text-xs text-yellow-500/70 uppercase tracking-[0.5em] mb-2 font-black">- 天道恩賜 -</span>
+                {celebration.drops.map((d, i) => (
+                   <span key={i} className="text-lg md:text-xl text-yellow-400 font-black tracking-widest drop-shadow-md">{d}</span>
+                ))}
+             </div>
+          )}
+          
+          <div className="mt-14 text-sm font-black text-white/30 animate-pulse tracking-widest uppercase">點擊虛空任意處繼續</div>
         </div>
       )}
 
