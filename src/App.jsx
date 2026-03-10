@@ -901,40 +901,55 @@ const pillCooldownRemaining = player.lastPillTime ? Math.max(0, 3600 - Math.floo
     return Math.floor(offense * defense);
   }, [currentCombatPower, critRate, critDmg, maxVitality, dmgTakenPct, evadeRate]);
 
-  // --- ✨ 新增：天機推演 2.0 (極端邊界預測) ---
-  const combatPrediction = useMemo(() => {
-    if (isActive || mode === 'break') return null; // 陣法啟動或調息時，天機蒙蔽
+// 🔮 靜態神識感應：呼吸律動版
+const combatPrediction = useMemo(() => {
+  if (!monster || !finalStats) return null;
 
-    const timeRatio = focusDuration / 1500;
-    const minDmg = Math.floor(currentCombatPower * timeRatio);
-    const maxDmg = Math.floor(minDmg * critDmg);
-    
-    let enemyTimeScale = 1.0;
-    if (timeRatio > 1.0) {
-        if (player.realmIndex === 2) enemyTimeScale = 1.0 + (timeRatio - 1.0) * 0.4;
-        else if (player.realmIndex >= 3) enemyTimeScale = 1.0 + (timeRatio - 1.0) * 0.8;
-    }
-    if (monster.isBoss && enemyTimeScale > 1.0) enemyTimeScale = 1.0 + (enemyTimeScale - 1.0) * 0.7;
-    
-    // 抓取妖獸最痛的極端反撲傷害
-    const worstRawEnemyDmg = Math.floor(monster.atk * 2.5 * 1.2 * enemyTimeScale);
-    const worstEnemyDmg = Math.max(1, Math.floor(worstRawEnemyDmg * (dmgTakenPct / 100)));
+  const baseDmg = finalStats.totalCombat; 
+  const minDmg = baseDmg * 1; 
+  const maxDmg = baseDmg * 4; 
 
-    if (minDmg >= monster.hp) {
-        return { status: 'safe', text: '【天機：大吉】靈壓呈碾壓之勢，無須爆擊亦可瞬間鎮殺！', color: 'text-emerald-400', bg: 'bg-emerald-950/30', border: 'border-emerald-500/30' };
-    }
-    if (maxDmg >= monster.hp) {
-        return { status: 'variable', text: `【天機：變數】若觸發爆擊(${Math.floor(critRate*100)}%)可一擊必殺，否則將遭反撲！`, color: 'text-yellow-400', bg: 'bg-yellow-950/30', border: 'border-yellow-500/30' };
-    }
-    if (worstEnemyDmg < player.vitality) {
-        return { status: 'attrition', text: `【天機：鏖戰】無法秒殺，必遭反撲！(預估最重受損 ${formatNumber(worstEnemyDmg)} 血)，尚能硬扛。`, color: 'text-orange-400', bg: 'bg-orange-950/30', border: 'border-orange-500/30' };
-    }
-    if (maxStreakShields > 0) {
-        return { status: 'shielded', text: `【天機：凶險】靈力不足，反撲致命！所幸有法寶護盾庇佑，可擋下死劫。`, color: 'text-cyan-400', bg: 'bg-cyan-950/30', border: 'border-cyan-500/30' };
-    }
-    
-    return { status: 'danger', text: `【十死無生】大凶！無法擊殺且反撲致命！請拉長時長或煉製丹藥！`, color: 'text-rose-500 animate-pulse', bg: 'bg-rose-950/40', border: 'border-rose-500/50' };
-  }, [focusDuration, currentCombatPower, critDmg, critRate, monster, player.vitality, maxStreakShields, dmgTakenPct, isActive, mode, player.realmIndex]);
+  // --- 1. 極度威脅 (死氣逼人) ---
+  if (maxDmg < monster.hp * 0.8) {
+    return {
+      status: 'DANGER',
+      text: "死氣逼人",
+      color: "text-rose-400",
+      bg: "bg-rose-950/40",
+      border: "border-rose-500/50",
+      // 強烈呼吸：紅色光暈閃爍
+      animate: "animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.3)]",
+      icon: "💀"
+    };
+  }
+
+  // --- 2. 毫無威脅 (微末之流) ---
+  if (minDmg >= monster.hp) {
+    return {
+      status: 'SAFE',
+      text: "微末之流",
+      color: "text-slate-400",
+      bg: "bg-slate-900/40",
+      border: "border-slate-700/50",
+      // 微弱呼吸：極慢的透明度變化
+      animate: "opacity-80 hover:opacity-100 transition-opacity duration-1000",
+      icon: "🍃"
+    };
+  }
+
+  // --- 3. 存在變數 (靈壓激盪) ---
+  return {
+    status: 'UNKNOWN',
+    text: "靈壓激盪",
+    color: "text-amber-400",
+    bg: "bg-amber-950/40",
+    border: "border-amber-600/40",
+    // 紊亂呼吸：黃色光暈律動
+    animate: "animate-pulse shadow-[0_0_10px_rgba(251,191,36,0.2)]",
+    icon: "☯️"
+  };
+
+}, [monster, finalStats.totalCombat]);
 
   const getExportString = () => {
       try {
