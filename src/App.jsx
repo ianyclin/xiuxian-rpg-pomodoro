@@ -2187,8 +2187,12 @@ const handleComplete = (usedPill = false) => {
            ))}
         </div>
         {/* --- ✨ 插入點：天機推演橫幅 --- */}
-        {combatPrediction && !isActive && (
-          <div className={`mb-8 px-4 py-3 rounded-xl border ${combatPrediction.bg} ${combatPrediction.border} flex items-center justify-center gap-3 text-xs md:text-sm font-black tracking-widest ${combatPrediction.color} max-w-xl mx-auto shadow-inner animate-pop-in`}>
+{combatPrediction && !isActive && (
+  <div key={combatPrediction.status} className={`mb-8 px-4 py-3 rounded-xl border ${combatPrediction.bg} ${combatPrediction.border} flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-[11px] sm:text-xs md:text-sm font-black tracking-widest ${combatPrediction.color} max-w-xl mx-auto shadow-inner animate-pop-in text-center leading-relaxed`}>
+     <Eye size={16} className="fill-current opacity-80 animate-pulse shrink-0"/>
+     <span>{combatPrediction.text}</span>
+  </div>
+)}
              <Eye size={18} className="fill-current opacity-80 animate-pulse"/>
              {combatPrediction.text}
           </div>
