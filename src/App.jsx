@@ -815,11 +815,21 @@ export default function App() {
     }
   };
 
-  const executeGiveUp = () => {
+const executeGiveUp = () => {
     setShowGiveUpWarning(false);
     setIsActive(false); 
     setTargetEndTime(null);
     
+    const elapsedTime = focusDuration - timeLeft;
+
+    // 1. 新增：10 秒防呆寬限期 (Grace Period)
+    if (elapsedTime <= 10) {
+        addLog(`💨 【神識收攏】開陣未滿 10 秒，靈氣尚未入體，無傷退回。`);
+        setTimeLeft(focusDuration);
+        return; // 直接中斷，無任何懲罰
+    }
+    
+    // 2. 正常反噬與閃避判定
     if (Math.random() < evadeRate) { 
       addLog(`💨 【羅煙閃避】成功閃避反噬！連擊不墜！`); 
     } else {
@@ -828,12 +838,17 @@ export default function App() {
       const senseDef = Math.min(0.9, getMultiplier('sense_def') - 1);
       let rawPenalty = Math.floor((maxVitality * 0.20 + monster.tier * 50 + monster.maxHp * 0.01) * (1 / defMultiplier) * (1 - senseDef));
       
-      const elapsedTime = focusDuration - timeLeft;
-      const progressRatio = elapsedTime / focusDuration;
+      // 3. 實裝道友的「半數保底」氣機牽引邏輯
+      // 進度比例：至少以 50% (0.5) 計算，超過 50% 則按實際比例計算
+      const progressRatio = Math.max(0.5, elapsedTime / focusDuration);
       let penaltyMult = 1.0;
       
-      if (player.realmIndex === 2) penaltyMult = 1.0 + (progressRatio * 0.5); // 築基期
-      else if (player.realmIndex >= 3) penaltyMult = 1.0 + (progressRatio * 1.0); // 結丹以上
+      // 依境界套用牽引係數 (結丹期以上才會有極致的走火入魔)
+      if (player.realmIndex === 2) {
+          penaltyMult = 1.0 + (progressRatio * 0.5); // 築基期：最高 1.5 倍
+      } else if (player.realmIndex >= 3) {
+          penaltyMult = 1.0 + (progressRatio * 1.5); // 結丹以上：起步至少 1.75倍 (1 + 0.5*1.5)，最高 2.5倍
+      }
 
       rawPenalty = Math.floor(rawPenalty * penaltyMult);
       const penalty = Math.min(rawPenalty, player.vitality * 0.8);
@@ -843,8 +858,11 @@ export default function App() {
       let nextShields = player.streakShields;
       
       let logMsg = `🚨 【靈力反噬】神魂震盪，承受 ${formatNumber(penalty)} 傷害。`;
-      if (penaltyMult > 1.1) {
-          logMsg = `🚨 【氣機牽引】強行收功導致靈氣暴走 (反噬加劇 ${(penaltyMult * 100 - 100).toFixed(0)}%)，承受 ${formatNumber(penalty)} 傷害。`;
+      if (penaltyMult > 1.0) {
+          // 若觸發半數保底，文案提示「底蘊反噬」
+          const isFloorTriggered = (elapsedTime / focusDuration) < 0.5;
+          const cause = isFloorTriggered ? '陣法崩潰(半數保底)' : '靈氣暴走';
+          logMsg = `🚨 【氣機牽引】強行收功導致${cause} (反噬加劇 ${(penaltyMult * 100 - 100).toFixed(0)}%)，承受 ${formatNumber(penalty)} 傷害。`;
       }
 
       if (nextHp <= 0) {
