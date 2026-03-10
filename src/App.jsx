@@ -1896,9 +1896,22 @@ export default function App() {
             <span className="sm:ml-3">with Gemini</span>
           </p>
           
-          <div className="flex items-center justify-center gap-4 mt-4">
-              <button onClick={() => setShowChangelog(true)} className="opacity-60 hover:opacity-100 transition-opacity border border-white/30 px-6 py-3 rounded-full text-xs tracking-widest hover:bg-emerald-900/60 hover:border-emerald-500/60 hover:text-emerald-200 flex items-center gap-2"><FileText size={14}/> 天道紀元 (版本紀錄)</button>
-              <button onClick={()=>{if(window.confirm('【天道輪迴】\n確定要刪除所有進度，重新投胎轉世嗎？\n所有成果將灰飛煙滅。')) { localStorage.clear(); window.location.reload(); }}} className="opacity-60 hover:opacity-100 transition-opacity border border-white/30 px-6 py-3 rounded-full text-xs tracking-widest hover:bg-rose-900/60 hover:border-rose-500/60 hover:text-rose-200 flex items-center gap-2"><RefreshCw size={14}/> 輪迴轉世 (刪檔)</button>
+<div className="flex w-full max-w-md justify-center gap-3 mt-4">
+              <button 
+                onClick={() => setShowChangelog(true)} 
+                className="flex-1 sm:flex-none opacity-60 hover:opacity-100 transition-all border border-white/30 py-3 px-2 sm:px-6 rounded-2xl text-xs tracking-widest hover:bg-emerald-900/60 hover:border-emerald-500/60 hover:text-emerald-200 flex flex-col items-center justify-center gap-1.5"
+              >
+                <span className="flex items-center gap-1.5 whitespace-nowrap"><FileText size={14}/> 天道紀元</span>
+                <span className="text-[9px] opacity-50 whitespace-nowrap tracking-[0.2em] font-mono">(版本紀錄)</span>
+              </button>
+              
+              <button 
+                onClick={()=>{if(window.confirm('【天道輪迴】\n確定要刪除所有進度，重新投胎轉世嗎？\n所有成果將灰飛煙滅。')) { localStorage.clear(); window.location.reload(); }}} 
+                className="flex-1 sm:flex-none opacity-60 hover:opacity-100 transition-all border border-white/30 py-3 px-2 sm:px-6 rounded-2xl text-xs tracking-widest hover:bg-rose-900/60 hover:border-rose-500/60 hover:text-rose-200 flex flex-col items-center justify-center gap-1.5"
+              >
+                <span className="flex items-center gap-1.5 whitespace-nowrap"><RefreshCw size={14}/> 輪迴轉世</span>
+                <span className="text-[9px] opacity-50 whitespace-nowrap tracking-[0.2em] font-mono">(刪檔)</span>
+              </button>
           </div>
         </footer>
       </div>
