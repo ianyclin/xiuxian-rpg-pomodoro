@@ -655,7 +655,8 @@ export default function App() {
 
   const [saveIndicator, setSaveIndicator] = useState(false);
   const [globalStats, setGlobalStats] = useState({ focus: 0, ascensions: 0 });
-
+// --- 新增這行：防止時空亂流的神識鎖 ---
+  const sessionLockRef = useRef(false);
   // 新增：階層式反饋 Toast 狀態
   const [toast, setToast] = useState(null);
 
@@ -914,6 +915,7 @@ export default function App() {
   };
 
   const executeGiveUp = () => {
+    sessionLockRef.current = true; // <-- 新增這行上鎖
     setShowGiveUpWarning(false);
     setIsActive(false); 
     setTargetEndTime(null);
@@ -1012,6 +1014,7 @@ if (elapsedTime <= 60) {
   };
 
   const handleSkipBreak = () => {
+    sessionLockRef.current = true; // <-- 新增這行上鎖
     setIsActive(false);
     setTargetEndTime(null);
     setMode('focus');
@@ -1058,7 +1061,11 @@ if (elapsedTime <= 60) {
   };
 
 const handleComplete = (usedPill = false) => {
-    const isUsingPill = usedPill === true;
+  // --- 新增這兩行：如果已經在結算中，直接擋下後續的重複觸發 ---
+    if (sessionLockRef.current) return; 
+    sessionLockRef.current = true;  
+  
+  const isUsingPill = usedPill === true;
     
     setIsActive(false); 
     setTargetEndTime(null);
@@ -1503,6 +1510,9 @@ const handleComplete = (usedPill = false) => {
 
   const toggleTimer = () => { 
     if (!isActive) { 
+      // --- 新增這行：開始新周天時解鎖 ---
+      sessionLockRef.current = false;
+      
       const endTime = Date.now() + (timeLeft * 1000);
       setIsActive(true); 
       setTargetEndTime(endTime);
