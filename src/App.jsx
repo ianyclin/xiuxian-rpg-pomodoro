@@ -881,8 +881,50 @@ const currentRealmData = REALMS[player.realmIndex];
   const arrayDefCost = Math.floor(4000 * Math.pow(1.35, (player.arrays?.def || 0)) * forgeDiscount);
   const gachaCost = Math.floor(5000 * Math.pow(1.15, player.realmIndex) * forgeDiscount);
 
-  const pillCooldownRemaining = player.lastPillTime ? Math.max(0, 3600 - Math.floor((now - player.lastPillTime) / 1000)) : 0;
+const pillCooldownRemaining = player.lastPillTime ? Math.max(0, 3600 - Math.floor((now - player.lastPillTime) / 1000)) : 0;
   const canUsePill = (player.epiphanyPills || 0) > 0 && pillCooldownRemaining === 0;
+
+  // --- ✨ 新增：綜合靈壓 (CP) 計算 ---
+  const comprehensiveCP = useMemo(() => {
+    const offense = currentCombatPower * (1 + critRate * (critDmg - 1));
+    const defense = (maxVitality / 100) * (100 / dmgTakenPct) * (1 + evadeRate);
+    return Math.floor(offense * defense);
+  }, [currentCombatPower, critRate, critDmg, maxVitality, dmgTakenPct, evadeRate]);
+
+  // --- ✨ 新增：天機推演 2.0 (極端邊界預測) ---
+  const combatPrediction = useMemo(() => {
+    if (isActive || mode === 'break') return null; // 陣法啟動或調息時，天機蒙蔽
+
+    const timeRatio = focusDuration / 1500;
+    const minDmg = Math.floor(currentCombatPower * timeRatio);
+    const maxDmg = Math.floor(minDmg * critDmg);
+    
+    let enemyTimeScale = 1.0;
+    if (timeRatio > 1.0) {
+        if (player.realmIndex === 2) enemyTimeScale = 1.0 + (timeRatio - 1.0) * 0.4;
+        else if (player.realmIndex >= 3) enemyTimeScale = 1.0 + (timeRatio - 1.0) * 0.8;
+    }
+    if (monster.isBoss && enemyTimeScale > 1.0) enemyTimeScale = 1.0 + (enemyTimeScale - 1.0) * 0.7;
+    
+    // 抓取妖獸最痛的極端反撲傷害
+    const worstRawEnemyDmg = Math.floor(monster.atk * 2.5 * 1.2 * enemyTimeScale);
+    const worstEnemyDmg = Math.max(1, Math.floor(worstRawEnemyDmg * (dmgTakenPct / 100)));
+
+    if (minDmg >= monster.hp) {
+        return { status: 'safe', text: '【天機：大吉】靈壓呈碾壓之勢，無須爆擊亦可瞬間鎮殺！', color: 'text-emerald-400', bg: 'bg-emerald-950/30', border: 'border-emerald-500/30' };
+    }
+    if (maxDmg >= monster.hp) {
+        return { status: 'variable', text: `【天機：變數】若觸發爆擊(${Math.floor(critRate*100)}%)可一擊必殺，否則將遭反撲！`, color: 'text-yellow-400', bg: 'bg-yellow-950/30', border: 'border-yellow-500/30' };
+    }
+    if (worstEnemyDmg < player.vitality) {
+        return { status: 'attrition', text: `【天機：鏖戰】無法秒殺，必遭反撲！(預估最重受損 ${formatNumber(worstEnemyDmg)} 血)，尚能硬扛。`, color: 'text-orange-400', bg: 'bg-orange-950/30', border: 'border-orange-500/30' };
+    }
+    if (maxStreakShields > 0) {
+        return { status: 'shielded', text: `【天機：凶險】靈力不足，反撲致命！所幸有法寶護盾庇佑，可擋下死劫。`, color: 'text-cyan-400', bg: 'bg-cyan-950/30', border: 'border-cyan-500/30' };
+    }
+    
+    return { status: 'danger', text: `【十死無生】大凶！無法擊殺且反撲致命！請拉長時長或煉製丹藥！`, color: 'text-rose-500 animate-pulse', bg: 'bg-rose-950/40', border: 'border-rose-500/50' };
+  }, [focusDuration, currentCombatPower, critDmg, critRate, monster, player.vitality, maxStreakShields, dmgTakenPct, isActive, mode, player.realmIndex]);
 
   const getExportString = () => {
       try {
@@ -2050,7 +2092,12 @@ const handleComplete = (usedPill = false) => {
                     {player.equippedTitle && <span className="text-amber-400 mr-2 border border-amber-500/50 bg-amber-950/50 px-2 py-0.5 rounded text-[10px] sm:text-xs tracking-widest relative -top-0.5">[{TITLE_DATA.find(t=>t.id===player.equippedTitle)?.name}]</span>}
                     {currentRealmData.name}
                   </h2>
-                  
+                  {/* --- ✨ 插入點：將綜合靈壓放在境界名稱正下方 --- */}
+                  <div className="flex items-center gap-2 mt-1">
+                     <span className="text-[10px] text-white/50 uppercase tracking-widest">綜合靈壓</span>
+                     <span className="text-sm font-mono font-black text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.8)] flex items-center gap-1.5"><Activity size={12}/> {formatNumber(comprehensiveCP)}</span>
+                  </div>
+                  {/* ------------------------------------------------ */}
                   <div className="flex flex-wrap items-center gap-2 mt-3">
                     <div className={`group relative flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-white/10 bg-black/40 text-[10px] sm:text-xs tracking-widest font-black transition-all ${currentFate.color} cursor-help`}>
                       <Clover size={14} className="fill-current"/> 
@@ -2129,6 +2176,14 @@ const handleComplete = (usedPill = false) => {
              </button>
            ))}
         </div>
+        {/* --- ✨ 插入點：天機推演橫幅 --- */}
+        {combatPrediction && !isActive && (
+          <div className={`mb-8 px-4 py-3 rounded-xl border ${combatPrediction.bg} ${combatPrediction.border} flex items-center justify-center gap-3 text-xs md:text-sm font-black tracking-widest ${combatPrediction.color} max-w-xl mx-auto shadow-inner animate-pop-in`}>
+             <Eye size={18} className="fill-current opacity-80 animate-pulse"/>
+             {combatPrediction.text}
+          </div>
+        )}
+        {/* ------------------------------ */}
         
 {/* 尋找原本的這段代碼： */}
         {mode === 'focus' ? (
