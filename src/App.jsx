@@ -786,7 +786,7 @@ export default function App() {
       return { drop: finalDrop, coins: compensationCoins, log: mutationLog, finalRarity: currentTargetRarity };
   };
 
-  const handleComplete = (usedPill = false) => {
+const handleComplete = (usedPill = false) => {
     const isUsingPill = usedPill === true;
     
     setIsActive(false); 
@@ -888,7 +888,8 @@ export default function App() {
             killLog += ` 💊 搜刮妖獸巢穴，獲得【頓悟丹】x1！`;
         }
 
-        if (Math.random() < (0.20 * currentLuck)) {
+        // 修復漏洞2：掉落判定乘上時間倍率 timeRatio
+        if (Math.random() < (0.20 * currentLuck * timeRatio)) {
             const roll = Math.random();
             let targetRarity = 'COMMON';
             let accum = 0;
@@ -901,7 +902,6 @@ export default function App() {
                 }
             }
 
-            // 使用連鎖突變演算法
             const result = resolveDropWithMutation(targetRarity, newArtifacts, newSecretBooks, gachaCost);
             
             nextCoins += result.coins;
@@ -938,10 +938,9 @@ export default function App() {
         }
         setMonster(generateMonsterState(nextRealm));
       } else {
-        setMonster(prev => ({ ...prev, hp: newHp }));
-        
         const isBigAttack = Math.random() < 0.20; 
         const atkName = isBigAttack ? monster.bAtkName : monster.sAtkName;
+        let nextMonsterHp = newHp; // 預設妖獸血量下降
         
         if (Math.random() < evadeRate) {
             killLog = `💨 妖獸反撲！你身形如鬼魅，完美閃避【${atkName}】！`;
@@ -971,16 +970,21 @@ export default function App() {
                     nextStreak = 0;
                     nextShields = 0;
                     isDeadFromCounter = true;
-                    killLog = `💀 妖獸施展【${atkName}】造成 ${formatNumber(actualDamage)} 傷害！氣血歸零，損失 20% 修為與連擊！`;
+                    // 修復漏洞1：玩家真實死亡，重置妖獸血量，防止無限堆屍
+                    nextMonsterHp = monster.maxHp; 
+                    killLog = `💀 妖獸施展【${atkName}】造成 ${formatNumber(actualDamage)} 傷害！氣血歸零，損失 20% 修為與連擊！(妖獸趁機恢復了所有氣血)`;
                 }
             } else {
                 killLog = `💥 妖獸未死，發動【${atkName}】反擊，造成 ${formatNumber(actualDamage)} 點傷害。`;
             }
         }
+        // 更新妖獸血量
+        setMonster(prev => ({ ...prev, hp: nextMonsterHp }));
       }
 
       let fortuneLog = '';
-      if (!isDeadFromCounter && Math.random() < (0.10 * currentLuck)) {
+      // 修復漏洞2：奇遇判定乘上時間倍率 timeRatio
+      if (!isDeadFromCounter && Math.random() < (0.10 * currentLuck * timeRatio)) {
         const fRoll = Math.random() * 100;
         
         if (fRoll < 25) {
@@ -1013,14 +1017,13 @@ export default function App() {
             let accum = 0;
             const sortedRarities = Object.entries(RARITY).sort((a,b) => a[1].weight - b[1].weight);
             for (let [r, data] of sortedRarities) {
-                accum += data.weight * currentLuck; 
+                accum += data.weight * currentLuck; // 抽獎不吃時間加成，只吃氣運
                 if (roll < accum) {
                     targetRarity = r;
                     break;
                 }
             }
 
-            // 使用連鎖突變演算法
             const result = resolveDropWithMutation(targetRarity, newArtifacts, newSecretBooks, gachaCost);
             
             nextCoins += result.coins;
