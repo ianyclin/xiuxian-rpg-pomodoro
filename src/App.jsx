@@ -2169,7 +2169,7 @@ const handleComplete = (usedPill = false) => {
                       凡俗根基 (SP 研習)
                     </h3>
                     <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
-                      <span className="text-cyan-400 font-mono">可用 SP: {formatNumber(availableSP)} / {totalSP})</span>
+                      <span className="text-cyan-400 font-mono">可用 SP: {formatNumber(availableSP)} / {totalSP}</span>
                       <button onClick={handleRebuildBase} className="px-4 py-2.5 bg-rose-900/40 hover:bg-rose-700 text-rose-300 hover:text-white rounded-lg text-xs font-black border border-rose-500/50 transition-all flex items-center gap-2 shadow-lg">
                         <RefreshCw size={14} /> 散功重修 (退SP)
                       </button>
