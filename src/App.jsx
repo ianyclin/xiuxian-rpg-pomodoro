@@ -30,6 +30,14 @@ const database = getDatabase(app);
 
 const CHANGELOG_DATA = [
   {
+    version: "v3.2.5",
+    title: "心流與史記",
+    desc: "溫故而知新，每一次吐納皆是修行。",
+    changes: [
+      "優化【介面樞紐】：將「修行日誌」移至分頁首位並設為預設開啟，讓道友出關後能第一時間閱覽戰報與收穫。"
+    ]
+  },
+  {
     version: "v3.2.4",
     title: "歲月情深：矩陣語錄與防呆優化",
     desc: "一語一契機，情隨歲月深，羈絆演化萬千。",
