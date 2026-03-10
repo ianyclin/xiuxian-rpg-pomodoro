@@ -720,7 +720,7 @@ export default function App() {
   const [targetEndTime, setTargetEndTime] = useState(null); 
   const [isActive, setIsActive] = useState(false);
   const [mode, setMode] = useState('focus'); 
-  const [activeTab, setActiveTab] = useState('skills');
+  const [activeTab, setActiveTab] = useState('log');
   const [showRealmGuide, setShowRealmGuide] = useState(false);
   const [showStatsReport, setShowStatsReport] = useState(false);
   const [showGuide, setShowGuide] = useState(false); 
@@ -2094,14 +2094,14 @@ const handleComplete = (usedPill = false) => {
 
       <div className={`w-full max-w-4xl mt-4 transition-all duration-500 z-10 font-bold ${isActive ? 'hidden' : 'block'}`}>
         <div className="bg-slate-950/90 backdrop-blur-3xl rounded-2xl border border-white/10 shadow-2xl flex flex-col h-[800px] overflow-hidden">
-          <div className="flex bg-black/80 border-b border-white/10 p-2 gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
+<div className="flex bg-black/80 border-b border-white/10 p-2 gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
             {[
+              { id: 'log', label: '修行日誌', icon: History }, // 移至首位
               { id: 'skills', label: '功法祕籍', icon: ScrollText },
               { id: 'forge', label: '洞府淬煉', icon: Hammer },
               { id: 'artifacts', label: '法寶庫', icon: Box },
               { id: 'companions', label: '道侶紅顏', icon: Heart },
-              { id: 'insights', label: '識海投影', icon: Activity },
-              { id: 'log', label: '修行日誌', icon: History }
+              { id: 'insights', label: '識海投影', icon: Activity }
             ].map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 py-4 md:py-5 rounded-xl text-xs md:text-sm font-black uppercase flex flex-col items-center justify-center gap-2 transition-all min-w-[80px] ${activeTab===tab.id ? 'bg-white/15 text-white shadow-inner border border-white/20' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}>
                 <tab.icon size={18} className={`md:size-[20px] ${tab.id === 'companions' && activeTab===tab.id ? 'text-pink-400 fill-current' : ''}`}/> <span>{tab.label}</span>
