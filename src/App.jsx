@@ -1228,7 +1228,11 @@ const handleComplete = (usedPill = false) => {
             nextLifetime.totalCoins += killCoin;
         }
 
-        if (Math.random() < 0.10) {
+// 修正後：60m 為 10% 基準，並受到氣運微幅加持
+        const basePillRate = 0.10 * (focusDuration / 3600); // 依時長比例縮放
+        const finalPillRate = basePillRate * luckVal; // 氣運極高者，可稍微突破上限
+
+        if (Math.random() < finalPillRate) {
             nextPills += 1;
             killLog += ` 💊 搜刮巢穴，獲得【頓悟丹】x1！`;
             collectedDrops.push(`💊 獲得【頓悟丹】x1`);
