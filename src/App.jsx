@@ -187,7 +187,6 @@ const GUIDE_REALMS = [
   { name: '渡劫期', desc: '引動九九重雷劫，成則羽化登仙，敗則化為劫灰。', range: 'Tier 34' }
 ];
 
-// 【展開排版】以防 Cloudflare Esbuild 壓縮報錯
 const ARTIFACT_POOL = [
   { id: 'a01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (防禦減傷 +2%)', val: { def: 0.02 } },
   { id: 'a02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +4%)', val: { atk: 0.04 } },
@@ -251,7 +250,7 @@ const TITLE_DATA = [
   { id: 't_focus_1', cat: 'focus', req: 50, tier: 1, name: '向道之心', desc: '「資質平庸的偽靈根又如何？唯有堅如磐石的向道之心，方能走到最後。」', buffDesc: '靈氣獲取倍率 +15%', val: { qi: 0.15 } },
   { id: 't_focus_2', cat: 'focus', req: 200, tier: 2, name: '苦修之士', desc: '「閉關動輒數十載，世間繁華不過過眼雲煙。」', buffDesc: '靈氣獲取倍率 +30%，休息回血 +10%', val: { qi: 0.30, heal_bonus: 0.10 } },
   { id: 't_focus_3', cat: 'focus', req: 500, tier: 3, name: '歲月仙尊', desc: '「紅顏白骨，故人皆逝。你獨坐洞府，笑看滄海桑田，已與天地同壽。」', buffDesc: '靈氣獲取倍率 +80%，閃避免傷 +10%', val: { qi: 0.80, evade: 0.10 } },
-  { id: 't_coin_1', cat: 'coin', req: 1000000, tier: 1, name: '身家豐厚', desc: '「在低階散修眼中，你已經是個不折不扣的大土豪了。」', buffDesc: '靈石掉落倍率 +15%', val: { stone: 0.15 } },
+  { id: 't_coin_1', cat: 'coin', req: 1000000, tier: 1, name: '身家豐厚', desc: '「在低階散修眼中，你已經是个不折不扣的大土豪了。」', buffDesc: '靈石掉落倍率 +15%', val: { stone: 0.15 } },
   { id: 't_coin_2', cat: 'coin', req: 10000000, tier: 2, name: '天南巨富', desc: '「靈石成山。這等身家，哪怕在天南修仙界也足以橫著走了。」', buffDesc: '靈石掉落倍率 +40%', val: { stone: 0.40 } },
   { id: 't_coin_3', cat: 'coin', req: 500000000, tier: 3, name: '財可通神', desc: '「連靈界大乘期老怪看到你的儲物袋，也會忍不住生出殺人奪寶的心思。」', buffDesc: '靈石倍率 +150%，氣運保底 +0.5', val: { stone: 1.50, luck_floor: 0.50 } },
   { id: 't_art_1', cat: 'artifact', req: 5, tier: 1, name: '身懷異寶', desc: '「財不露白，道友還是盡早將這些寶物收進儲物袋為妙。」', buffDesc: '氣運保底 +0.15', val: { luck_floor: 0.15 } },
@@ -501,7 +500,7 @@ export default function App() {
              const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
              updatedLogs.unshift(`[${timeStr}] 🏆 【天道恩賜】解鎖稱號「${titleName}」！獲贈免費尋寶 1 次！`);
           });
-          return { ...p, unlockedTitles: updatedUnlocked, freeGacha: newFreeGacha, logs: updatedLogs.slice(0, 50) };
+          return { ...p, unlockedTitles: updatedUnlocked, freeGacha: newFreeGacha, logs: updatedLogs.slice(0, 100) };
        });
     }
   }, [player.lifetimeStats, player.artifacts, player.basicSkills, player.secretBooks]);
@@ -557,6 +556,31 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('xianxia_monster', JSON.stringify(monster));
   }, [monster]);
+
+  // 【補回】動態排序：讓解鎖的法寶、功法、紅顏自動置頂
+  const sortedCompanions = useMemo(() => {
+    return [...COMPANIONS].sort((a, b) => {
+      const isUnlockedA = player.realmIndex >= a.unlockIdx;
+      const isUnlockedB = player.realmIndex >= b.unlockIdx;
+      return (isUnlockedB ? 1 : 0) - (isUnlockedA ? 1 : 0);
+    });
+  }, [player.realmIndex]);
+
+  const sortedArtifacts = useMemo(() => {
+    return [...ARTIFACT_POOL].sort((a, b) => {
+      const isUnlockedA = (player.artifacts || []).includes(a.id);
+      const isUnlockedB = (player.artifacts || []).includes(b.id);
+      return (isUnlockedB ? 1 : 0) - (isUnlockedA ? 1 : 0);
+    });
+  }, [player.artifacts]);
+
+  const sortedSecretBooks = useMemo(() => {
+    return [...SECRET_BOOKS].sort((a, b) => {
+      const isLearnedA = (player.secretBooks?.[a.id] || 0) > 0;
+      const isLearnedB = (player.secretBooks?.[b.id] || 0) > 0;
+      return (isLearnedB ? 1 : 0) - (isLearnedA ? 1 : 0);
+    });
+  }, [player.secretBooks]);
 
   const [focusDuration, setFocusDuration] = useState(25 * 60);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
@@ -691,7 +715,7 @@ export default function App() {
 
   const addLog = (text) => {
     const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    setPlayer(p => ({ ...p, logs: [`[${timeStr}] ${text}`, ...(p.logs || [])].slice(0, 50) }));
+    setPlayer(p => ({ ...p, logs: [`[${timeStr}] ${text}`, ...(p.logs || [])].slice(0, 100) })); // 擴充至100筆
   };
 
   const handleHeal = () => {
@@ -820,9 +844,10 @@ export default function App() {
 
       // 【新增】用於裝載法寶或道具掉落大字提示的陣列
       let currentDrops = []; 
+      let actionLogs = [];
 
       if (isUsingPill) {
-          addLog(`💊 【歲月法則】吞服頓悟丹，瞬間出關！(此經歷不列入識海與生涯)`);
+          actionLogs.push(`💊 【歲月法則】吞服頓悟丹，瞬間出關！(此經歷不列入識海與生涯)`);
           nextPills -= 1;
           nextLastPillTime = Date.now(); 
       } else {
@@ -850,13 +875,13 @@ export default function App() {
       let nextQiToNext = player.qiToNext;
       let newArtifacts = [...(player.artifacts || [])];
       let newSecretBooks = { ...(player.secretBooks || {}) };
-      let nextHasAscended = player.hasAscended;
       let nextBaseCombat = player.baseCombat;
       let nextBaseMaxVitality = player.baseMaxVitality;
       
       let nextStreak = player.streakCount + 1;
       let nextShields = maxStreakShields; 
       let isDeadFromCounter = false;
+
       let isKilled = false;
       let killedBoss = false;
 
@@ -866,12 +891,13 @@ export default function App() {
         const lifesteal = Math.floor(maxVitality * (getMultiplier('lifesteal') - 1));
         if (lifesteal > 0) {
           nextVitality = Math.min(maxVitality, nextVitality + lifesteal);
-          addLog(`💉 【真靈吸吮】爆擊恢復了 ${formatNumber(lifesteal)} 氣血！`);
+          actionLogs.push(`💉 【真靈吸吮】爆擊恢復了 ${formatNumber(lifesteal)} 氣血！`);
         }
       }
 
       let killLog = '';
       let compLog = '';
+      let dmgMsg = isCrit ? `🔥 【爆擊】造成 ${formatNumber(actualDamage)} 傷害。` : `⚔️ 【運功】造成 ${formatNumber(actualDamage)} 傷害。`;
 
       if (newHp === 0) {
         isKilled = true;
@@ -896,14 +922,14 @@ export default function App() {
             const compData = COMPANIONS.find(c => c.id === compId);
             if ([1, 10, 50, 100].includes(newKills)) {
                 const tierName = COMPANION_TIERS[getCompanionTier(newKills)].name;
-                compLog = ` 🌸 與【${compData.name}】羈絆加深，達到「${tierName}」！增益效果提升！`;
+                compLog = `🌸 與【${compData.name}】羈絆加深，達到「${tierName}」！增益效果提升！`;
             }
         }
         
         if (Math.random() < 0.10) {
             nextPills += 1;
             currentDrops.push('💊 頓悟丹');
-            killLog += ` 💊 搜刮妖獸巢穴，獲得【頓悟丹】x1！`;
+            killLog += ` 🎁 搜刮妖獸巢穴，獲得【頓悟丹】x1！`;
         }
 
         if (Math.random() < (0.20 * currentLuck)) {
@@ -962,12 +988,12 @@ export default function App() {
 
         // 死劫突破判定
         if (monster.isBoss) {
-            if (monster.name.includes('九九重雷劫') && !player.hasAscended) {
+            if (monster.name.includes('九九重雷劫')) {
                 try { update(ref(database, 'globalStats'), { totalAscensions: increment(1) }); } catch(e) {}
-                nextHasAscended = true;
-                killLog = `🌌 【破空飛升】位列仙班！ ` + killLog;
                 
-                // 【新增】傳遞 Boss 死亡語錄給彈窗
+                actionLogs.push(`${dmgMsg} 🌌 【破空飛升】位列仙班！`);
+                
+                // 傳遞隨機 Boss 語錄給彈窗
                 const randomBossQuote = FEEDBACK_TEXTS.boss[Math.floor(Math.random() * FEEDBACK_TEXTS.boss.length)];
                 setCelebration({ name: '飛升仙界！成就無上真仙！', desc: randomBossQuote });
                 
@@ -979,17 +1005,19 @@ export default function App() {
                 nextQiToNext = Math.floor(nextQiToNext * 1.35);
                 if (!isUsingPill) nextHistory = [...nextHistory, { name: REALMS[nextRealm].name, time: nextTotalFocusTime }];
                 
-                // 【新增】傳遞 Boss 死亡語錄給彈窗
+                actionLogs.push(`${dmgMsg} ☄️ 【突破死劫】境界晉升至${REALMS[nextRealm].name}！`);
+                
                 const randomBossQuote = FEEDBACK_TEXTS.boss[Math.floor(Math.random() * FEEDBACK_TEXTS.boss.length)];
                 setCelebration({ name: REALMS[nextRealm].name, desc: randomBossQuote });
                 
-                killLog = `☄️ 【突破死劫】境界晉升至${REALMS[nextRealm].name}！` + killLog;
                 setMonster(generateMonsterState(nextRealm, nextQi, nextQiToNext));
             }
         } else {
-            killLog = `⚔️ 【擊殺】奪得修為 ${formatNumber(killQi)}！` + killLog;
+            actionLogs.push(`${dmgMsg} 🩸 【斬殺】成功擊敗${monster.name}！`);
             setMonster(generateMonsterState(nextRealm, nextQi, nextQiToNext));
         }
+        
+        actionLogs.push(`💰 【戰利品】奪得修為 ${formatNumber(passiveQi + kQi)}，靈石 ${formatNumber(passiveCoin + kCoin)}。`);
 
       } else {
         setMonster(prev => ({ ...prev, hp: newHp }));
@@ -998,7 +1026,8 @@ export default function App() {
         const atkName = isBigAttack ? monster.bAtkName : monster.sAtkName;
         
         if (Math.random() < evadeRate) {
-            killLog = `💨 妖獸反撲！你身形如鬼魅，完美閃避【${atkName}】！`;
+            actionLogs.push(`${dmgMsg} 妖獸剩餘 ${formatNumber(newHp)} 氣血。`);
+            actionLogs.push(`💨 妖獸反撲！你身形如鬼魅，完美閃避【${atkName}】！`);
         } else {
             setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
             const baseMod = isBigAttack ? 2.5 : 1.0;
@@ -1014,27 +1043,31 @@ export default function App() {
                     nextShields -= 1;
                     nextVitality = Math.floor(maxVitality * 0.1) || 1;
                     isDeadFromCounter = false;
-                    killLog = `🛡️ 妖獸施展【${atkName}】造成致命傷！【法寶護主】替身傀儡粉碎，鎖血 10% 擋下死劫！`;
+                    actionLogs.push(`${dmgMsg} 妖獸剩餘 ${formatNumber(newHp)} 氣血。`);
+                    actionLogs.push(`🛡️ 妖獸施展【${atkName}】造成致命傷！【法寶護主】替身傀儡粉碎，鎖血 10% 擋下死劫！`);
                 } else if (Math.random() < reviveRate) {
                     nextVitality = maxVitality;
                     isDeadFromCounter = false;
-                    killLog = `💥 妖獸餘威未減，施展【${atkName}】造成致命傷！✨ 【涅槃重生】轉危為安！`;
+                    actionLogs.push(`${dmgMsg} 妖獸剩餘 ${formatNumber(newHp)} 氣血。`);
+                    actionLogs.push(`💥 妖獸餘威未減，施展【${atkName}】造成致命傷！✨ 【涅槃重生】轉危為安！`);
                 } else {
                     nextVitality = Math.floor(maxVitality * 0.5);
                     nextQi = Math.floor(nextQi * 0.8);
                     nextStreak = 0;
                     nextShields = 0;
                     isDeadFromCounter = true;
-                    killLog = `💀 妖獸施展【${atkName}】造成 ${formatNumber(actualDamage)} 傷害！氣血歸零，損失 20% 修為與連擊！`;
+                    actionLogs.push(`💀 妖獸施展【${atkName}】造成 ${formatNumber(actualDamage)} 傷害！氣血歸零，損失 20% 修為與連擊！`);
                 }
             } else {
-                killLog = `💥 妖獸未死，發動【${atkName}】反擊，造成 ${formatNumber(actualDamage)} 點傷害。`;
+                actionLogs.push(`${dmgMsg} 妖獸剩餘 ${formatNumber(newHp)} 氣血。`);
+                actionLogs.push(`💥 妖獸未死，發動【${atkName}】反擊，造成 ${formatNumber(actualDamage)} 點傷害。`);
             }
         }
+        actionLogs.push(`💨 【吐納】獲修為 ${formatNumber(passiveQi)}，靈石 ${formatNumber(passiveCoin)}。`);
       }
 
       if (isDeadFromCounter && monster.isBoss && nextQi < nextQiToNext) {
-          killLog += ` 📉 境界不穩，跌落玄關，宿敵消散！`;
+          actionLogs.push(`📉 境界不穩，跌落玄關，宿敵消散！需重新積累底蘊。`);
           setMonster(generateMonsterState(nextRealm, nextQi, nextQiToNext));
       }
 
@@ -1045,27 +1078,27 @@ export default function App() {
         if (fRoll < 25) {
             const extraQi = Math.floor(passiveQi * 2);
             nextQi += extraQi;
-            fortuneLog = ` 🌈 【偶遇靈泉】額外獲 ${formatNumber(extraQi)} 修為！`;
+            fortuneLog = `🌈 【偶遇靈泉】額外獲 ${formatNumber(extraQi)} 修為！`;
         } else if (fRoll < 50) {
             const extraCoin = Math.floor(passiveCoin * 3);
             nextCoins += extraCoin;
             if (!isUsingPill) nextLifetime.totalCoins += extraCoin;
-            fortuneLog = ` 🌈 【古修洞府】額外獲 ${formatNumber(extraCoin)} 靈石！`;
+            fortuneLog = `🌈 【古修洞府】額外獲 ${formatNumber(extraCoin)} 靈石！`;
         } else if (fRoll < 75) {
             const healAmount = Math.floor(maxVitality * 0.3);
             nextVitality = Math.min(maxVitality, nextVitality + healAmount);
-            fortuneLog = ` 🌈 【天道頓悟】氣血恢復 ${formatNumber(healAmount)}！`;
+            fortuneLog = `🌈 【天道頓悟】氣血恢復 ${formatNumber(healAmount)}！`;
         } else if (fRoll < 90) {
             nextPills += 1;
             currentDrops.push('💊 頓悟丹');
-            fortuneLog = ` 🌈 【天降機緣】獲得【頓悟丹】x1！`;
+            fortuneLog = `🌈 【天降機緣】獲得【頓悟丹】x1！`;
         } else if (fRoll < 98) {
             if (Math.random() < 0.5) {
                 nextBaseCombat += 5;
-                fortuneLog = ` ⚡ 【天雷淬體】肉身脫胎換骨，永久基礎戰力 +5！`;
+                fortuneLog = `⚡ 【天雷淬體】肉身脫胎換骨，永久基礎戰力 +5！`;
             } else {
                 nextBaseMaxVitality += 5;
-                fortuneLog = ` ⚡ 【天雷淬體】經脈拓寬，永久氣血上限 +5！`;
+                fortuneLog = `⚡ 【天雷淬體】經脈拓寬，永久氣血上限 +5！`;
             }
         } else {
             const roll = Math.random();
@@ -1080,11 +1113,11 @@ export default function App() {
                 }
             }
 
-            let originalIdx = RARITIES_ORDER.indexOf(targetRarity);
+            let targetIdx = RARITIES_ORDER.indexOf(targetRarity);
             let combinedPool = getUnownedPool(targetRarity, newArtifacts, newSecretBooks);
 
             if (combinedPool.length === 0) {
-                for (let i = originalIdx - 1; i >= 0; i--) {
+                for (let i = targetIdx - 1; i >= 0; i--) {
                     combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks);
                     if (combinedPool.length > 0) {
                         targetRarity = RARITIES_ORDER[i];
@@ -1094,7 +1127,7 @@ export default function App() {
             }
 
             if (combinedPool.length === 0) {
-                for (let i = originalIdx + 1; i < RARITIES_ORDER.length; i++) {
+                for (let i = targetIdx + 1; i < RARITIES_ORDER.length; i++) {
                     combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks);
                     if (combinedPool.length > 0) {
                         targetRarity = RARITIES_ORDER[i];
@@ -1108,26 +1141,26 @@ export default function App() {
                 if (drop.poolType === 'art') {
                     newArtifacts.push(drop.id);
                     currentDrops.push(`🏺 【${RARITY[targetRarity].name}】法寶「${drop.name}」`);
-                    fortuneLog = ` 🏺 【異寶出世】霞光萬丈，喜獲【${RARITY[targetRarity].name}】法寶「${drop.name}」！`;
+                    fortuneLog = `🏺 【異寶出世】霞光萬丈，喜獲【${RARITY[targetRarity].name}】法寶「${drop.name}」！`;
                 } else {
                     newSecretBooks[drop.id] = 1;
                     currentDrops.push(`📜 【${RARITY[targetRarity].name}】功法「${drop.name}」`);
-                    fortuneLog = ` 📜 【殘卷現世】機緣巧合，領悟【${RARITY[targetRarity].name}】功法「${drop.name}」！`;
+                    fortuneLog = `📜 【殘卷現世】機緣巧合，領悟【${RARITY[targetRarity].name}】功法「${drop.name}」！`;
                 }
             } else {
-                const topRarity = 'DIVINE';
-                const compCoins = Math.floor((0.1 * gachaCost) / RARITY[topRarity].weight);
+                const compCoins = Math.floor((0.1 * gachaCost) / RARITY[targetRarity].weight);
                 nextCoins += compCoins;
                 if (!isUsingPill) nextLifetime.totalCoins += compCoins;
-                fortuneLog = ` ✨ 【天道反哺】此界寶物已盡數入您手中！天道降下 ${formatNumber(compCoins)} 靈石補償！`;
+                fortuneLog = `✨ 【天道反哺】此界寶物已盡數入您手中！天道降下 ${formatNumber(compCoins)} 靈石補償！`;
             }
         }
       }
 
-      const dmgLog = isCrit ? `🔥 【爆擊】造成 ${formatNumber(actualDamage)} 傷害。` : `[運功] 造成 ${formatNumber(actualDamage)} 傷害。`;
-      addLog(`${dmgLog} ${killLog || `獲修為 ${formatNumber(passiveQi)}。`}${fortuneLog}${compLog}`);
+      if (killLog) actionLogs.push(killLog.trim());
+      if (fortuneLog) actionLogs.push(fortuneLog.trim());
+      if (compLog) actionLogs.push(compLog.trim());
 
-      // 【新增】觸發非阻擋式動態橫幅 (Toast)
+      // 【新增】觸發動態橫幅 (Toast)
       if (!killedBoss) {
           const toastType = isKilled ? 'kill' : 'focus';
           const randomText = FEEDBACK_TEXTS[toastType][Math.floor(Math.random() * FEEDBACK_TEXTS[toastType].length)];
@@ -1139,27 +1172,34 @@ export default function App() {
           setTimeout(() => setToast(null), 5000);
       }
 
-      setPlayer(p => ({
-          ...p,
-          realmIndex: nextRealm,
-          qi: nextQi,
-          qiToNext: nextQiToNext,
-          coins: nextCoins,
-          vitality: nextVitality,
-          baseCombat: nextBaseCombat,
-          baseMaxVitality: nextBaseMaxVitality,
-          streakCount: nextStreak,
-          streakShields: nextShields,
-          totalFocusTime: nextTotalFocusTime,
-          artifacts: newArtifacts,
-          secretBooks: newSecretBooks,
-          epiphanyPills: nextPills,
-          lastPillTime: nextLastPillTime,
-          companionKills: nextCompanionKills,
-          history: nextHistory,
-          hasAscended: nextHasAscended,
-          lifetimeStats: nextLifetime
-      }));
+      setPlayer(p => {
+          const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+          // 將多條行為日誌打包並標記時間
+          const formattedLogs = actionLogs.reverse().map(msg => `[${timeStr}] ${msg}`);
+          return {
+              ...p,
+              realmIndex: nextRealm,
+              qi: nextQi,
+              qiToNext: nextQiToNext,
+              coins: nextCoins,
+              vitality: nextVitality,
+              baseCombat: nextBaseCombat,
+              baseMaxVitality: nextBaseMaxVitality,
+              streakCount: nextStreak,
+              streakShields: nextShields,
+              totalFocusTime: nextTotalFocusTime,
+              artifacts: newArtifacts,
+              secretBooks: newSecretBooks,
+              epiphanyPills: nextPills,
+              lastPillTime: nextLastPillTime,
+              companionKills: nextCompanionKills,
+              history: nextHistory,
+              lifetimeStats: nextLifetime,
+              // 【修復】強制 String() 轉型，防止髒數據崩潰
+              logs: [...formattedLogs, ...(p.logs || [])].map(l => String(l)).slice(0, 100)
+          };
+      });
+      
       setMode('break'); setTimeLeft(5 * 60);
 
     } else { 
@@ -1183,6 +1223,79 @@ export default function App() {
         streakShields: maxStreakShields 
       }));
       addLog(`🌧️ 【靈雨降臨】吐納調息圓滿，恢復了 ${formatNumber(heal)} 氣血。`); 
+    }
+  };
+
+  const handleGacha = () => {
+    if (player.coins < gachaCost) return;
+    const currentLuck = getMultiplier('luck_floor');
+    const roll = Math.random(); 
+    let targetRarity = 'COMMON';
+    let accum = 0;
+    const sortedRarities = Object.entries(RARITY).sort((a,b) => a[1].weight - b[1].weight);
+    
+    for (let [r, data] of sortedRarities) {
+        accum += data.weight * currentLuck; 
+        if (roll < accum) {
+            targetRarity = r;
+            break;
+        }
+    }
+    
+    let targetIdx = RARITIES_ORDER.indexOf(targetRarity);
+    let combinedPool = getUnownedPool(targetRarity, player.artifacts || [], player.secretBooks || {});
+    
+    if (combinedPool.length === 0) {
+        for (let i = targetIdx - 1; i >= 0; i--) {
+            combinedPool = getUnownedPool(RARITIES_ORDER[i], player.artifacts || [], player.secretBooks || {});
+            if (combinedPool.length > 0) {
+                targetRarity = RARITIES_ORDER[i];
+                break;
+            }
+        }
+    }
+    
+    if (combinedPool.length === 0) {
+        for (let i = targetIdx + 1; i < RARITIES_ORDER.length; i++) {
+            combinedPool = getUnownedPool(RARITIES_ORDER[i], player.artifacts || [], player.secretBooks || {});
+            if (combinedPool.length > 0) {
+                targetRarity = RARITIES_ORDER[i];
+                break;
+            }
+        }
+    }
+    
+    if (combinedPool.length > 0) {
+      const drop = combinedPool[Math.floor(Math.random() * combinedPool.length)];
+      setPlayer(p => ({ 
+        ...p, 
+        coins: p.coins - gachaCost, 
+        artifacts: drop.poolType === 'art' ? [...(p.artifacts || []), drop.id] : p.artifacts,
+        secretBooks: drop.poolType === 'book' ? { ...(p.secretBooks || {}), [drop.id]: 1 } : p.secretBooks
+      }));
+      addLog(`[萬寶樓] 靈光乍現！獲得【${RARITY[targetRarity].name}】${drop.poolType === 'art' ? '法寶' : '功法'}「${drop.name}」！`);
+    } else { 
+      const compCoins = Math.floor((0.1 * gachaCost) / RARITY[targetRarity].weight);
+      setPlayer(p => ({ ...p, coins: (p.coins - gachaCost) + compCoins })); 
+      addLog(`[萬寶樓] 該品階與以下寶物已盡數收入囊中！天道補償 ${formatNumber(compCoins)} 靈石。`); 
+    }
+  };
+
+  const handleUpgradeSecret = (id) => {
+    const lvl = player.secretBooks[id] || 0;
+    const cost = Math.floor(10000 * Math.pow(2, lvl) * forgeDiscount);
+    if (player.coins >= cost && lvl < 5 && availableSP >= 1) {
+      setPlayer(p => ({ ...p, coins: p.coins - cost, secretBooks: { ...p.secretBooks, [id]: lvl + 1 } }));
+      addLog(`[參悟] 耗費 1 SP，將【${SECRET_BOOKS.find(x=>x.id===id).name}】提昇至 Lv.${lvl + 1}。`);
+    }
+  };
+
+  const handleUpgradeArtifact = (artId, rarity) => {
+    const currentLvl = player.artifactLvls[artId] || 0;
+    const cost = Math.floor(RARITY_BASE_COST[rarity] * Math.pow(1.8, currentLvl) * forgeDiscount);
+    if (player.coins >= cost && currentLvl < 5) { 
+      setPlayer(p => ({ ...p, coins: p.coins - cost, artifactLvls: { ...p.artifactLvls, [artId]: currentLvl + 1 }, streakShields: maxStreakShields })); 
+      addLog(`[血煉] 【${ARTIFACT_POOL.find(x=>x.id===artId).name}】至 Lv.${currentLvl + 1}。`);
     }
   };
 
@@ -1379,6 +1492,7 @@ export default function App() {
         </div>
       )}
 
+      {/* 【優化】Boss 勝利加入隨機語錄 */}
       {celebration && (
         <div className="fixed inset-0 z-[500] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 sm:p-12 cursor-pointer font-bold mt-8 text-center animate-pop-in" onClick={() => setCelebration(null)}>
           <Crown size={80} className="text-yellow-500/80 mb-6 animate-bounce drop-shadow-[0_0_30px_rgba(250,204,21,0.5)]" />
@@ -1387,7 +1501,6 @@ export default function App() {
           </h2>
           <p className="text-xl sm:text-2xl text-emerald-400 font-light tracking-widest mb-6">【{celebration.name}】</p>
           
-          {/* 【新增】顯示 Boss 隨機反饋語句 */}
           {celebration.desc && (
               <p className="text-base text-rose-200 italic leading-loose tracking-widest max-w-lg mx-auto">
                   「{celebration.desc}」
@@ -1489,7 +1602,7 @@ export default function App() {
         </div>
       </div>
 
-      <div className={`w-full max-w-4xl bg-slate-900/40 backdrop-blur-3xl p-8 md:p-14 rounded-2xl border ${mode === 'break' ? 'border-cyan-500/30' : 'border-white/10'} text-center mb-8 z-10 shadow-2xl transition-all duration-700 ${isActive ? (mode === 'break' ? 'scale-[1.02] shadow-[0_0_50px_rgba(6,182,212,0.15)]' : 'scale-[1.02] shadow-[0_0_50px_rgba(16,185,129,0.15)] border-emerald-500/30') : ''}`}>
+      <div className={`w-full max-w-4xl bg-slate-900/40 backdrop-blur-3xl p-8 md:p-14 rounded-2xl border ${mode === 'break' ? 'border-cyan-500/30' : 'border-white/10'} text-center mb-8 z-10 shadow-2xl transition-all duration-700 ${isActive ? 'scale-[1.02] shadow-[0_0_50px_rgba(16,185,129,0.15)] border-emerald-500/30' : ''}`}>
         
         <div className="grid grid-cols-2 sm:flex sm:justify-center gap-4 md:gap-6 mb-12 font-bold max-w-[280px] sm:max-w-none mx-auto">
            {FOCUS_OPTIONS.map(opt => (
@@ -1511,7 +1624,7 @@ export default function App() {
           </>
         ) : (
           <div className="flex justify-center items-center gap-3 mb-10 text-sm md:text-base tracking-[0.6em] font-black uppercase text-cyan-400 animate-pulse">
-            <Wind size={18}/> 靈氣反哺．吐納調息中
+            <CloudLightning size={18}/> 靈氣反哺．吐納調息中
           </div>
         )}
 
@@ -1549,217 +1662,214 @@ export default function App() {
         </div>
       </div>
 
-      {!isActive && (
-        <div className="w-full max-w-4xl mt-4 z-10 font-bold animate-soft-fade-in">
-          <div className="bg-slate-950/90 backdrop-blur-3xl rounded-2xl border border-white/10 shadow-2xl flex flex-col h-[800px] overflow-hidden">
-            <div className="flex bg-black/80 border-b border-white/10 p-2 gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
-              {[
-                { id: 'skills', label: '功法祕籍', icon: ScrollText },
-                { id: 'forge', label: '洞府淬煉', icon: Hammer },
-                { id: 'artifacts', label: '法寶庫', icon: Box },
-                { id: 'companions', label: '道侶紅顏', icon: Heart },
-                { id: 'insights', label: '識海投影', icon: Activity },
-                { id: 'log', label: '修行日誌', icon: History }
-              ].map(tab => (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 py-4 md:py-5 rounded-xl text-xs md:text-sm font-black uppercase flex flex-col items-center justify-center gap-2 transition-all min-w-[80px] ${activeTab===tab.id ? 'bg-white/15 text-white shadow-inner border border-white/20' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}>
-                  <tab.icon size={18} className={`md:size-[20px] ${tab.id === 'companions' && activeTab===tab.id ? 'text-pink-400 fill-current' : ''}`}/> <span>{tab.label}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="p-5 md:p-10 overflow-y-auto flex-1 custom-scrollbar">
-              {activeTab === 'skills' && (
-                <div className="space-y-14 animate-pop-in">
-                  <div>
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b border-white/20 pb-4 gap-4">
-                      <h3 className="text-white/60 text-sm font-black uppercase tracking-widest">
-                        凡俗根基 (SP 研習)
-                      </h3>
-                      <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
-                        <span className="text-cyan-400 font-mono">可用 SP: {formatNumber(availableSP)}</span>
-                        <button onClick={handleRebuildBase} className="px-4 py-2.5 bg-rose-900/40 hover:bg-rose-700 text-rose-300 hover:text-white rounded-lg text-xs font-black border border-rose-500/50 transition-all flex items-center gap-2 shadow-lg">
-                          <RefreshCw size={14} /> 散功重修 (退SP)
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                    {BASIC_SKILLS.map(s => { const lvl = player.basicSkills?.[s.id] || 0; return (
-                      <div key={s.id} className="p-5 rounded-xl border border-white/20 bg-white/5 flex flex-col justify-between h-56 shadow-inner group">
-                          <div><h4 className="text-white font-bold text-sm tracking-widest uppercase">{s.name} <span className="opacity-50 float-right font-mono">Lv.{lvl}/{s.maxLvl}</span></h4><p className="text-xs text-white/60 mt-3 leading-relaxed italic">{s.desc}</p></div>
-                          <button onClick={() => { if(availableSP >= 1 && lvl < s.maxLvl) setPlayer(p => ({...p, basicSkills: {...p.basicSkills, [s.id]: lvl+1}})) }} disabled={availableSP < 1 || lvl >= s.maxLvl} className="mt-5 w-full py-4 bg-white/10 hover:bg-cyan-600 hover:border-cyan-400 text-white rounded-lg text-xs font-black border border-white/20 transition-all disabled:opacity-30 disabled:hover:bg-white/10">研習 (1 SP)</button>
-                      </div>
-                    );})}
-                    </div></div>
-                    <div><h3 className="text-white/60 text-sm font-black uppercase border-b border-white/20 pb-4 mb-8 tracking-widest">機緣祕籍 (14 種)</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                    {SECRET_BOOKS.map(book => { const lvl = player.secretBooks?.[book.id] || 0; const learned = lvl > 0; const upCost = Math.floor(10000 * Math.pow(2, lvl) * forgeDiscount); return (
-                      <div key={book.id} className={`p-6 rounded-2xl border transition-all flex flex-col justify-between min-h-[16rem] ${learned ? 'bg-emerald-950/40 border-emerald-500/50 shadow-xl' : 'bg-black/60 border-white/10 opacity-60'}`}>
-                          <div className="flex items-start gap-5"><div className={`p-4 rounded-xl ${learned ? 'bg-emerald-500 text-black shadow-lg' : 'bg-slate-800'}`}><BookOpen size={24}/></div><div className="flex-1"><h4 className="font-black text-base tracking-widest text-white">{book.name} {learned && <span className="text-xs opacity-60 ml-2 font-mono">Lv.{lvl}</span>}</h4><p className="text-sm opacity-70 leading-relaxed mt-2 text-white">{learned ? book.desc : '擊殺強敵機率獲得。'}</p></div></div>
-                          {learned && lvl < 5 && <button onClick={() => handleUpgradeSecret(book.id)} disabled={player.coins < upCost || availableSP < 1} className="mt-6 w-full py-4 bg-white/10 hover:bg-emerald-600 text-white rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">參悟升級 (${formatNumber(upCost)} 靈石 + 1 SP)</button>}
-                      </div>
-                    );})}
-                    </div></div>
-                </div>
-              )}
-              
-              {activeTab === 'companions' && (
-                <div className="space-y-8 animate-pop-in pb-10">
-                  <div className="bg-pink-950/30 border border-pink-500/30 p-6 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-                      <div>
-                          <h3 className="text-pink-400 font-black text-lg tracking-widest flex items-center gap-2"><Heart size={20} className="fill-current"/> 仙途伴侶</h3>
-                          <p className="text-white/60 text-xs mt-2 leading-relaxed">道侶解鎖與當前境界息息相關。選擇一位道侶同行，共同斬殺妖獸將提升羈絆，獲得強大增益。<br/>(羈絆階級：初識 1 / 相知 10 / 傾心 50 / 生死相隨 100)</p>
-                      </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {COMPANIONS.map(comp => {
-                          const isUnlocked = player.realmIndex >= comp.unlockIdx;
-                          const isActive = player.activeCompanion === comp.id;
-                          const kills = player.companionKills?.[comp.id] || 0;
-                          const tierIdx = getCompanionTier(kills);
-                          const currentBuff = tierIdx >= 0 ? comp.tiers[tierIdx] : 0;
-                          
-                          return isUnlocked ? (
-                              <div key={comp.id} className={`p-6 rounded-2xl border transition-all flex flex-col justify-between ${isActive ? 'bg-pink-900/40 border-pink-500/50 shadow-[0_0_20px_rgba(244,114,182,0.2)]' : 'bg-black/60 border-white/10'}`}>
-                                  <div>
-                                      <div className="flex justify-between items-start mb-4">
-                                          <h4 className="text-white font-black text-xl tracking-widest flex items-center gap-2">
-                                              {comp.name} 
-                                              {isActive && <span className="text-[10px] bg-pink-500 text-white px-2 py-0.5 rounded-full uppercase tracking-widest ml-2">同行中</span>}
-                                          </h4>
-                                          <div className="text-right">
-                                              <div className="text-pink-400 font-mono text-sm">{kills} 斬</div>
-                                              <div className="text-white/40 text-[10px] uppercase tracking-widest mt-1">{tierIdx >= 0 ? COMPANION_TIERS[tierIdx].name : '未結緣'}</div>
-                                          </div>
-                                      </div>
-                                      <p className="text-white/70 text-xs italic leading-relaxed mb-6 h-12">"{comp.desc}"</p>
-                                      
-                                      <div className="bg-black/40 rounded-xl p-4 border border-white/5 mb-6">
-                                          <div className="text-pink-300 text-xs font-black mb-2 flex items-center gap-2">【{comp.buffName}】</div>
-                                          <div className="flex justify-between items-end">
-                                              <span className="text-white/60 text-xs">{comp.buffDesc}</span>
-                                              <span className="text-white font-mono text-base font-black">+{comp.buffType === 'luck_floor' ? currentBuff.toFixed(2) : `${currentBuff}%`}</span>
-                                          </div>
-                                          <div className="flex gap-1 mt-3">
-                                              {comp.tiers.map((t, idx) => (
-                                                  <div key={idx} className={`h-1.5 flex-1 rounded-full ${idx <= tierIdx ? 'bg-pink-500' : 'bg-white/10'}`}></div>
-                                              ))}
-                                          </div>
-                                      </div>
-                                  </div>
-                                  {!isActive ? (
-                                      <button 
-                                        onClick={() => setPlayer(p => ({ ...p, activeCompanion: comp.id }))}
-                                        className="w-full py-4 rounded-xl border border-white/20 text-xs font-black text-white/70 hover:bg-pink-600 hover:border-pink-400 hover:text-white transition-all mt-4">
-                                        邀其同行
-                                      </button>
-                                  ) : (
-                                      <button 
-                                        onClick={() => setPlayer(p => ({ ...p, activeCompanion: null }))}
-                                        className="w-full py-4 rounded-xl border border-pink-500/30 text-xs font-black text-pink-400 hover:bg-pink-950 hover:text-pink-300 transition-all mt-4">
-                                        請其回府 (取消同行)
-                                      </button>
-                                  )}
-                              </div>
-                          ) : (
-                              <div key={comp.id} className="p-6 rounded-2xl border-2 border-dashed border-pink-900/30 bg-black/50 flex flex-col items-center justify-center min-h-[16rem] opacity-50">
-                                  <EyeOff size={40} className="text-pink-900/50 mb-5"/>
-                                  <p className="text-xs font-black text-pink-700/50 uppercase tracking-[0.3em]">仙影朦朧</p>
-                                  <div className="text-pink-900/40 text-[10px] mt-4 font-mono border border-pink-900/30 px-3 py-1 rounded-full">需突破至【{REALMS[comp.unlockIdx].name}】</div>
-                              </div>
-                          );
-                      })}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'forge' && (
-                <div className="space-y-14 animate-pop-in pb-10">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-                    <div className="p-8 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 min-h-[16rem] flex flex-col justify-between group shadow-xl shadow-emerald-900/20">
-                      <div><h3 className="text-emerald-400 font-black text-xl tracking-tighter uppercase flex items-center gap-3"><Pill size={24}/> 煉製回春丹</h3><p className="text-white/70 text-sm mt-3 italic tracking-widest leading-relaxed">恢復 50% 最大氣血。</p></div>
-                      <button onClick={handleHeal} disabled={player.coins < healCost || player.vitality >= maxVitality} className="w-full py-5 bg-emerald-900/80 hover:bg-emerald-600 text-emerald-100 rounded-xl font-black uppercase text-sm transition-all disabled:opacity-40 border border-emerald-500/50 mt-6">{player.vitality >= maxVitality ? '氣血已滿' : `煉丹 (${formatNumber(healCost)} 靈石)`}</button>
-                    </div>
-                    <div className="p-8 rounded-2xl bg-white/10 border border-white/20 min-h-[16rem] flex flex-col justify-between group">
-                        <div><h3 className="text-white font-black text-xl tracking-tighter uppercase">凝練劍光</h3><p className="text-white/60 text-sm mt-3 italic tracking-widest">基礎戰力 +100。<br/>(花費指數提升，無極限)</p></div>
-                        <button onClick={() => { if(player.coins >= upgCostAtk) setPlayer(p => ({ ...p, coins: p.coins - upgCostAtk, baseCombat: p.baseCombat + 100 })) }} disabled={player.coins < upgCostAtk} className="w-full py-5 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl font-black uppercase text-sm tracking-widest shadow-xl transition-all disabled:opacity-30 mt-6">祭煉 ({formatNumber(upgCostAtk)} 靈石)</button>
-                    </div>
-                    <div className="p-8 rounded-2xl bg-white/10 border border-white/20 min-h-[16rem] flex flex-col justify-between group">
-                        <div><h3 className="text-white font-black text-xl tracking-tighter uppercase">熬煉肉身</h3><p className="text-white/60 text-sm mt-3 italic tracking-widest">氣血上限 +100。<br/>(花費指數提升，無極限)</p></div>
-                        <button onClick={() => { if(player.coins >= upgCostHp) setPlayer(p => ({ ...p, coins: p.coins - upgCostHp, baseMaxVitality: p.baseMaxVitality + 100, vitality: p.vitality + 100 })) }} disabled={player.coins < upgCostHp} className="w-full py-5 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl font-black uppercase text-sm tracking-widest shadow-xl transition-all disabled:opacity-30 mt-6">熬煉 ({formatNumber(upgCostHp)} 靈石)</button>
-                    </div>
-                  </div>
-                  <div className="space-y-6">
-                     <h3 className="text-white/60 text-sm font-black uppercase border-b border-white/20 pb-4">陣法樞紐 (無上限)</h3>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                        <div className="bg-white/10 p-8 rounded-2xl border border-white/20 min-h-[14rem] flex flex-col justify-between shadow-inner"><div className="flex justify-between text-base text-white font-bold drop-shadow-md">聚靈大陣 <span className="opacity-60 font-mono">Lv.{player.arrays?.qi||0}</span></div><p className="text-sm opacity-70 italic mt-2">靈氣獲取提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayQiCost) setPlayer(p => ({ ...p, coins: p.coins - arrayQiCost, arrays: {...p.arrays, qi: (p.arrays?.qi||0)+1} })) }} disabled={player.coins < arrayQiCost} className="w-full py-4 mt-6 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">升級 ({formatNumber(arrayQiCost)} 靈石)</button></div>
-                        <div className="bg-white/10 p-8 rounded-2xl border border-white/20 min-h-[14rem] flex flex-col justify-between shadow-inner"><div className="flex justify-between text-base text-white font-bold drop-shadow-md">顛倒五行陣 <span className="opacity-60 font-mono">Lv.{player.arrays?.def||0}</span></div><p className="text-sm opacity-70 italic text-white mt-2">全域減傷提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-4 mt-6 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">升級 ({formatNumber(arrayDefCost)} 靈石)</button></div>
-                     </div>
-                  </div>
-                </div>
-              )}
-              {activeTab === 'artifacts' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 animate-pop-in pb-10">
-                  {ARTIFACT_POOL.map(art => {
-                    const unlocked = (player.artifacts || []).includes(art.id), lvl = player.artifactLvls?.[art.id]||0, cost = Math.floor(RARITY_BASE_COST[art.rarity]*Math.pow(1.8,lvl)*forgeDiscount);
-                    return unlocked ? (
-                      <div key={art.id} className={`p-8 rounded-2xl border bg-black/60 border-white/20 flex flex-col justify-between shadow-inner min-h-[16rem]`}><div className="z-10"><h4 className={`font-black text-xl ${RARITY[art.rarity].color} tracking-tighter drop-shadow-md`}>{art.name} <span className="opacity-60 text-xs float-right font-mono text-white mt-1">Lv.{lvl}</span></h4><p className="text-sm text-white/70 mt-5 italic leading-relaxed uppercase tracking-widest">「{art.desc}」</p></div>{lvl < 5 && <button onClick={()=>handleUpgradeArtifact(art.id, art.rarity)} disabled={player.coins < cost} className="mt-8 w-full py-4 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black transition-all border border-white/20 disabled:opacity-30">血煉 ({formatNumber(cost)} 靈石)</button>}</div>
-                    ) : <div key={art.id} className="p-8 rounded-2xl border-2 border-dashed border-white/10 bg-black/50 flex flex-col items-center justify-center opacity-50 min-h-[16rem]"><EyeOff size={40} className="text-white/30 mb-5"/><p className="text-xs font-black text-white/50 uppercase tracking-[0.3em]">寶光內斂：{RARITY[art.rarity].name}</p></div>;
-                  })}
-                </div>
-              )}
-              {activeTab === 'insights' && (
-                <div className="h-[500px] md:h-[600px] animate-pop-in bg-black/60 rounded-2xl border border-white/20 shadow-inner p-6 md:p-12 flex flex-col">
-                  <div className="flex justify-between items-center mb-10 opacity-70 text-xs font-black uppercase tracking-[0.4em] text-white"><span className="flex items-center gap-3"><Activity size={16}/> 識海投影 (修煉進程)</span><span>累計時間: {formatNumber(Math.floor((player.totalFocusTime || 0)/60))}m</span></div>
-                  <div className="flex-1 relative border-l-2 border-b-2 border-white/20"><InsightsChart /></div>
-                </div>
-              )}
-              {activeTab === 'log' && (
-                <div className="space-y-4 md:space-y-6 animate-pop-in pb-10">
-                  {(player.logs || []).map((e, i) => (<div key={i} className={`p-5 md:p-6 rounded-xl border border-white/20 text-xs md:text-sm leading-relaxed transition-all ${i===0?'bg-white/20 text-white shadow-xl animate-pulse':'bg-black/60 border-white/10 text-white/60'}`}>{String(e)}</div>))}
-                </div>
-              )}
-            </div>
+      <div className="w-full max-w-4xl mt-4 z-10 font-bold animate-soft-fade-in">
+        <div className="bg-slate-950/90 backdrop-blur-3xl rounded-2xl border border-white/10 shadow-2xl flex flex-col h-[750px] overflow-hidden">
+          <div className="flex bg-black/80 border-b border-white/10 p-2 gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
+            {[
+              { id: 'skills', label: '功法祕籍', icon: ScrollText },
+              { id: 'forge', label: '洞府淬煉', icon: Hammer },
+              { id: 'artifacts', label: '法寶庫', icon: Box },
+              { id: 'companions', label: '道侶紅顏', icon: Heart },
+              { id: 'insights', label: '識海投影', icon: Activity },
+              { id: 'log', label: '修行日誌', icon: History }
+            ].map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 py-4 md:py-5 rounded-xl text-xs md:text-sm font-black uppercase flex flex-col items-center justify-center gap-2 transition-all min-w-[80px] ${activeTab===tab.id ? 'bg-white/15 text-white shadow-inner border border-white/20' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}>
+                <tab.icon size={18} className={`md:size-[20px] ${tab.id === 'companions' && activeTab===tab.id ? 'text-pink-400 fill-current' : ''}`}/> <span>{tab.label}</span>
+              </button>
+            ))}
           </div>
 
-          <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4 w-full">
-            
-            <div className="w-full max-w-2xl grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 mx-auto">
-               <button onClick={() => setShowTitles(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-amber-400 hover:text-amber-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest relative">
-                 <Award size={16}/> <span className="whitespace-nowrap">名號頭銜</span>
-                 {player.freeGacha > 0 && <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded-full animate-bounce">{player.freeGacha}</span>}
-               </button>
-               <button onClick={() => setShowGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-                 <HelpCircle size={16}/> <span className="whitespace-nowrap">修行指引</span>
-               </button>
-               <button onClick={() => setShowStatsReport(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-                 <BarChart3 size={16}/> <span className="whitespace-nowrap">屬性極限</span>
-               </button>
-               <button onClick={() => setShowRealmGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-                 <BookOpen size={16}/> <span className="whitespace-nowrap">境界全覽</span>
-               </button>
-            </div>
+          <div className="p-5 md:p-10 overflow-y-auto flex-1 custom-scrollbar">
+            {activeTab === 'skills' && (
+              <div className="space-y-14 animate-pop-in">
+                <div>
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b border-white/20 pb-4 gap-4">
+                    <h3 className="text-white/60 text-sm font-black uppercase tracking-widest">
+                      凡俗根基 (SP 研習)
+                    </h3>
+                    <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
+                      <span className="text-cyan-400 font-mono">可用 SP: {formatNumber(availableSP)}</span>
+                      <button onClick={handleRebuildBase} className="px-4 py-2.5 bg-rose-900/40 hover:bg-rose-700 text-rose-300 hover:text-white rounded-lg text-xs font-black border border-rose-500/50 transition-all flex items-center gap-2 shadow-lg">
+                        <RefreshCw size={14} /> 散功重修 (退SP)
+                      </button>
+                    </div>
+                  </div>
 
-            <div className="w-full max-w-2xl mb-8 flex justify-center">
-               <button onClick={() => setShowSaveModal(true)} className="flex items-center justify-center gap-2 text-cyan-400 hover:text-cyan-300 transition-all bg-cyan-950/40 hover:bg-cyan-900/60 py-3 px-6 rounded-full border border-cyan-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(6,182,212,0.15)] font-black tracking-widest">
-                 <ScrollText size={16}/> 玉簡傳功 (進度跨裝置同步)
-               </button>
-            </div>
-
-            <p className="leading-relaxed">《凡人修仙傳》原著設定歸作者 忘語 所有</p>
-            <p className="opacity-80 leading-loose">
-              Created by <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 underline transition-all text-white">fb/指數三寶飯</a> 
-              <br className="block sm:hidden mt-2" />
-              <span className="sm:ml-3">with Gemini</span>
-            </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                  {BASIC_SKILLS.map(s => { const lvl = player.basicSkills?.[s.id] || 0; return (
+                    <div key={s.id} className="p-5 rounded-xl border border-white/20 bg-white/5 flex flex-col justify-between h-56 shadow-inner group">
+                        <div><h4 className="text-white font-bold text-sm tracking-widest uppercase">{s.name} <span className="opacity-50 float-right font-mono">Lv.{lvl}/{s.maxLvl}</span></h4><p className="text-xs text-white/60 mt-3 leading-relaxed italic">{s.desc}</p></div>
+                        <button onClick={() => { if(availableSP >= 1 && lvl < s.maxLvl) setPlayer(p => ({...p, basicSkills: {...p.basicSkills, [s.id]: lvl+1}})) }} disabled={availableSP < 1 || lvl >= s.maxLvl} className="mt-5 w-full py-4 bg-white/10 hover:bg-cyan-600 hover:border-cyan-400 text-white rounded-lg text-xs font-black border border-white/20 transition-all disabled:opacity-30 disabled:hover:bg-white/10">研習 (1 SP)</button>
+                    </div>
+                  );})}
+                  </div></div>
+                  <div><h3 className="text-white/60 text-sm font-black uppercase border-b border-white/20 pb-4 mb-8 tracking-widest">機緣祕籍 (14 種)</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                  {SECRET_BOOKS.map(book => { const lvl = player.secretBooks?.[book.id] || 0; const learned = lvl > 0; const upCost = Math.floor(10000 * Math.pow(2, lvl) * forgeDiscount); return (
+                    <div key={book.id} className={`p-6 rounded-2xl border transition-all flex flex-col justify-between min-h-[16rem] ${learned ? 'bg-emerald-950/40 border-emerald-500/50 shadow-xl' : 'bg-black/60 border-white/10 opacity-60'}`}>
+                        <div className="flex items-start gap-5"><div className={`p-4 rounded-xl ${learned ? 'bg-emerald-500 text-black shadow-lg' : 'bg-slate-800'}`}><BookOpen size={24}/></div><div className="flex-1"><h4 className="font-black text-base tracking-widest text-white">{book.name} {learned && <span className="text-xs opacity-60 ml-2 font-mono">Lv.{lvl}</span>}</h4><p className="text-sm opacity-70 leading-relaxed mt-2 text-white">{learned ? book.desc : '擊殺強敵機率獲得。'}</p></div></div>
+                        {learned && lvl < 5 && <button onClick={() => handleUpgradeSecret(book.id)} disabled={player.coins < upCost || availableSP < 1} className="mt-6 w-full py-4 bg-white/10 hover:bg-emerald-600 text-white rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">參悟升級 (${formatNumber(upCost)} 靈石 + 1 SP)</button>}
+                    </div>
+                  );})}
+                  </div></div>
+              </div>
+            )}
             
-            <div className="flex items-center justify-center gap-4 mt-4">
-                <button onClick={() => setShowChangelog(true)} className="opacity-60 hover:opacity-100 transition-opacity border border-white/30 px-6 py-3 rounded-full text-xs tracking-widest hover:bg-emerald-900/60 hover:border-emerald-500/60 hover:text-emerald-200 flex items-center gap-2"><FileText size={14}/> 天道紀元 (版本紀錄)</button>
-                <button onClick={()=>{if(window.confirm('【天道輪迴】\n確定要刪除所有進度，重新投胎轉世嗎？\n所有成果將灰飛煙滅。')) { localStorage.clear(); window.location.reload(); }}} className="opacity-60 hover:opacity-100 transition-opacity border border-white/30 px-6 py-3 rounded-full text-xs tracking-widest hover:bg-rose-900/60 hover:border-rose-500/60 hover:text-rose-200 flex items-center gap-2"><RefreshCw size={14}/> 輪迴轉世 (刪檔)</button>
-            </div>
-          </footer>
+            {activeTab === 'companions' && (
+              <div className="space-y-8 animate-pop-in pb-10">
+                <div className="bg-pink-950/30 border border-pink-500/30 p-6 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h3 className="text-pink-400 font-black text-lg tracking-widest flex items-center gap-2"><Heart size={20} className="fill-current"/> 仙途伴侶</h3>
+                        <p className="text-white/60 text-xs mt-2 leading-relaxed">道侶解鎖與當前境界息息相關。選擇一位道侶同行，共同斬殺妖獸將提升羈絆，獲得強大增益。<br/>(羈絆階級：初識 1 / 相知 10 / 傾心 50 / 生死相隨 100)</p>
+                    </div>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {COMPANIONS.map(comp => {
+                        const isUnlocked = player.realmIndex >= comp.unlockIdx;
+                        const isActive = player.activeCompanion === comp.id;
+                        const kills = player.companionKills?.[comp.id] || 0;
+                        const tierIdx = getCompanionTier(kills);
+                        const currentBuff = tierIdx >= 0 ? comp.tiers[tierIdx] : 0;
+                        
+                        return isUnlocked ? (
+                            <div key={comp.id} className={`p-6 rounded-2xl border transition-all flex flex-col justify-between ${isActive ? 'bg-pink-900/40 border-pink-500/50 shadow-[0_0_20px_rgba(244,114,182,0.2)]' : 'bg-black/60 border-white/10'}`}>
+                                <div>
+                                    <div className="flex justify-between items-start mb-4">
+                                        <h4 className="text-white font-black text-xl tracking-widest flex items-center gap-2">
+                                            {comp.name} 
+                                            {isActive && <span className="text-[10px] bg-pink-500 text-white px-2 py-0.5 rounded-full uppercase tracking-widest ml-2">同行中</span>}
+                                        </h4>
+                                        <div className="text-right">
+                                            <div className="text-pink-400 font-mono text-sm">{kills} 斬</div>
+                                            <div className="text-white/40 text-[10px] uppercase tracking-widest mt-1">{tierIdx >= 0 ? COMPANION_TIERS[tierIdx].name : '未結緣'}</div>
+                                        </div>
+                                    </div>
+                                    <p className="text-white/70 text-xs italic leading-relaxed mb-6 h-12">"{comp.desc}"</p>
+                                    
+                                    <div className="bg-black/40 rounded-xl p-4 border border-white/5 mb-6">
+                                        <div className="text-pink-300 text-xs font-black mb-2 flex items-center gap-2">【{comp.buffName}】</div>
+                                        <div className="flex justify-between items-end">
+                                            <span className="text-white/60 text-xs">{comp.buffDesc}</span>
+                                            <span className="text-white font-mono text-base font-black">+{comp.buffType === 'luck_floor' ? currentBuff.toFixed(2) : `${currentBuff}%`}</span>
+                                        </div>
+                                        <div className="flex gap-1 mt-3">
+                                            {comp.tiers.map((t, idx) => (
+                                                <div key={idx} className={`h-1.5 flex-1 rounded-full ${idx <= tierIdx ? 'bg-pink-500' : 'bg-white/10'}`}></div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                {!isActive ? (
+                                    <button 
+                                      onClick={() => setPlayer(p => ({ ...p, activeCompanion: comp.id }))}
+                                      className="w-full py-4 rounded-xl border border-white/20 text-xs font-black text-white/70 hover:bg-pink-600 hover:border-pink-400 hover:text-white transition-all mt-4">
+                                      邀其同行
+                                    </button>
+                                ) : (
+                                    <button 
+                                      onClick={() => setPlayer(p => ({ ...p, activeCompanion: null }))}
+                                      className="w-full py-4 rounded-xl border border-pink-500/30 text-xs font-black text-pink-400 hover:bg-pink-950 hover:text-pink-300 transition-all mt-4">
+                                      請其回府 (取消同行)
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <div key={comp.id} className="p-6 rounded-2xl border-2 border-dashed border-pink-900/30 bg-black/50 flex flex-col items-center justify-center min-h-[16rem] opacity-50">
+                                <EyeOff size={40} className="text-pink-900/50 mb-5"/>
+                                <p className="text-xs font-black text-pink-700/50 uppercase tracking-[0.3em]">仙影朦朧</p>
+                                <div className="text-pink-900/40 text-[10px] mt-4 font-mono border border-pink-900/30 px-3 py-1 rounded-full">需突破至【{REALMS[comp.unlockIdx].name}】</div>
+                            </div>
+                        );
+                    })}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'forge' && (
+              <div className="space-y-14 animate-pop-in pb-10">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                  <div className="p-8 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 min-h-[16rem] flex flex-col justify-between group shadow-xl shadow-emerald-900/20">
+                    <div><h3 className="text-emerald-400 font-black text-xl tracking-tighter uppercase flex items-center gap-3"><Pill size={24}/> 煉製回春丹</h3><p className="text-white/70 text-sm mt-3 italic tracking-widest leading-relaxed">恢復 50% 最大氣血。</p></div>
+                    <button onClick={handleHeal} disabled={player.coins < healCost || player.vitality >= maxVitality} className="w-full py-5 bg-emerald-900/80 hover:bg-emerald-600 text-emerald-100 rounded-xl font-black uppercase text-sm transition-all disabled:opacity-40 border border-emerald-500/50 mt-6">{player.vitality >= maxVitality ? '氣血已滿' : `煉丹 (${formatNumber(healCost)} 靈石)`}</button>
+                  </div>
+                  <div className="p-8 rounded-2xl bg-white/10 border border-white/20 min-h-[16rem] flex flex-col justify-between group">
+                      <div><h3 className="text-white font-black text-xl tracking-tighter uppercase">凝練劍光</h3><p className="text-white/60 text-sm mt-3 italic tracking-widest">基礎戰力 +100。<br/>(花費指數提升，無極限)</p></div>
+                      <button onClick={() => { if(player.coins >= upgCostAtk) setPlayer(p => ({ ...p, coins: p.coins - upgCostAtk, baseCombat: p.baseCombat + 100 })) }} disabled={player.coins < upgCostAtk} className="w-full py-5 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl font-black uppercase text-sm tracking-widest shadow-xl transition-all disabled:opacity-30 mt-6">祭煉 ({formatNumber(upgCostAtk)} 靈石)</button>
+                  </div>
+                  <div className="p-8 rounded-2xl bg-white/10 border border-white/20 min-h-[16rem] flex flex-col justify-between group">
+                      <div><h3 className="text-white font-black text-xl tracking-tighter uppercase">熬煉肉身</h3><p className="text-white/60 text-sm mt-3 italic tracking-widest">氣血上限 +100。<br/>(花費指數提升，無極限)</p></div>
+                      <button onClick={() => { if(player.coins >= upgCostHp) setPlayer(p => ({ ...p, coins: p.coins - upgCostHp, baseMaxVitality: p.baseMaxVitality + 100, vitality: p.vitality + 100 })) }} disabled={player.coins < upgCostHp} className="w-full py-5 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl font-black uppercase text-sm tracking-widest shadow-xl transition-all disabled:opacity-30 mt-6">熬煉 ({formatNumber(upgCostHp)} 靈石)</button>
+                  </div>
+                </div>
+                <div className="space-y-6">
+                   <h3 className="text-white/60 text-sm font-black uppercase border-b border-white/20 pb-4">陣法樞紐 (無上限)</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                      <div className="bg-white/10 p-8 rounded-2xl border border-white/20 min-h-[14rem] flex flex-col justify-between shadow-inner"><div className="flex justify-between text-base text-white font-bold drop-shadow-md">聚靈大陣 <span className="opacity-60 font-mono">Lv.{player.arrays?.qi||0}</span></div><p className="text-sm opacity-70 italic mt-2">靈氣獲取提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayQiCost) setPlayer(p => ({ ...p, coins: p.coins - arrayQiCost, arrays: {...p.arrays, qi: (p.arrays?.qi||0)+1} })) }} disabled={player.coins < arrayQiCost} className="w-full py-4 mt-6 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">升級 ({formatNumber(arrayQiCost)} 靈石)</button></div>
+                      <div className="bg-white/10 p-8 rounded-2xl border border-white/20 min-h-[14rem] flex flex-col justify-between shadow-inner"><div className="flex justify-between text-base text-white font-bold drop-shadow-md">顛倒五行陣 <span className="opacity-60 font-mono">Lv.{player.arrays?.def||0}</span></div><p className="text-sm opacity-70 italic text-white mt-2">全域減傷提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-4 mt-6 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">升級 ({formatNumber(arrayDefCost)} 靈石)</button></div>
+                   </div>
+                </div>
+              </div>
+            )}
+            {activeTab === 'artifacts' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 animate-pop-in pb-10">
+                {ARTIFACT_POOL.map(art => {
+                  const unlocked = (player.artifacts || []).includes(art.id), lvl = player.artifactLvls?.[art.id]||0, cost = Math.floor(RARITY_BASE_COST[art.rarity]*Math.pow(1.8,lvl)*forgeDiscount);
+                  return unlocked ? (
+                    <div key={art.id} className={`p-8 rounded-2xl border bg-black/60 border-white/20 flex flex-col justify-between shadow-inner min-h-[16rem]`}><div className="z-10"><h4 className={`font-black text-xl ${RARITY[art.rarity].color} tracking-tighter drop-shadow-md`}>{art.name} <span className="opacity-60 text-xs float-right font-mono text-white mt-1">Lv.{lvl}</span></h4><p className="text-sm text-white/70 mt-5 italic leading-relaxed uppercase tracking-widest">「{art.desc}」</p></div>{lvl < 5 && <button onClick={()=>handleUpgradeArtifact(art.id, art.rarity)} disabled={player.coins < cost} className="mt-8 w-full py-4 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black transition-all border border-white/20 disabled:opacity-30">血煉 ({formatNumber(cost)} 靈石)</button>}</div>
+                  ) : <div key={art.id} className="p-8 rounded-2xl border-2 border-dashed border-white/10 bg-black/50 flex flex-col items-center justify-center opacity-50 min-h-[16rem]"><EyeOff size={40} className="text-white/30 mb-5"/><p className="text-xs font-black text-white/50 uppercase tracking-[0.3em]">寶光內斂：{RARITY[art.rarity].name}</p></div>;
+                })}
+              </div>
+            )}
+            {activeTab === 'insights' && (
+              <div className="h-[500px] md:h-[600px] animate-pop-in bg-black/60 rounded-2xl border border-white/20 shadow-inner p-6 md:p-12 flex flex-col">
+                <div className="flex justify-between items-center mb-10 opacity-70 text-xs font-black uppercase tracking-[0.4em] text-white"><span className="flex items-center gap-3"><Activity size={16}/> 識海投影 (修煉進程)</span><span>累計時間: {formatNumber(Math.floor((player.totalFocusTime || 0)/60))}m</span></div>
+                <div className="flex-1 relative border-l-2 border-b-2 border-white/20"><InsightsChart /></div>
+              </div>
+            )}
+            {activeTab === 'log' && (
+              <div className="space-y-4 md:space-y-6 animate-pop-in pb-10">
+                {(player.logs || []).map((e, i) => (<div key={i} className={`p-5 md:p-6 rounded-xl border border-white/20 text-xs md:text-sm leading-relaxed transition-all ${i===0?'bg-white/20 text-white shadow-xl animate-pulse':'bg-black/60 border-white/10 text-white/60'}`}>{e}</div>))}
+              </div>
+            )}
+          </div>
         </div>
-      )}
+
+        <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4 w-full">
+          
+          <div className="w-full max-w-2xl grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 mx-auto">
+             <button onClick={() => setShowTitles(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-amber-400 hover:text-amber-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest relative">
+               <Award size={16}/> <span className="whitespace-nowrap">名號頭銜</span>
+             </button>
+             <button onClick={() => setShowGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+               <HelpCircle size={16}/> <span className="whitespace-nowrap">修行指引</span>
+             </button>
+             <button onClick={() => setShowStatsReport(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+               <BarChart3 size={16}/> <span className="whitespace-nowrap">屬性極限</span>
+             </button>
+             <button onClick={() => setShowRealmGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+               <BookOpen size={16}/> <span className="whitespace-nowrap">境界全覽</span>
+             </button>
+          </div>
+
+          <div className="w-full max-w-2xl mb-8 flex justify-center">
+             <button onClick={() => setShowSaveModal(true)} className="flex items-center justify-center gap-2 text-cyan-400 hover:text-cyan-300 transition-all bg-cyan-950/40 hover:bg-cyan-900/60 py-3 px-6 rounded-full border border-cyan-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(6,182,212,0.15)] font-black tracking-widest">
+               <ScrollText size={16}/> 玉簡傳功 (進度跨裝置同步)
+             </button>
+          </div>
+
+          <p className="leading-relaxed">《凡人修仙傳》原著設定歸作者 忘語 所有</p>
+          <p className="opacity-80 leading-loose">
+            Created by <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 underline transition-all text-white">fb/指數三寶飯</a> 
+            <br className="block sm:hidden mt-2" />
+            <span className="sm:ml-3">with Gemini</span>
+          </p>
+          
+          <div className="flex items-center justify-center gap-4 mt-4">
+              <button onClick={() => setShowChangelog(true)} className="opacity-60 hover:opacity-100 transition-opacity border border-white/30 px-6 py-3 rounded-full text-xs tracking-widest hover:bg-emerald-900/60 hover:border-emerald-500/60 hover:text-emerald-200 flex items-center gap-2"><FileText size={14}/> 天道紀元 (版本紀錄)</button>
+              <button onClick={()=>{if(window.confirm('【天道輪迴】\n確定要刪除所有進度，重新投胎轉世嗎？\n所有成果將灰飛煙滅。')) { localStorage.clear(); window.location.reload(); }}} className="opacity-60 hover:opacity-100 transition-opacity border border-white/30 px-6 py-3 rounded-full text-xs tracking-widest hover:bg-rose-900/60 hover:border-rose-500/60 hover:text-rose-200 flex items-center gap-2"><RefreshCw size={14}/> 輪迴轉世 (刪檔)</button>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }
