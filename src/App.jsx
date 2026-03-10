@@ -1235,10 +1235,10 @@ let compLog = '';
                 }
                 
                 const quoteMsg = FEEDBACK_TEXTS.boss[Math.floor(Math.random() * FEEDBACK_TEXTS.boss.length)];
-                // 組合突破與結緣資訊
+                // 組合突破與結緣資訊 (修正：確保抽取的是字串，而非陣列)
                 setCelebration({ 
                     name: REALMS[nextRealm].name, 
-                    quote: newCompanion ? `「${newCompanion.quotes[0]}」` : quoteMsg, 
+                    quote: newCompanion ? `「${newCompanion.quotes[0][Math.floor(Math.random() * newCompanion.quotes[0].length)]}」` : quoteMsg, 
                     drops: collectedDrops 
                 });
                 killLog = `☄️ 【突破瓶頸】晉升至${REALMS[nextRealm].name}！` + killLog;
