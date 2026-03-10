@@ -1404,34 +1404,34 @@ export default function App() {
                 <button onClick={() => setGuideTab('tips')} className={`flex-1 py-4 text-xs md:text-sm font-bold rounded uppercase tracking-widest transition-all ${guideTab === 'tips' ? 'bg-amber-900/30 text-amber-500 shadow-inner' : 'text-amber-500/30 hover:text-amber-400/80'}`}>機制與祕訣 (TIPS)</button>
               </div>
 
-              {guideTab === 'rules' ? (
+{guideTab === 'rules' ? (
                 <div className="space-y-4 text-sm leading-relaxed animate-pop-in">
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-emerald-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-emerald-400 text-base flex items-center gap-2 font-black"><Play size={18}/> 運轉周天 (專注蓄力)</h3>
-                     <p className="text-white/70 font-bold">點擊開始計時。完成後結算傷害並獲取靈氣機緣。支援離線運算，切換視窗不影響進度。</p>
+                     <h3 className="text-emerald-400 text-base flex items-center gap-2 font-black"><Play size={18}/> 禪定運轉 (專注蓄力)</h3>
+                     <p className="text-white/70 font-bold">點擊開始計時即進入「禪定模式」，隱藏所有雜念。完成後結算傷害並獲取靈氣機緣。支援離線運算，切換視窗不影響進度。</p>
+                   </section>
+                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-500 flex flex-col gap-2 shadow-inner">
+                     <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Skull size={18}/> 道中妖獸 vs 守關死劫</h3>
+                     <p className="text-white/70 font-bold">修為未滿時，遭遇的是隨機「道中妖獸」；修為達 100% 將引動該境界的專屬「死劫 (Boss)」。若在死劫中重傷，修為將被扣除並<span className="text-rose-400">跌落突破門檻</span>，死劫消散，必須重新積累修為方可再次挑戰。</p>
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-400 flex flex-col gap-2 shadow-inner">
                      <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Sparkles size={18}/> 隨機氣運 (奇遇機制)</h3>
-                     <p className="text-white/70 font-bold">每次專注完成時，有 10% 基礎機率觸發奇遇（受氣運倍率加成）。可能獲得：靈氣翻倍、靈石三倍、或瞬間恢復 30% 氣血的頓悟。</p>
-                   </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Square size={18}/> 妖獸反撲與死亡懲罰</h3>
-                     <p className="text-white/70 font-bold">若專注結算未能擊殺妖獸，將面臨妖獸反撲。防禦與閃避屬性將決定生死。氣血歸零若無「涅槃復活」或「護盾」保護，將損失 20% 當前修為並清空連擊。請適時至洞府「煉製回春丹」。</p>
+                     <p className="text-white/70 font-bold">每次專注完成時，有基礎 10% 機率觸發奇遇（受氣運倍率與專注時長加成）。時長越久，觸發極品奇遇與掉落法寶的機率越高！</p>
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-cyan-400 flex flex-col gap-2 shadow-inner">
                      <h3 className="text-cyan-400 text-base flex items-center gap-2 font-black"><Wind size={18}/> 吐納調息 (休息無懲罰)</h3>
-                     <p className="text-white/70 font-bold">專注後進入 5 分鐘調息。調息結束可恢復大量氣血。若提前結束調息，只會放棄本次回血，【不會】受到反噬懲罰。</p>
+                     <p className="text-white/70 font-bold">專注後進入調息。調息結束可恢復大量氣血。若提前結束調息，只會放棄本次回血，【不會】受到走火入魔的反噬懲罰。</p>
                    </section>
                 </div>
-              ) : (
+) : (
                 <div className="space-y-4 text-sm leading-relaxed animate-pop-in">
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-purple-500 flex flex-col gap-2 shadow-inner">
                      <h3 className="text-purple-400 text-base flex items-center gap-2 font-black"><Activity size={18}/> 屬性溢出轉化 (核心)</h3>
                      <p className="text-white/70 font-bold">天道設有極限，但溢出的屬性不會浪費：<br/>• 閃避率上限 75%，溢出的閃避將以 <span className="text-emerald-400">1 : 0.5</span> 轉化為「連擊增幅上限」。<br/>• 爆擊率上限 95%，溢出的爆擊將以 <span className="text-rose-400">1 : 3</span> 轉化為「爆擊傷害」。</p>
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-cyan-400 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-cyan-400 text-base flex items-center gap-2 font-black"><Sword size={18}/> 劍陣共鳴與護盾</h3>
-                     <p className="text-white/70 font-bold">裝備 2 把以上「劍類」法寶，每把劍額外提升 20% 戰力與連擊上限。擁有「連擊護盾」時，能為你抵擋一次致死打擊或強行收功反噬。</p>
+                     <h3 className="text-cyan-400 text-base flex items-center gap-2 font-black"><Sword size={18}/> 劍陣共鳴 (隱藏收集)</h3>
+                     <p className="text-white/70 font-bold">萬寶樓中共藏有 <span className="text-amber-400">10 把名劍</span>。擁有 2 把以上時觸發劍陣共鳴：每多擁有一把劍，總戰力與連擊上限將額外 <span className="text-emerald-400">+20%</span>（集齊可達 +200% 的逆天加成）。擁有「護盾」時，還能抵擋一次致死打擊。</p>
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-500 flex flex-col gap-2 shadow-inner">
                      <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Compass size={18}/> 連鎖突變 (抽卡機制)</h3>
@@ -1439,7 +1439,7 @@ export default function App() {
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-400 flex flex-col gap-2 shadow-inner">
                      <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Pill size={18}/> 頓悟與丹毒冷卻</h3>
-                     <p className="text-white/70 font-bold">吞服「頓悟丹」可瞬間出關，但不計入生涯專注。吞服後需經歷「真實 1 小時」或「完成一次真實專注」方可化解丹毒。</p>
+                     <p className="text-white/70 font-bold">吞服「頓悟丹」可瞬間出關，但不計入生涯專注次數。吞服後需經歷「真實 1 小時」或「完成一次真實專注」方可化解丹毒。</p>
                    </section>
                 </div>
               )}
