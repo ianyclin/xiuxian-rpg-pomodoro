@@ -2182,10 +2182,8 @@ const handleComplete = (usedPill = false) => {
                  <span className="text-xs text-amber-500 uppercase font-black flex items-center gap-1.5 mb-1"><Pill size={12}/> 頓悟丹</span>
                  <span className="text-base text-amber-500 font-mono font-bold drop-shadow-md">{formatNumber(player.epiphanyPills || 0)}</span>
                </div>
-
             </div>
           </div>
-          )
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
             <div className="space-y-3 relative z-10">
                 <div className="flex justify-between text-xs uppercase font-black opacity-60 tracking-widest text-white">
@@ -2219,15 +2217,11 @@ const handleComplete = (usedPill = false) => {
              </button>
            ))}
         </div>
-        {/* --- ✨ 插入點：天機推演橫幅 --- */}
-{combatPrediction && !isActive && (
-  <div key={combatPrediction.status} className={`mb-8 px-4 py-3 rounded-xl border ${combatPrediction.bg} ${combatPrediction.border} flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-[11px] sm:text-xs md:text-sm font-black tracking-widest ${combatPrediction.color} max-w-xl mx-auto shadow-inner animate-pop-in text-center leading-relaxed`}>
-     <Eye size={16} className="fill-current opacity-80 animate-pulse shrink-0"/>
-     <span>{combatPrediction.text}</span>
-  </div>
-)}
-             <Eye size={18} className="fill-current opacity-80 animate-pulse"/>
-             {combatPrediction.text}
+{/* --- ✨ 插入點：天機推演橫幅 --- */}
+        {combatPrediction && !isActive && (
+          <div key={combatPrediction.status} className={`mb-8 px-4 py-3 rounded-xl border ${combatPrediction.bg} ${combatPrediction.border} flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-[11px] sm:text-xs md:text-sm font-black tracking-widest ${combatPrediction.color} max-w-xl mx-auto shadow-inner animate-pop-in text-center leading-relaxed`}>
+             <Eye size={16} className="fill-current opacity-80 animate-pulse shrink-0"/>
+             <span>{combatPrediction.text}</span>
           </div>
         )}
         {/* ------------------------------ */}
