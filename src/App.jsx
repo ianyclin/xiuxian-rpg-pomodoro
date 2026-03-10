@@ -286,14 +286,46 @@ const TITLE_DATA = [
 ];
 
 const COMPANIONS = [
-  { id: 'c_chen', name: '陳巧倩', unlockIdx: 4, desc: '「韓師弟，你真的不明白我的心意嗎？」落雲宗師姐，對你一往情深，至死未嫁。', buffType: 'atk', buffName: '痴情劍意', buffDesc: '總戰力加成', tiers: [5, 10, 20, 30] },
-  { id: 'c_dong', name: '董萱兒', unlockIdx: 6, desc: '「師兄，你看看萱兒嘛。」紅拂仙子之女，天生媚骨，後轉修魔道。', buffType: 'evade', buffName: '幻媚之身', buffDesc: '閃避率提升', tiers: [2, 4, 8, 15] },
-  { id: 'c_nangong', name: '南宮婉', unlockIdx: 9, desc: '「你這登徒子...」掩月宗長老，血色禁地結下不解之緣，唯一的正室妻子。', buffType: 'qi', buffName: '素女輪迴', buffDesc: '靈氣獲取倍率', tiers: [8, 15, 30, 50] },
-  { id: 'c_yuan', name: '元瑤', unlockIdx: 12, desc: '「韓兄大恩，元瑤沒齒難忘。」為救師姐不惜修煉陰陽輪迴訣，重情重義。', buffType: 'hp', buffName: '陰陽秘術', buffDesc: '氣血上限加成', tiers: [5, 10, 20, 30] },
-  { id: 'c_ziling', name: '紫靈仙子', unlockIdx: 14, desc: '「韓兄，亂星海一別，別來無恙？」妙音門門主，亂星海第一美女，紅顏知己。', buffType: 'luck_floor', buffName: '妙音氣運', buffDesc: '氣運保底加成', tiers: [0.05, 0.10, 0.20, 0.30] },
-  { id: 'c_yinyue', name: '銀月', unlockIdx: 17, desc: '「主人，銀月會一直陪著你。」靈界銀狼一族，化為器靈長伴左右，共患難。', buffType: 'crit_dmg', buffName: '天狼神擊', buffDesc: '爆擊傷害提升', tiers: [10, 20, 40, 60] },
-  { id: 'c_bingfeng', name: '冰鳳', unlockIdx: 21, desc: '「韓道友，你我聯手撕裂空間如何？」冰海之主，掌握空間法則的十級妖修。', buffType: 'streak_cap', buffName: '破空靈羽', buffDesc: '連擊增傷上限', tiers: [10, 20, 40, 60] },
-  { id: 'c_baohua', name: '寶花始祖', unlockIdx: 25, desc: '「你區區一名人族大乘，竟敢直視本座？」魔界三大始祖之一，與你亦敵亦友。', buffType: 'def', buffName: '玄天聖樹', buffDesc: '護甲防禦加成', tiers: [5, 10, 20, 30] }
+  { 
+    id: 'c_chen', name: '陳巧倩', unlockIdx: 4, desc: '「韓師弟，你真的不明白我的心意嗎？」落雲宗師姐，對你一往情深，至死未嫁。', 
+    buffType: 'atk', buffName: '痴情劍意', buffDesc: '總戰力加成', tiers: [5, 10, 20, 30],
+    quotes: ['韓師弟，你修煉如此刻苦，也要注意保重身體呀...', '只要能默默為你護法，巧倩便心滿意足了。', '師弟的背影，巧倩這輩子都不會忘記。'] 
+  },
+  { 
+    id: 'c_dong', name: '董萱兒', unlockIdx: 6, desc: '「師兄，你看看萱兒嘛。」紅拂仙子之女，天生媚骨，後轉修魔道。', 
+    buffType: 'evade', buffName: '幻媚之身', buffDesc: '閃避率提升', tiers: [2, 4, 8, 15],
+    quotes: ['師兄~ 你都修煉這麼久了，理理萱兒嘛！', '哼，這點小妖獸，哪用得著師兄親自動手？', '師兄的修為又精進了，萱兒可不能被落下呢。'] 
+  },
+  { 
+    id: 'c_nangong', name: '南宮婉', unlockIdx: 9, desc: '「你這登徒子...」掩月宗長老，血色禁地結下不解之緣，唯一的正室妻子。', 
+    buffType: 'qi', buffName: '素女輪迴', buffDesc: '靈氣獲取倍率', tiers: [8, 15, 30, 50],
+    quotes: ['夫君，修仙路阻且長，切莫急於求成。', '你這冤家，一閉關就是這麼久，也不怕我擔心。', '有我在旁為你護法，夫君大可安心衝關。'] 
+  },
+  { 
+    id: 'c_yuan', name: '元瑤', unlockIdx: 12, desc: '「韓兄大恩，元瑤沒齒難忘。」為救師姐不惜修煉陰陽輪迴訣，重情重義。', 
+    buffType: 'hp', buffName: '陰陽秘術', buffDesc: '氣血上限加成', tiers: [5, 10, 20, 30],
+    quotes: ['韓兄大恩，元瑤無以為報，唯有為你護法一生。', '韓兄的法力越發深不可測了，元瑤定會努力跟上。', '只要能留在韓兄身邊，元瑤便心甘情願。'] 
+  },
+  { 
+    id: 'c_ziling', name: '紫靈仙子', unlockIdx: 14, desc: '「韓兄，亂星海一別，別來無恙？」妙音門門主，亂星海第一美女，紅顏知己。', 
+    buffType: 'luck_floor', buffName: '妙音氣運', buffDesc: '氣運保底加成', tiers: [0.05, 0.10, 0.20, 0.30],
+    quotes: ['韓兄，你我聯手，這修仙界哪裡去不得？', '看著韓兄修煉的樣子，紫靈竟也有些痴了...', '這點機緣，比起韓兄的安危，又算得了什麼？'] 
+  },
+  { 
+    id: 'c_yinyue', name: '銀月', unlockIdx: 17, desc: '「主人，銀月會一直陪著你。」靈界銀狼一族，化為器靈長伴左右，共患難。', 
+    buffType: 'crit_dmg', buffName: '天狼神擊', buffDesc: '爆擊傷害提升', tiers: [10, 20, 40, 60],
+    quotes: ['主人！銀月為您護法，沒有任何宵小能靠近！', '嘻嘻，主人的神通又變強了，銀月也跟著沾光呢。', '無論主人去哪裡，銀月都會化為器靈，寸步不離。'] 
+  },
+  { 
+    id: 'c_bingfeng', name: '冰鳳', unlockIdx: 21, desc: '「韓道友，你我聯手撕裂空間如何？」冰海之主，掌握空間法則的十級妖修。', 
+    buffType: 'streak_cap', buffName: '破空靈羽', buffDesc: '連擊增傷上限', tiers: [10, 20, 40, 60],
+    quotes: ['哼，你這人族修士，修煉起來倒像個瘋子。', '別誤會，本宮為你護法，只是為了我們能早日飛升罷了。', '你的空間造詣又提升了？看來本宮也不能懈怠。'] 
+  },
+  { 
+    id: 'c_baohua', name: '寶花始祖', unlockIdx: 25, desc: '「你區區一名人族大乘，竟敢直視本座？」魔界三大始祖之一，與你亦敵亦友。', 
+    buffType: 'def', buffName: '玄天聖樹', buffDesc: '護甲防禦加成', tiers: [5, 10, 20, 30],
+    quotes: ['能讓本座為你護法，你區區一個人族也算死而無憾了。', '你的法則之力越發純熟了，不愧是本座看中的盟友。', '咯咯，這點程度的天劫，在本座眼裡不過是兒戲罷了。'] 
+  }
 ];
 
 // 道侶門檻改為時間制：相伴分鐘(載)
@@ -961,7 +993,7 @@ export default function App() {
         }
       }
 
-      let compLog = '';
+let compLog = '';
       if (player.activeCompanion) {
           const compId = player.activeCompanion;
           const oldExp = nextCompanionKills[compId] || 0; 
@@ -973,20 +1005,29 @@ export default function App() {
           const oldTier = getCompanionTier(oldExp);
           const newTier = getCompanionTier(newExp);
           
+          // 隨機抽取一句道侶專屬對話
+          const randomQuote = compData.quotes[Math.floor(Math.random() * compData.quotes.length)];
+          
           if (newTier > oldTier) {
+              // 突破羈絆的系統隨機描述 (移除多餘的符號，交由前綴統一處理)
               const tierMsgs = [
-                  ` 🌸 歷經歲月洗禮，你與【${compData.name}】的羈絆產生質變，達到「${COMPANION_TIERS[newTier].name}」！`,
-                  ` 🌸 仙途崎嶇，【${compData.name}】對你的心意越發堅定，羈絆突破至「${COMPANION_TIERS[newTier].name}」！`,
-                  ` 🌸 朝夕相處之下，【${compData.name}】眼中波光流轉，你們的羈絆達到了「${COMPANION_TIERS[newTier].name}」！`
+                  `歷經歲月洗禮，你與【${compData.name}】的羈絆產生質變，達到「${COMPANION_TIERS[newTier].name}」！`,
+                  `仙途崎嶇，【${compData.name}】對你的心意越發堅定，羈絆突破至「${COMPANION_TIERS[newTier].name}」！`,
+                  `朝夕相處之下，【${compData.name}】眼中波光流轉，你們的羈絆達到了「${COMPANION_TIERS[newTier].name}」！`
               ];
-              compLog = tierMsgs[Math.floor(Math.random() * tierMsgs.length)];
+              const sysMsg = tierMsgs[Math.floor(Math.random() * tierMsgs.length)];
+              // 組合：對話在前，系統描述在後
+              compLog = ` 🌸 【${compData.name}】：「${randomQuote}」 (${sysMsg})`;
           } else {
+              // 日常共修的系統隨機描述
               const normalMsgs = [
-                  ` 🍵 大道漫漫，與【${compData.name}】共修 ${addedExp} 載，彼此氣息越發交融。`,
-                  ` 🍵 歲月無聲，【${compData.name}】為你護法 ${addedExp} 載，默契暗生。`,
-                  ` 🍵 洞中無日月，你與【${compData.name}】論道 ${addedExp} 載，情誼漸深。`
+                  `大道漫漫，與【${compData.name}】共修 ${addedExp} 載，彼此氣息越發交融。`,
+                  `歲月無聲，【${compData.name}】為你護法 ${addedExp} 載，默契暗生。`,
+                  `洞中無日月，你與【${compData.name}】論道 ${addedExp} 載，情誼漸深。`
               ];
-              compLog = normalMsgs[Math.floor(Math.random() * normalMsgs.length)];
+              const sysMsg = normalMsgs[Math.floor(Math.random() * normalMsgs.length)];
+              // 組合：日常使用茶杯圖示
+              compLog = ` 🍵 【${compData.name}】：「${randomQuote}」 (${sysMsg})`;
           }
       }
 
