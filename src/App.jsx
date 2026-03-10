@@ -901,19 +901,22 @@ const pillCooldownRemaining = player.lastPillTime ? Math.max(0, 3600 - Math.floo
     return Math.floor(offense * defense);
   }, [currentCombatPower, critRate, critDmg, maxVitality, dmgTakenPct, evadeRate]);
 
-// 🔮 靜態神識感應：全屬性 + 連擊倍率連動版
+// 🔮 靜態神識感應：精準數值對齊版 (修復白屏與欺詐 Bug)
 const combatPrediction = React.useMemo(() => {
-  if (!monster || !finalStats) return null;
+  if (!monster) return null;
 
-  // 1. 核心算式：將「全屬性面板戰力」乘上「當前連擊倍率」
-  // 這裡確保了你的每一把飛劍、每一本心法、以及你的專注連擊，都算進了天機推演中！
-  const actualCombatPower = finalStats.totalCombat * (comboMultiplier || 1); 
+  // 1. 修復白屏：直接使用 currentCombatPower 
+  // (注意：currentCombatPower 內部已經乘過 comboMultiplier 了，切勿重複乘算)
+  const actualCombatPower = currentCombatPower; 
 
-  // 2. 換算專注時長的保底與極限輸出 (假設 15m=1x, 60m=4x)
-  const minDmg = actualCombatPower * 1; 
-  const maxDmg = actualCombatPower * 4; 
+  // 2. 修復數值欺詐：完全對齊 handleComplete 的 (focusDuration / 1500) 邏輯
+  // 15m = 900s / 1500 = 0.6x
+  // 60m = 3600s / 1500 = 2.4x
+  const minDmg = actualCombatPower * 0.6; 
+  const maxDmg = actualCombatPower * 2.4; 
 
   // --- 1. 極度威脅 (死氣逼人) ---
+  // 如果 60m (2.4x) 全力一擊都打不到怪物 80% 的血
   if (maxDmg < monster.hp * 0.8) {
     return {
       status: 'DANGER',
@@ -927,6 +930,7 @@ const combatPrediction = React.useMemo(() => {
   }
 
   // --- 2. 毫無威脅 (微末之流) ---
+  // 如果只用 15m (0.6x) 的隨手一擊也能秒殺怪物
   if (minDmg >= monster.hp) {
     return {
       status: 'SAFE',
@@ -940,6 +944,7 @@ const combatPrediction = React.useMemo(() => {
   }
 
   // --- 3. 存在變數 (靈壓激盪) ---
+  // 介於 0.6x ~ 2.4x 之間，需要玩家自行決定時長與祈求爆擊
   return {
     status: 'UNKNOWN',
     text: "靈壓激盪",
@@ -950,9 +955,8 @@ const combatPrediction = React.useMemo(() => {
     icon: "☯️"
   };
 
-// ⚠️ 關鍵：依賴陣列加入了 comboMultiplier。
-// 這樣當你完成一個番茄鐘，連擊數上升時，UI 上的威脅感會立刻實時降級！
-}, [monster, finalStats.totalCombat, comboMultiplier]);
+// ⚠️ 依賴陣列改為 currentCombatPower，只要戰力或連擊變動，天機即時刷新
+}, [monster, currentCombatPower]);
 
   const getExportString = () => {
       try {
