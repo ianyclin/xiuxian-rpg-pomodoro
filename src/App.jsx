@@ -845,86 +845,7 @@ const totalSP = useMemo(() => {
     }
     return mult;
   };
-// --- ✨ 屬性溯源陣法：精準拆解每一分戰力來源 ---
-  const getStatBreakdown = React.useCallback((type) => {
-    let breakdown = [];
-    
-    // 1. 基礎功法
-    BASIC_SKILLS.forEach(s => {
-      if (player.basicSkills?.[s.id] > 0 && s.val?.[type]) {
-        breakdown.push({ label: `功法 (${s.name})`, val: s.val[type] * player.basicSkills[s.id] });
-      }
-    });
-    // 2. 機緣祕籍
-    Object.entries(player.secretBooks || {}).forEach(([id, lvl]) => {
-      const book = SECRET_BOOKS.find(x => x.id === id);
-      if (book?.val?.[type]) breakdown.push({ label: `祕籍 (${book.name})`, val: book.val[type] * lvl });
-    });
-    // 3. 裝備法寶
-    (player.artifacts || []).forEach(id => {
-      const item = ARTIFACT_POOL.find(a => a.id === id);
-      if (item?.val?.[type]) breakdown.push({ label: `法寶 (${item.name})`, val: item.val[type] });
-    });
-    // 4. 頭銜稱號
-    if (player.equippedTitle) {
-      const activeTitle = TITLE_DATA.find(t => t.id === player.equippedTitle);
-      if (activeTitle?.val?.[type]) breakdown.push({ label: `稱號 (${activeTitle.name})`, val: activeTitle.val[type] });
-    }
-    // 5. 劍陣共鳴
-    if (type === 'atk' || type === 'streak_cap') {
-      const swordCount = (player.artifacts || []).filter(id => ARTIFACT_POOL.find(a => a.id === id)?.tags?.includes('sword')).length;
-      if (swordCount >= 2) breakdown.push({ label: `劍陣共鳴 (${swordCount}把劍)`, val: 0.2 * swordCount });
-    }
-    // 6. 陣法加持
-    if (type === 'qi' && (player.arrays?.qi || 0)) breakdown.push({ label: `陣法 (聚靈大陣)`, val: player.arrays.qi * 0.05 });
-    if (type === 'def' && (player.arrays?.def || 0)) breakdown.push({ label: `陣法 (顛倒五行)`, val: player.arrays.def * 0.05 });
-    // 7. 道侶護法
-    if (player.activeCompanion) {
-      const comp = COMPANIONS.find(c => c.id === player.activeCompanion);
-      if (comp && comp.buffType === type) {
-        const exp = player.companionKills?.[comp.id] || 0;
-        const tierIdx = getCompanionTier(exp);
-        if (tierIdx >= 0) breakdown.push({ label: `道侶 (${comp.name})`, val: type === 'luck_floor' ? comp.tiers[tierIdx] : comp.tiers[tierIdx] / 100 });
-      }
-    }
-    // 8. 天道氣運微加成 (隱藏屬性)
-    if (type === 'crit' && luckCritBonus > 0) breakdown.push({ label: `天道庇護 (氣運溢出)`, val: luckCritBonus });
-    if (type === 'evade' && luckEvadeBonus > 0) breakdown.push({ label: `天道庇護 (氣運溢出)`, val: luckEvadeBonus });
-    if (type === 'revive' && luckReviveBonus > 0) breakdown.push({ label: `天道庇護 (氣運溢出)`, val: luckReviveBonus });
 
-    return breakdown;
-  }, [player, luckCritBonus, luckEvadeBonus, luckReviveBonus]);
-
-  // --- ✨ UI 渲染樞紐：帶有透視鏡效果的數據行 ---
-  const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
-    const breakdown = getStatBreakdown(type);
-    return (
-      <div className="group relative border-b border-white/5 py-2">
-        <div className="flex justify-between text-sm items-center cursor-help">
-          <span className="text-slate-300 font-bold flex flex-col">
-             <span className="border-b border-dashed border-white/30 pb-0.5 inline-block w-fit">{title}</span>
-             {subtext && <span className="text-[10px] text-white/40 font-mono mt-1">{subtext}</span>}
-          </span>
-          <span className={`${colorClass} font-mono font-black text-base`}>{displayValue}</span>
-        </div>
-        
-        {/* 滑鼠移入或點擊時顯示的詳細拆解 */}
-        {breakdown.length > 0 && (
-          <div className="hidden group-hover:block mt-2 p-3 rounded-lg bg-black/80 border border-white/10 text-xs text-white/70 space-y-1.5 animate-pop-in shadow-xl absolute z-50 w-full left-0 top-full">
-            <div className="flex justify-between text-white/40 mb-2 border-b border-white/10 pb-1">
-               <span>來源拆解</span><span>加成數值</span>
-            </div>
-            {breakdown.map((b, i) => (
-              <div key={i} className="flex justify-between items-center">
-                <span className="font-bold">{b.label}</span>
-                <span className={colorClass}>+{displayValue.includes('x') ? b.val.toFixed(2) : (b.val * 100).toFixed(1) + '%'}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
 const currentRealmData = REALMS[player.realmIndex];
   const activeColorClass = REALM_COLORS[currentRealmData.color] || REALM_COLORS.slate;
 
@@ -1759,7 +1680,89 @@ const handleComplete = (usedPill = false) => {
       return () => { clearInterval(interval); document.removeEventListener('visibilitychange', syncTime); };
     }
   }, [isActive, targetEndTime, showGiveUpWarning]);
+// ==========================================
+      // ✨ 屬性溯源陣法與透視鏡 (放在 InsightsChart 之前最安全)
+      // ==========================================
+      const getStatBreakdown = React.useCallback((type) => {
+        let breakdown = [];
+        
+        // 1. 基礎功法
+        BASIC_SKILLS.forEach(s => {
+          if (player.basicSkills?.[s.id] > 0 && s.val?.[type]) {
+            breakdown.push({ label: `功法 (${s.name})`, val: s.val[type] * player.basicSkills[s.id] });
+          }
+        });
+        // 2. 機緣祕籍
+        Object.entries(player.secretBooks || {}).forEach(([id, lvl]) => {
+          const book = SECRET_BOOKS.find(x => x.id === id);
+          if (book?.val?.[type]) breakdown.push({ label: `祕籍 (${book.name})`, val: book.val[type] * lvl });
+        });
+        // 3. 裝備法寶
+        (player.artifacts || []).forEach(id => {
+          const item = ARTIFACT_POOL.find(a => a.id === id);
+          if (item?.val?.[type]) breakdown.push({ label: `法寶 (${item.name})`, val: item.val[type] });
+        });
+        // 4. 頭銜稱號
+        if (player.equippedTitle) {
+          const activeTitle = TITLE_DATA.find(t => t.id === player.equippedTitle);
+          if (activeTitle?.val?.[type]) breakdown.push({ label: `稱號 (${activeTitle.name})`, val: activeTitle.val[type] });
+        }
+        // 5. 劍陣共鳴
+        if (type === 'atk' || type === 'streak_cap') {
+          const swordCount = (player.artifacts || []).filter(id => ARTIFACT_POOL.find(a => a.id === id)?.tags?.includes('sword')).length;
+          if (swordCount >= 2) breakdown.push({ label: `劍陣共鳴 (${swordCount}把劍)`, val: 0.2 * swordCount });
+        }
+        // 6. 陣法加持
+        if (type === 'qi' && (player.arrays?.qi || 0)) breakdown.push({ label: `陣法 (聚靈大陣)`, val: player.arrays.qi * 0.05 });
+        if (type === 'def' && (player.arrays?.def || 0)) breakdown.push({ label: `陣法 (顛倒五行)`, val: player.arrays.def * 0.05 });
+        // 7. 道侶護法
+        if (player.activeCompanion) {
+          const comp = COMPANIONS.find(c => c.id === player.activeCompanion);
+          if (comp && comp.buffType === type) {
+            const exp = player.companionKills?.[comp.id] || 0;
+            const tierIdx = getCompanionTier(exp);
+            if (tierIdx >= 0) breakdown.push({ label: `道侶 (${comp.name})`, val: type === 'luck_floor' ? comp.tiers[tierIdx] : comp.tiers[tierIdx] / 100 });
+          }
+        }
+        // 8. 天道氣運微加成 (隱藏屬性)
+        if (type === 'crit' && luckCritBonus > 0) breakdown.push({ label: `天道庇護 (氣運溢出)`, val: luckCritBonus });
+        if (type === 'evade' && luckEvadeBonus > 0) breakdown.push({ label: `天道庇護 (氣運溢出)`, val: luckEvadeBonus });
+        if (type === 'revive' && luckReviveBonus > 0) breakdown.push({ label: `天道庇護 (氣運溢出)`, val: luckReviveBonus });
 
+        return breakdown;
+      }, [player, luckCritBonus, luckEvadeBonus, luckReviveBonus]);
+
+      const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
+        const breakdown = getStatBreakdown(type);
+        return (
+          <div className="group relative border-b border-white/5 py-2">
+            <div className="flex justify-between text-sm items-center cursor-help">
+              <span className="text-slate-300 font-bold flex flex-col">
+                 <span className="border-b border-dashed border-white/30 pb-0.5 inline-block w-fit">{title}</span>
+                 {subtext && <span className="text-[10px] text-white/40 font-mono mt-1">{subtext}</span>}
+              </span>
+              <span className={`${colorClass} font-mono font-black text-base`}>{displayValue}</span>
+            </div>
+            
+            {breakdown.length > 0 && (
+              <div className="hidden group-hover:block mt-2 p-3 rounded-lg bg-black/80 border border-white/10 text-xs text-white/70 space-y-1.5 animate-pop-in shadow-xl absolute z-50 w-full left-0 top-full">
+                <div className="flex justify-between text-white/40 mb-2 border-b border-white/10 pb-1">
+                   <span>來源拆解</span><span>加成數值</span>
+                </div>
+                {breakdown.map((b, i) => (
+                  <div key={i} className="flex justify-between items-center">
+                    <span className="font-bold">{b.label}</span>
+                    <span className={colorClass}>+{displayValue.includes('x') ? b.val.toFixed(2) : (b.val * 100).toFixed(1) + '%'}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      // 你的舊代碼在這裡
+      const InsightsChart = () => {
   const InsightsChart = () => {
     const data = player.history || [];
     if (data.length < 2) return <div className="h-full flex items-center justify-center text-white/10 uppercase tracking-widest font-bold text-xs">識海未成，尚無投影</div>;
@@ -2077,7 +2080,7 @@ const handleComplete = (usedPill = false) => {
         </div>
       )}
 
-      {showStatsReport && (
+{showStatsReport && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-3xl bg-[#0a0a0a] p-4 sm:p-6 md:p-10 rounded-2xl border border-cyan-900/50 shadow-2xl flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4 flex-shrink-0">
@@ -2086,7 +2089,7 @@ const handleComplete = (usedPill = false) => {
             </div>
             
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-4">
-<div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 pb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 pb-8">
                 
                 {/* --- 基礎倍率區 --- */}
                 <div className="space-y-2">
@@ -2123,8 +2126,6 @@ const handleComplete = (usedPill = false) => {
                   {renderStatRow('真靈吸血比例', 'lifesteal', `${((getMultiplier('lifesteal') - 1) * 100).toFixed(1)}%`, '(爆擊時 30% 機率觸發)', 'text-rose-400')}
                   {renderStatRow('休息回血比例', 'heal_bonus', `${(healPct * 100).toFixed(1)}%`, '(極限 80%)', 'text-emerald-400')}
                 </div>
-
-              </div>
 
               </div>
             </div>
