@@ -30,6 +30,15 @@ const database = getDatabase(app);
 
 const CHANGELOG_DATA = [
   {
+    version: "v2.8.0",
+    title: "禪定模式 (Zen Mode)",
+    desc: "大道至簡，專注如一。",
+    changes: [
+      "實裝【禪定模式】：一旦開始運轉周天，所有與當前專注無關的境界、法寶、狀態將全數隱藏。",
+      "優化【視覺置中】：螢幕將只剩下最純粹的計時器與陣眼，幫助道友心無旁騖地衝擊瓶頸。"
+    ]
+  },
+  {
     version: "v2.7.0",
     title: "天道命格與神識勘破",
     desc: "天機不可洩漏，命數自有定論。",
@@ -46,16 +55,6 @@ const CHANGELOG_DATA = [
     changes: [
       "實裝【雙層排序法則】：法寶庫與功法祕籍現在會自動將「已解鎖」的項目強制置頂。",
       "優化【品階降序】：同為解鎖或未解鎖的法寶，將嚴格按照「造化至凡品」的高低順序排列，方便檢視底蘊。"
-    ]
-  },
-  {
-    version: "v2.5.0",
-    title: "萬寶擴編與機率突變",
-    desc: "上古遺寶大量現世，天地法則重新洗牌。",
-    changes: [
-      "重構【法寶機制】：拔除法寶升級系統，獲取即為完全體，基礎數值大幅提升。",
-      "擴編【萬寶圖鑑】：法寶總數擴充至 85 件，嚴格對標原著法器至造化至寶階級。",
-      "實裝【連鎖突變演算法】：抽滿該階級圖鑑時，80%轉化為靈石，20%機率引發突變躍升至下一階級。"
     ]
   }
 ];
@@ -1186,13 +1185,15 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-colors duration-300 pt-10
+    // 修改 1：主容器動態切換排版。專注時使用 justify-center 完美置中，並移除 top padding。
+    <div className={`min-h-screen text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-colors duration-300 ${isActive ? 'justify-center py-0' : 'pt-10'}
       ${isCollapsing ? 'bg-red-950/80 animate-shake' : 
         isKilling ? 'bg-emerald-950/60' :
         isCritStrike ? 'bg-rose-900/40' : 'bg-[#020617]'}`}
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1542224566-6e85f2e6772f?auto=format&fit=crop&q=80")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
       
-      <div className="fixed top-0 left-0 w-full bg-emerald-950/90 text-[10px] sm:text-xs py-2 text-center font-black tracking-widest z-[600] border-b border-emerald-500/30 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+      {/* 修改 2：頂部全服數據列。專注時向外推移隱藏。 */}
+      <div className={`fixed top-0 left-0 w-full bg-emerald-950/90 text-[10px] sm:text-xs py-2 text-center font-black tracking-widest z-[600] border-b border-emerald-500/30 flex-wrap items-center justify-center gap-x-6 gap-y-1 shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-transform duration-500 ${isActive ? '-translate-y-full opacity-0 pointer-events-none' : 'flex translate-y-0 opacity-100'}`}>
         <div className="flex items-center gap-1.5 text-emerald-400">
           <Network size={14} className="animate-pulse" />
           <span>三千世界運轉:</span>
@@ -1309,7 +1310,8 @@ export default function App() {
         </div>
       )}
 
-      <div className={`fixed top-14 right-4 z-50 flex items-center gap-2 bg-emerald-900/80 text-emerald-300 px-4 py-2 rounded-full text-xs font-bold border border-emerald-500/30 transition-opacity duration-500 ${saveIndicator ? 'opacity-100' : 'opacity-0'}`}>
+      {/* 修改 3：存檔提示隱藏 */}
+      <div className={`fixed top-14 right-4 z-50 flex items-center gap-2 bg-emerald-900/80 text-emerald-300 px-4 py-2 rounded-full text-xs font-bold border border-emerald-500/30 transition-opacity duration-500 ${saveIndicator && !isActive ? 'opacity-100' : 'opacity-0'} ${isActive ? 'hidden' : ''}`}>
         <Save size={14} className="animate-pulse"/> 天道已同步
       </div>
 
@@ -1538,25 +1540,25 @@ export default function App() {
         </div>
       )}
 
-      <div className="w-full max-w-4xl mb-6 transition-focus z-10 font-bold px-2 md:px-0 mt-10">
+      {/* 修改 4：將原本的頂部與境界列使用 isActive 隱藏 */}
+      <div className={`w-full max-w-4xl mb-6 transition-all duration-500 z-10 font-bold px-2 md:px-0 mt-10 ${isActive ? 'hidden' : 'block'}`}>
         <div className="flex flex-col items-center mb-8 h-10 justify-center">
           <h1 className="text-lg md:text-xl font-extralight tracking-[1.2em] text-white/30 uppercase font-bold drop-shadow-md">
-            {mode === 'focus' ? '凡人修仙專注' : '靈氣反哺 (調息中)'}
+            凡人修仙專注
           </h1>
           <div className="h-px w-48 bg-gradient-to-r from-transparent via-white/20 to-transparent mt-4 opacity-50"></div>
         </div>
         
-        <div className={`bg-slate-900/50 backdrop-blur-3xl p-5 md:p-8 rounded-xl border ${mode === 'break' ? 'border-cyan-500/30' : activeColorClass.border} relative shadow-2xl shadow-inner group transition-all duration-500`}>
+        <div className={`bg-slate-900/50 backdrop-blur-3xl p-5 md:p-8 rounded-xl border activeColorClass.border relative shadow-2xl shadow-inner group transition-all duration-500`}>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-6 mb-6">
             <div className="flex items-center gap-4 w-full md:flex-1 min-w-0">
-               <Shield size={36} className={`${mode === 'break' ? 'text-cyan-400' : activeColorClass.text} flex-shrink-0`}/>
+               <Shield size={36} className={`${activeColorClass.text} flex-shrink-0`}/>
                <div className="flex flex-col justify-center flex-1 min-w-0">
                   <h2 className="text-xl sm:text-2xl font-black tracking-widest uppercase text-white font-bold drop-shadow-lg truncate flex items-center flex-wrap">
                     {player.equippedTitle && <span className="text-amber-400 mr-2 border border-amber-500/50 bg-amber-950/50 px-2 py-0.5 rounded text-[10px] sm:text-xs tracking-widest relative -top-0.5">[{TITLE_DATA.find(t=>t.id===player.equippedTitle)?.name}]</span>}
                     {currentRealmData.name}
                   </h2>
                   
-                  {/* 新增：命格與道侶的左側身分標籤區 */}
                   <div className="flex flex-wrap items-center gap-2 mt-3">
                     <div className={`group relative flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-white/10 bg-black/40 text-[10px] sm:text-xs tracking-widest font-black transition-all ${currentFate.color} cursor-help`}>
                       <Clover size={14} className="fill-current"/> 
@@ -1574,11 +1576,10 @@ export default function App() {
                     )}
                   </div>
                   
-                  <p className={`text-xs md:text-sm leading-tight ${mode === 'break' ? 'text-cyan-300' : activeColorClass.text} font-bold mt-2 opacity-90 italic drop-shadow-md truncate`}>{currentRealmData.desc}</p>
+                  <p className={`text-xs md:text-sm leading-tight ${activeColorClass.text} font-bold mt-2 opacity-90 italic drop-shadow-md truncate`}>{currentRealmData.desc}</p>
                </div>
             </div>
             
-            {/* 修改：右側數據列改為 grid-cols-2 (原本為 grid-cols-3) 並移除氣運格 */}
             <div className="grid grid-cols-2 sm:flex sm:flex-row sm:flex-nowrap justify-start md:justify-end items-start md:items-end gap-x-4 gap-y-4 w-full md:w-auto mt-4 md:mt-0">
                <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-yellow-500 uppercase font-black flex items-center gap-1.5 mb-1"><Coins size={12}/> 靈石</span>
@@ -1613,7 +1614,7 @@ export default function App() {
             </div>
             <div className="space-y-3 relative z-10">
               <div className="flex justify-between text-xs uppercase font-black opacity-60 tracking-widest text-white"><span>修為進度</span><span>{formatNumber(player.qi)} / {formatNumber(player.qiToNext)}</span></div>
-              <div className="h-2.5 bg-black/60 rounded-full overflow-hidden shadow-inner"><div className={`h-full ${mode === 'break' ? 'bg-cyan-500' : activeColorClass.bg} transition-all duration-1000 shadow-[0_0_10px_currentColor]`} style={{ width: `${Math.min(100, (player.qi/player.qiToNext)*100)}%` }}></div></div>
+              <div className="h-2.5 bg-black/60 rounded-full overflow-hidden shadow-inner"><div className={`h-full ${activeColorClass.bg} transition-all duration-1000 shadow-[0_0_10px_currentColor]`} style={{ width: `${Math.min(100, (player.qi/player.qiToNext)*100)}%` }}></div></div>
             </div>
           </div>
         </div>
@@ -1625,9 +1626,11 @@ export default function App() {
         </div>
       </div>
 
-      <div className={`w-full max-w-4xl bg-slate-900/40 backdrop-blur-3xl p-8 md:p-14 rounded-2xl border ${mode === 'break' ? 'border-cyan-500/30' : 'border-white/10'} text-center mb-8 z-10 shadow-2xl transition-all duration-700 ${isActive ? (mode === 'break' ? 'scale-[1.02] shadow-[0_0_50px_rgba(6,182,212,0.15)]' : 'scale-[1.02] shadow-[0_0_50px_rgba(16,185,129,0.15)] border-emerald-500/30') : ''}`}>
+      {/* 修改 5：核心計時器區塊。當專注時，移除下方 mb-8 以達到完美置中 */}
+      <div className={`w-full max-w-4xl bg-slate-900/40 backdrop-blur-3xl p-8 md:p-14 rounded-2xl border ${mode === 'break' ? 'border-cyan-500/30' : 'border-white/10'} text-center z-10 shadow-2xl transition-all duration-700 ${isActive ? (mode === 'break' ? 'scale-[1.02] shadow-[0_0_50px_rgba(6,182,212,0.15)] my-auto' : 'scale-[1.02] shadow-[0_0_50px_rgba(16,185,129,0.15)] border-emerald-500/30 my-auto') : 'mb-8'}`}>
         
-        <div className="grid grid-cols-2 sm:flex sm:justify-center gap-4 md:gap-6 mb-12 font-bold max-w-[280px] sm:max-w-none mx-auto">
+        {/* 隱藏專注時間選項 */}
+        <div className={`grid grid-cols-2 sm:flex sm:justify-center gap-4 md:gap-6 mb-12 font-bold max-w-[280px] sm:max-w-none mx-auto ${isActive ? 'hidden' : ''}`}>
            {FOCUS_OPTIONS.map(opt => (
              <button key={opt.value} onClick={() => { if(!isActive) { if(mode==='break') setMode('focus'); setFocusDuration(opt.value); setTimeLeft(opt.value); }}} className={`w-full sm:w-auto px-6 py-3.5 rounded-full text-sm font-black border transition-all ${focusDuration === opt.value && mode === 'focus' ? 'bg-white text-black border-white shadow-lg' : 'bg-black/40 text-white/50 border-white/20 hover:text-white/90 hover:bg-white/10'}`}>
                {opt.label}
@@ -1636,7 +1639,8 @@ export default function App() {
         </div>
         
         {mode === 'focus' ? (
-          <>
+          // 隱藏妖獸血量資訊，只留下純粹的數字與按鈕
+          <div className={isActive ? 'hidden' : 'block'}>
             <div className={`flex justify-center items-center gap-3 mb-2 text-sm md:text-base tracking-[0.6em] font-black uppercase transition-colors ${monster.name.includes('瓶頸') || monster.name.includes('劫') ? 'text-rose-500 animate-pulse' : 'text-rose-400'}`}>
               <Compass size={18}/> {monster.name}
             </div>
@@ -1644,9 +1648,9 @@ export default function App() {
                <div className="bg-gradient-to-r from-rose-900 to-rose-500 h-full transition-all duration-500 shadow-[0_0_10px_#f43f5e]" style={{ width: `${Math.min(100, (monster.hp / monster.maxHp) * 100)}%` }}></div>
             </div>
             <div className="text-[10px] font-mono text-white/40 text-center mb-10">氣血 {formatNumber(monster.hp)} / {formatNumber(monster.maxHp)} ｜ 戰力 {formatNumber(monster.atk)}</div>
-          </>
+          </div>
         ) : (
-          <div className="flex justify-center items-center gap-3 mb-10 text-sm md:text-base tracking-[0.6em] font-black uppercase text-cyan-400 animate-pulse">
+          <div className={`flex justify-center items-center gap-3 mb-10 text-sm md:text-base tracking-[0.6em] font-black uppercase text-cyan-400 animate-pulse ${isActive ? 'hidden' : 'flex'}`}>
             <CloudLightning size={18}/> 靈氣反哺．吐納調息中
           </div>
         )}
@@ -1676,7 +1680,7 @@ export default function App() {
             <button 
               onClick={() => canUsePill && handleComplete(true)} 
               disabled={!canUsePill}
-              className={`flex items-center justify-center gap-2 px-8 py-4 rounded-full text-xs sm:text-sm font-black tracking-widest transition-all border shadow-[0_0_15px_rgba(245,158,11,0.2)] ${canUsePill ? 'bg-amber-900/50 text-amber-400 hover:bg-amber-600 hover:text-white border-amber-500/50 cursor-pointer' : 'bg-slate-900/80 text-slate-500 border-slate-700/50 cursor-not-allowed opacity-80'}`}
+              className={`flex items-center justify-center gap-2 px-8 py-4 rounded-full text-xs sm:text-sm font-black tracking-widest transition-all border shadow-[0_0_15px_rgba(245,158,11,0.2)] ${canUsePill ? 'bg-amber-900/50 text-amber-400 hover:bg-amber-600 hover:text-white border-amber-500/50 cursor-pointer' : 'bg-slate-900/80 text-slate-500 border-slate-700/50 cursor-not-allowed opacity-80'} ${isActive ? 'opacity-30 hover:opacity-100' : ''}`}
             >
               <Pill size={16} className={canUsePill ? "animate-pulse" : ""}/> 
               {canUsePill ? `吞服頓悟丹，瞬間出關 (餘 ${player.epiphanyPills})` : `丹毒未消 (需真實專注或待 ${formatTime(pillCooldownRemaining)})`}
@@ -1685,7 +1689,8 @@ export default function App() {
         </div>
       </div>
 
-      <div className={`w-full max-w-4xl mt-4 transition-all duration-500 z-10 font-bold ${isActive ? 'opacity-0 pointer-events-none translate-y-10' : 'opacity-100 translate-y-0'}`}>
+      {/* 修改 6：隱藏底部分頁與選單區塊 */}
+      <div className={`w-full max-w-4xl mt-4 transition-all duration-500 z-10 font-bold ${isActive ? 'hidden' : 'block'}`}>
         <div className="bg-slate-950/90 backdrop-blur-3xl rounded-2xl border border-white/10 shadow-2xl flex flex-col h-[800px] overflow-hidden">
           <div className="flex bg-black/80 border-b border-white/10 p-2 gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
             {[
