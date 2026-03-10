@@ -30,54 +30,23 @@ const database = getDatabase(app);
 
 const CHANGELOG_DATA = [
   {
+    version: "v2.5.0",
+    title: "萬寶擴編與機率突變",
+    desc: "上古遺寶大量現世，天地法則重新洗牌。",
+    changes: [
+      "重構【法寶機制】：拔除法寶升級系統，獲取即為完全體，基礎數值大幅提升。",
+      "擴編【萬寶圖鑑】：法寶總數擴充至 85 件，嚴格對標原著法器至造化至寶階級。",
+      "實裝【連鎖突變演算法】：抽滿該階級圖鑑時，80%轉化為靈石，20%機率引發突變躍升至下一階級。",
+      "校準【多寶稱號】：因應圖鑑擴充，收集稱號門檻上調至 15 / 40 / 75 件。"
+    ]
+  },
+  {
     version: "v2.0.0",
     title: "紅顏道侶與玉簡傳功",
     desc: "天地異變，仙途不再孤單；神識突破空間限制。",
     changes: [
       "新增【仙途伴侶】：結識原著8位紅顏知己，同行雙修獲得專屬增益。",
-      "新增【玉簡傳功】：支援跨裝置進度匯出與匯入 (Base64 防呆加密)。",
-      "優化【顛倒五行陣】：升級曲線平滑化 (1.35x)，文本描述精準化。",
-      "介面【仙影朦朧】：未解鎖道侶與法寶統一隱藏視覺，保留神祕感。"
-    ]
-  },
-  {
-    version: "v1.8.0",
-    title: "妖獸反撲與生死大劫",
-    desc: "天道無情，修仙之路步步殺機。",
-    changes: [
-      "實裝【妖獸反撲】：專注結束未擊殺妖獸，將面臨致命反擊（20%觸發大招）。",
-      "實裝【涅槃重生】：氣血歸零時的最後保命手段，新增「高階替身符」與「三轉重元功」。",
-      "修復【法寶護主】：連擊護盾現可強制鎖血 10% 擋下妖獸致死打擊。"
-    ]
-  },
-  {
-    version: "v1.5.0",
-    title: "屬性極限與轉化法則",
-    desc: "修煉無止境，溢出之真元將化為更強的殺招。",
-    changes: [
-      "實裝【屬性溢出轉化】：閃避溢出(>75%)轉連擊上限，爆擊溢出(>95%)轉爆傷。",
-      "新增【屬性極限報告】：可於選單查看所有底層乘區與極限數值。",
-      "實裝【劍陣共鳴】：裝備2把以上飛劍類法寶，獲得額外戰力與連擊加成。"
-    ]
-  },
-  {
-    version: "v1.2.0",
-    title: "萬寶樓與機緣祕籍",
-    desc: "上古遺寶現世，氣運加身者得之。",
-    changes: [
-      "新增【萬寶樓抽獎】：消耗靈石抽取凡品至造化至寶。",
-      "新增【功法祕籍】：14種原著經典功法，消耗 SP 進行參悟升級。",
-      "新增【隨機氣運】：結算時有 10% 基礎機率觸發天降機緣與7大奇遇。"
-    ]
-  },
-  {
-    version: "v1.0.0",
-    title: "天道初開 (Core System)",
-    desc: "凡人修仙專注法器正式運轉。",
-    changes: [
-      "核心【番茄鐘專注】機制上線，支援離線運算。",
-      "實裝【境界突破】系統，從一介凡人至九九重劫。",
-      "實裝【洞府淬煉】基礎升級與打坐調息回血功能。"
+      "新增【玉簡傳功】：支援跨裝置進度匯出與匯入 (Base64 防呆加密)。"
     ]
   }
 ];
@@ -148,36 +117,111 @@ const GUIDE_REALMS = [
   { name: '渡劫期', desc: '引動九九重雷劫，成則羽化登仙，敗則化為劫灰。', range: 'Tier 34' }
 ];
 
+// ==========================================
+// 萬寶錄 85+ 擴編 (拔除等級制，數值一步到位)
+// ==========================================
 const ARTIFACT_POOL = [
-  { id: 'a01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (防禦減傷 +2%)', val: { def: 0.02 } },
-  { id: 'a02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +4%)', val: { atk: 0.04 } },
-  { id: 'a03', rarity: 'COMMON', name: '凝神蒲團', desc: '固本培元 (回血+2%，修為+2%)', val: { heal_bonus: 0.02, qi: 0.02 } },
-  { id: 'a04', rarity: 'COMMON', name: '粗糙靈石袋', desc: '聚財之陣 (靈石掉落 +5%)', val: { stone: 0.05 } },
-  { id: 'a10', rarity: 'UNCOMMON', name: '神風舟', desc: '御風而行 (閃避率 +5%)', val: { evade: 0.05 } },
-  { id: 'a11', rarity: 'UNCOMMON', name: '子母刃', desc: '奇門暗器 (戰力+8%，爆擊率+8%)', val: { atk: 0.08, crit: 0.08 }, tags: ['sword'] },
-  { id: 'a12', rarity: 'UNCOMMON', name: '無形針', desc: '無影無蹤 (連擊效率+10%，爆擊+10%)', val: { streak_eff: 0.10, crit: 0.10 } },
-  { id: 'a13', rarity: 'UNCOMMON', name: '血玉髓', desc: '氣血滋養 (休息回血比例 +5%)', val: { heal_bonus: 0.05 } },
-  { id: 'a20', rarity: 'RARE', name: '青蛟旗', desc: '妖魂鎮壓 (戰力加成 +15%)', val: { atk: 0.15 } },
-  { id: 'a21', rarity: 'RARE', name: '玄鐵飛天盾', desc: '堅不可摧 (防禦減傷 +15%)', val: { def: 0.15 } },
-  { id: 'a22', rarity: 'RARE', name: '碧玉葫蘆', desc: '納寶空間 (靈石掉落 +30%)', val: { stone: 0.30 } },
-  { id: 'a23', rarity: 'RARE', name: '金光磚', desc: '重擊崩碎 (爆擊傷害 +25%)', val: { crit_dmg: 0.25 } },
-  { id: 'a24', rarity: 'RARE', name: '高階替身符', desc: '替死擋災 (復活機率 +5%)', val: { revive: 0.05 } },
-  { id: 'a30', rarity: 'EPIC', name: '虛天鼎 (仿)', desc: '鎮壓氣運 (減傷+15%，氣運保底+0.15/級)', val: { def: 0.15, luck_floor: 0.15 } },
-  { id: 'a31', rarity: 'EPIC', name: '風雷翅', desc: '迅捷如雷 (連擊效率+30%，閃避+8%)', val: { streak_eff: 0.30, evade: 0.08 } },
-  { id: 'a32', rarity: 'EPIC', name: '紫羅極火', desc: '極寒之焰 (戰力+20%，爆傷+40%/級)', val: { atk: 0.20, crit_dmg: 0.40 } },
-  { id: 'a33', rarity: 'EPIC', name: '嗜血幡', desc: '吸血魔器 (戰力+15%，回血+10%/級)', val: { atk: 0.15, heal_bonus: 0.10 } },
-  { id: 'a40', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖 (連擊上限+30%，閃避+10%/級)', val: { streak_cap: 0.30, evade: 0.10 } },
-  { id: 'a41', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣 (戰力+50%，連擊效率+50%，爆擊+10%/級)', val: { atk: 0.50, streak_eff: 0.50, crit: 0.10 }, tags: ['sword'] },
-  { id: 'a42', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '替身擋災 (氣血+100%，連擊護盾+1/級)', val: { hp: 1.00, streak_shield: 1.0 } }, 
-  { id: 'a43', rarity: 'LEGENDARY', name: '成熟體噬金蟲', desc: '無物不噬 (戰力+80%，爆傷+80%/級)', val: { atk: 0.80, crit_dmg: 0.80 } },
-  { id: 'a50', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '法則破壞 (戰力+150%，爆傷+150%/級)', val: { atk: 1.50, crit_dmg: 1.50 }, tags: ['sword'] },
-  { id: 'a51', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +80%/級)', val: { atk: 0.80, def: 0.80 } },
-  { id: 'a52', rarity: 'MYTHIC', name: '虛天大鼎', desc: '鼎鎮山河 (減傷+80%，折扣-40%，氣運保底+0.5)', val: { def: 0.80, forge_discount: 0.40, luck_floor: 0.5 } },
-  { id: 'a53', rarity: 'MYTHIC', name: '玄天如意刃', desc: '斬裂虛空 (連擊上限+80%，爆傷+80%/級)', val: { streak_cap: 0.80, crit_dmg: 0.80 }, tags: ['sword'] },
-  { id: 'a60', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+300%，靈石+150%/級)', val: { qi: 3.00, stone: 1.50 } },
-  { id: 'a61', rarity: 'DIVINE', name: '游天鯤鵬翎', desc: '跨越界域 (閃避+15%，連擊效率+100%/級)', val: { evade: 0.15, streak_eff: 1.00 } },
-  { id: 'a62', rarity: 'DIVINE', name: '涅槃真血', desc: '真靈不死 (免死+10%，連擊護盾+2/級)', val: { revive: 0.10, streak_shield: 2.0 } }, 
-  { id: 'a63', rarity: 'DIVINE', name: '金闕玉書', desc: '降界天書 (靈石獲取+400%，氣運+0.5/級)', val: { stone: 4.00, luck_floor: 0.50 } },
+  // COMMON (25件) - 基礎過渡
+  { id: 'a_c01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (防禦減傷 +5%)', val: { def: 0.05 } },
+  { id: 'a_c02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +5%)', val: { atk: 0.05 } },
+  { id: 'a_c03', rarity: 'COMMON', name: '凝神蒲團', desc: '固本培元 (回血+3%，修為+3%)', val: { heal_bonus: 0.03, qi: 0.03 } },
+  { id: 'a_c04', rarity: 'COMMON', name: '粗糙靈石袋', desc: '聚財之陣 (靈石掉落 +8%)', val: { stone: 0.08 } },
+  { id: 'a_c05', rarity: 'COMMON', name: '玄鐵刃', desc: '近戰利器 (基礎戰力 +6%)', val: { atk: 0.06 } },
+  { id: 'a_c06', rarity: 'COMMON', name: '飛蝗石', desc: '暗器連發 (連擊效率 +5%)', val: { streak_eff: 0.05 } },
+  { id: 'a_c07', rarity: 'COMMON', name: '聚氣散', desc: '臨時提氣 (修為獲取 +6%)', val: { qi: 0.06 } },
+  { id: 'a_c08', rarity: 'COMMON', name: '水罩符', desc: '水行護盾 (防禦減傷 +4%)', val: { def: 0.04 } },
+  { id: 'a_c09', rarity: 'COMMON', name: '烈陽劍', desc: '火行劍氣 (戰力+4%，劍陣部件)', val: { atk: 0.04 }, tags: ['sword'] },
+  { id: 'a_c10', rarity: 'COMMON', name: '冷月刀', desc: '冰寒之刃 (爆擊傷害 +10%)', val: { crit_dmg: 0.10 } },
+  { id: 'a_c11', rarity: 'COMMON', name: '踏雲靴', desc: '凡品輕功 (閃避率 +3%)', val: { evade: 0.03 } },
+  { id: 'a_c12', rarity: 'COMMON', name: '迷魂鐘', desc: '擾亂神識 (爆擊率 +3%)', val: { crit: 0.03 } },
+  { id: 'a_c13', rarity: 'COMMON', name: '金剛罩', desc: '硬氣功法 (氣血上限 +6%)', val: { hp: 0.06 } },
+  { id: 'a_c14', rarity: 'COMMON', name: '靈氣匣', desc: '儲存靈氣 (修為獲取 +5%)', val: { qi: 0.05 } },
+  { id: 'a_c15', rarity: 'COMMON', name: '青光劍', desc: '制式飛劍 (戰力+5%，劍陣部件)', val: { atk: 0.05 }, tags: ['sword'] },
+  { id: 'a_c16', rarity: 'COMMON', name: '黃絲網', desc: '束縛困敵 (神識減傷 +4%)', val: { sense_def: 0.04 } },
+  { id: 'a_c17', rarity: 'COMMON', name: '巨鐵劍', desc: '沉重無比 (戰力+8%，閃避-2%)', val: { atk: 0.08, evade: -0.02 }, tags: ['sword'] },
+  { id: 'a_c18', rarity: 'COMMON', name: '追風玉', desc: '提升遁速 (閃避率 +4%)', val: { evade: 0.04 } },
+  { id: 'a_c19', rarity: 'COMMON', name: '靈龜盾', desc: '龜甲防禦 (防禦減傷 +6%)', val: { def: 0.06 } },
+  { id: 'a_c20', rarity: 'COMMON', name: '炎陽玉', desc: '純陽之氣 (休息回血 +4%)', val: { heal_bonus: 0.04 } },
+  { id: 'a_c21', rarity: 'COMMON', name: '寒冰刺', desc: '冰寒刺骨 (爆擊傷害 +12%)', val: { crit_dmg: 0.12 } },
+  { id: 'a_c22', rarity: 'COMMON', name: '迷霧陣旗', desc: '基礎陣法 (閃避率 +4%)', val: { evade: 0.04 } },
+  { id: 'a_c23', rarity: 'COMMON', name: '遁地符', desc: '五行遁術 (閃避率 +5%)', val: { evade: 0.05 } },
+  { id: 'a_c24', rarity: 'COMMON', name: '引路蜂', desc: '尋寶靈蟲 (靈石掉落 +6%)', val: { stone: 0.06 } },
+  { id: 'a_c25', rarity: 'COMMON', name: '烏龍奪', desc: '詭異兵器 (爆傷+15%)', val: { crit_dmg: 0.15 } },
+
+  // UNCOMMON (20件) - 單項特化
+  { id: 'a_u01', rarity: 'UNCOMMON', name: '神風舟', desc: '御風而行 (閃避率 +8%)', val: { evade: 0.08 } },
+  { id: 'a_u02', rarity: 'UNCOMMON', name: '金蚨子母刃', desc: '奇門暗器 (戰力+12%，爆擊+5%)', val: { atk: 0.12, crit: 0.05 }, tags: ['sword'] },
+  { id: 'a_u03', rarity: 'UNCOMMON', name: '無形針', desc: '無影無蹤 (連擊效率+15%，爆擊+5%)', val: { streak_eff: 0.15, crit: 0.05 } },
+  { id: 'a_u04', rarity: 'UNCOMMON', name: '血玉髓', desc: '氣血滋養 (休息回血比例 +10%)', val: { heal_bonus: 0.10 } },
+  { id: 'a_u05', rarity: 'UNCOMMON', name: '玄鐵飛天盾', desc: '高階防禦 (防禦減傷 +10%)', val: { def: 0.10 } },
+  { id: 'a_u06', rarity: 'UNCOMMON', name: '天雷竹(殘)', desc: '辟邪神雷基底 (爆傷 +20%)', val: { crit_dmg: 0.20 } },
+  { id: 'a_u07', rarity: 'UNCOMMON', name: '平山印', desc: '重壓攻擊 (戰力+15%)', val: { atk: 0.15 } },
+  { id: 'a_u08', rarity: 'UNCOMMON', name: '引魂鐘', desc: '攻擊神識 (反噬減傷 +10%)', val: { sense_def: 0.10 } },
+  { id: 'a_u09', rarity: 'UNCOMMON', name: '踏雪無痕靴', desc: '高級輕功 (閃避率 +10%)', val: { evade: 0.10 } },
+  { id: 'a_u10', rarity: 'UNCOMMON', name: '破甲錐', desc: '無視防禦 (爆擊傷害 +25%)', val: { crit_dmg: 0.25 } },
+  { id: 'a_u11', rarity: 'UNCOMMON', name: '震天弓', desc: '遠程殺伐 (戰力+12%，爆擊+6%)', val: { atk: 0.12, crit: 0.06 } },
+  { id: 'a_u12', rarity: 'UNCOMMON', name: '穿雲箭', desc: '配合震天弓 (連擊上限 +10%)', val: { streak_cap: 0.10 } },
+  { id: 'a_u13', rarity: 'UNCOMMON', name: '縛妖索', desc: '專剋妖獸 (防禦減傷 +8%)', val: { def: 0.08 } },
+  { id: 'a_u14', rarity: 'UNCOMMON', name: '青靈甲', desc: '木系戰甲 (氣血上限 +15%)', val: { hp: 0.15 } },
+  { id: 'a_u15', rarity: 'UNCOMMON', name: '幻影陣盤', desc: '迷幻神識 (閃避率 +9%)', val: { evade: 0.09 } },
+  { id: 'a_u16', rarity: 'UNCOMMON', name: '烈焰珠', desc: '純火爆發 (戰力 +14%)', val: { atk: 0.14 } },
+  { id: 'a_u17', rarity: 'UNCOMMON', name: '寒冰劍', desc: '冰封減速 (戰力+10%，劍陣)', val: { atk: 0.10 }, tags: ['sword'] },
+  { id: 'a_u18', rarity: 'UNCOMMON', name: '紫金缽', desc: '佛門法器 (防禦減傷 +12%)', val: { def: 0.12 } },
+  { id: 'a_u19', rarity: 'UNCOMMON', name: '攝魂鈴', desc: '神識攻擊 (反噬減傷 +12%)', val: { sense_def: 0.12 } },
+  { id: 'a_u20', rarity: 'UNCOMMON', name: '高級儲物袋', desc: '極大空間 (靈石掉落 +20%)', val: { stone: 0.20 } },
+
+  // RARE (15件) - 結丹期主力
+  { id: 'a_r01', rarity: 'RARE', name: '青蛟旗', desc: '妖魂鎮壓 (戰力加成 +25%)', val: { atk: 0.25 } },
+  { id: 'a_r02', rarity: 'RARE', name: '金光磚', desc: '重擊崩碎 (爆擊傷害 +40%)', val: { crit_dmg: 0.40 } },
+  { id: 'a_r03', rarity: 'RARE', name: '碧玉葫蘆', desc: '納寶空間 (靈石掉落 +40%)', val: { stone: 0.40 } },
+  { id: 'a_r04', rarity: 'RARE', name: '綠煌劍', desc: '毒性飛劍 (戰力+20%，劍陣)', val: { atk: 0.20 }, tags: ['sword'] },
+  { id: 'a_r05', rarity: 'RARE', name: '降魔杖', desc: '佛門降魔 (防禦+15%，爆擊+8%)', val: { def: 0.15, crit: 0.08 } },
+  { id: 'a_r06', rarity: 'RARE', name: '混元缽', desc: '混元之氣 (減傷+15%，修為+15%)', val: { def: 0.15, qi: 0.15 } },
+  { id: 'a_r07', rarity: 'RARE', name: '巨劍門重劍', desc: '力劈華山 (戰力+30%，閃避-5%)', val: { atk: 0.30, evade: -0.05 }, tags: ['sword'] },
+  { id: 'a_r08', rarity: 'RARE', name: '血毒刃', desc: '見血封喉 (爆傷+45%)', val: { crit_dmg: 0.45 } },
+  { id: 'a_r09', rarity: 'RARE', name: '掩月雙環', desc: '合擊之術 (連擊效率 +30%)', val: { streak_eff: 0.30 } },
+  { id: 'a_r10', rarity: 'RARE', name: '烏黑魔匕', desc: '魔道暗器 (爆擊率 +12%)', val: { crit: 0.12 } },
+  { id: 'a_r11', rarity: 'RARE', name: '雪晶珠', desc: '極寒冰域 (閃避+12%，減傷+10%)', val: { evade: 0.12, def: 0.10 } },
+  { id: 'a_r12', rarity: 'RARE', name: '碧血帶', desc: '韌性極強 (氣血上限 +25%)', val: { hp: 0.25 } },
+  { id: 'a_r13', rarity: 'RARE', name: '乾坤塔', desc: '鎮壓妖物 (防禦減傷 +20%)', val: { def: 0.20 } },
+  { id: 'a_r14', rarity: 'RARE', name: '噬炎刀', desc: '吞噬火焰 (吸血 +5%)', val: { lifesteal: 0.05 } },
+  { id: 'a_r15', rarity: 'RARE', name: '高階替身符', desc: '替死擋災 (復活機率 +8%)', val: { revive: 0.08 } },
+
+  // EPIC (12件) - 元嬰期古寶
+  { id: 'a_e01', rarity: 'EPIC', name: '虛天鼎 (仿)', desc: '鎮壓氣運 (減傷+20%，氣運保底+0.3)', val: { def: 0.20, luck_floor: 0.30 } },
+  { id: 'a_e02', rarity: 'EPIC', name: '風雷翅', desc: '迅捷如雷 (連擊效率+50%，閃避+12%)', val: { streak_eff: 0.50, evade: 0.12 } },
+  { id: 'a_e03', rarity: 'EPIC', name: '紫羅極火', desc: '極寒之焰 (戰力+40%，爆傷+60%)', val: { atk: 0.40, crit_dmg: 0.60 } },
+  { id: 'a_e04', rarity: 'EPIC', name: '嗜血幡', desc: '吸血魔器 (戰力+30%，吸血+10%)', val: { atk: 0.30, lifesteal: 0.10 } },
+  { id: 'a_e05', rarity: 'EPIC', name: '狼首玉如意', desc: '召喚銀狼 (氣血+40%，護盾+1)', val: { hp: 0.40, streak_shield: 1.0 } },
+  { id: 'a_e06', rarity: 'EPIC', name: '五色珠', desc: '五行相生 (全修為/靈石獲取 +30%)', val: { qi: 0.30, stone: 0.30 } },
+  { id: 'a_e07', rarity: 'EPIC', name: '銅錢古寶', desc: '落寶金錢 (氣運保底+0.4，靈石+50%)', val: { luck_floor: 0.40, stone: 0.50 } },
+  { id: 'a_e08', rarity: 'EPIC', name: '魔髓鑽', desc: '破防極致 (爆傷+80%，無視防禦)', val: { crit_dmg: 0.80 } },
+  { id: 'a_e09', rarity: 'EPIC', name: '降靈符', desc: '真靈附體 (戰力+45%，減傷+15%)', val: { atk: 0.45, def: 0.15 } },
+  { id: 'a_e10', rarity: 'EPIC', name: '補天丹(法化)', desc: '洗髓易經 (氣血+50%，回血+20%)', val: { hp: 0.50, heal_bonus: 0.20 } },
+  { id: 'a_e11', rarity: 'EPIC', name: '萬年靈乳', desc: '瞬間恢復 (復活機率 +12%)', val: { revive: 0.12 } },
+  { id: 'a_e12', rarity: 'EPIC', name: '太玄八卦圖', desc: '推演天機 (反噬減傷+40%，連擊上限+30%)', val: { sense_def: 0.40, streak_cap: 0.30 } },
+
+  // LEGENDARY (8件) - 通天靈寶
+  { id: 'a_l01', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖 (連擊上限+80%，閃避+18%)', val: { streak_cap: 0.80, evade: 0.18 } },
+  { id: 'a_l02', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣核心 (戰力+80%，連擊效率+80%)', val: { atk: 0.80, streak_eff: 0.80 }, tags: ['sword'] },
+  { id: 'a_l03', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '元嬰後期戰力 (氣血+120%，護盾+2)', val: { hp: 1.20, streak_shield: 2.0 } }, 
+  { id: 'a_l04', rarity: 'LEGENDARY', name: '黑風旗', desc: '空間法則 (閃避+20%，全減傷+40%)', val: { evade: 0.20, def: 0.40 } },
+  { id: 'a_l05', rarity: 'LEGENDARY', name: '三焰扇', desc: '三味真火 (戰力+90%，爆傷+100%)', val: { atk: 0.90, crit_dmg: 1.00 } },
+  { id: 'a_l06', rarity: 'LEGENDARY', name: '萬妖幡', desc: '萬妖聽令 (氣血+100%，吸血+15%)', val: { hp: 1.00, lifesteal: 0.15 } },
+  { id: 'a_l07', rarity: 'LEGENDARY', name: '五子同心魔', desc: '極凶之物 (戰力+110%，反噬防禦-20%)', val: { atk: 1.10, sense_def: -0.20 } },
+  { id: 'a_l08', rarity: 'LEGENDARY', name: '成熟噬金蟲群', desc: '無物不噬 (戰力+100%，爆傷+120%)', val: { atk: 1.00, crit_dmg: 1.20 } },
+
+  // MYTHIC (5件) - 玄天之寶
+  { id: 'a_m01', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '斬裂法則 (戰力+200%，爆傷+250%)', val: { atk: 2.00, crit_dmg: 2.50 }, tags: ['sword'] },
+  { id: 'a_m02', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +150%)', val: { atk: 1.50, def: 1.50 } },
+  { id: 'a_m03', rarity: 'MYTHIC', name: '虛天大鼎', desc: '鼎鎮山河 (減傷+120%，折扣-50%，氣運保底+0.8)', val: { def: 1.20, forge_discount: 0.50, luck_floor: 0.8 } },
+  { id: 'a_m04', rarity: 'MYTHIC', name: '玄天如意刃', desc: '空間切割 (連擊上限+150%，爆傷+150%)', val: { streak_cap: 1.50, crit_dmg: 1.50 }, tags: ['sword'] },
+  { id: 'a_m05', rarity: 'MYTHIC', name: '萬靈血璽', desc: '血祭一界 (戰力+250%，復活+15%，護盾+3)', val: { atk: 2.50, revive: 0.15, streak_shield: 3.0 } },
+
+  // DIVINE (3件) - 造化至寶
+  { id: 'a_d01', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+500%，靈石+300%)', val: { qi: 5.00, stone: 3.00 } },
+  { id: 'a_d02', rarity: 'DIVINE', name: '游天鯤鵬翎', desc: '跨越界域 (閃避+25%，連擊效率+200%)', val: { evade: 0.25, streak_eff: 2.00 } },
+  { id: 'a_d03', rarity: 'DIVINE', name: '金闕玉書', desc: '仙界天書 (靈石+600%，氣運保底+1.5)', val: { stone: 6.00, luck_floor: 1.50 } }
 ];
 
 const SECRET_BOOKS = [
@@ -206,6 +250,7 @@ const BASIC_SKILLS = [
 
 const RARITY_BASE_COST = { COMMON: 1000, UNCOMMON: 5000, RARE: 25000, EPIC: 100000, LEGENDARY: 500000, MYTHIC: 2500000, DIVINE: 10000000 };
 
+// 調整稱號解鎖門檻
 const TITLE_DATA = [
   { id: 't_kill_1', cat: 'kill', req: 50, tier: 1, name: '同階無敵', desc: '「死在閣下手下的同階修士，已不在少數。」', buffDesc: '總戰力加成 +10%', val: { atk: 0.10 } },
   { id: 't_kill_2', cat: 'kill', req: 200, tier: 2, name: '厲飛雨', desc: '「殺人放火厲飛雨，萬人敬仰韓天尊。道友，借個名號用用。」', buffDesc: '爆擊率 +10%，真靈吸血 +5%', val: { crit: 0.10, lifesteal: 0.05 } },
@@ -216,9 +261,10 @@ const TITLE_DATA = [
   { id: 't_coin_1', cat: 'coin', req: 1000000, tier: 1, name: '身家豐厚', desc: '「在低階散修眼中，你已經是個不折不扣的大土豪了。」', buffDesc: '靈石掉落倍率 +15%', val: { stone: 0.15 } },
   { id: 't_coin_2', cat: 'coin', req: 10000000, tier: 2, name: '天南巨富', desc: '「靈石成山。這等身家，哪怕在天南修仙界也足以橫著走了。」', buffDesc: '靈石掉落倍率 +40%', val: { stone: 0.40 } },
   { id: 't_coin_3', cat: 'coin', req: 500000000, tier: 3, name: '財可通神', desc: '「連靈界大乘期老怪看到你的儲物袋，也會忍不住生出殺人奪寶的心思。」', buffDesc: '靈石倍率 +150%，氣運保底 +0.5', val: { stone: 1.50, luck_floor: 0.50 } },
-  { id: 't_art_1', cat: 'artifact', req: 5, tier: 1, name: '身懷異寶', desc: '「財不露白，道友還是盡早將這些寶物收進儲物袋為妙。」', buffDesc: '氣運保底 +0.15', val: { luck_floor: 0.15 } },
-  { id: 't_art_2', cat: 'artifact', req: 15, tier: 2, name: '一身是寶', desc: '「『不可能！你區區一介散修，身家怎會比老夫還要豐厚！』」', buffDesc: '連擊上限 +50%，氣運保底 +0.3', val: { streak_cap: 0.50, luck_floor: 0.30 } },
-  { id: 't_art_3', cat: 'artifact', req: 25, tier: 3, name: '多寶天尊', desc: '「玄天之寶、造化至寶盡入你手，此界天道法則已被你徹底顛覆。」', buffDesc: '連擊上限 +150%，氣運保底 +0.8', val: { streak_cap: 1.50, luck_floor: 0.80 } },
+  // 修改：圖鑑收集門檻上調為 15 / 40 / 75
+  { id: 't_art_1', cat: 'artifact', req: 15, tier: 1, name: '身懷異寶', desc: '「財不露白，道友還是盡早將這些寶物收進儲物袋為妙。」', buffDesc: '氣運保底 +0.15', val: { luck_floor: 0.15 } },
+  { id: 't_art_2', cat: 'artifact', req: 40, tier: 2, name: '一身是寶', desc: '「『不可能！你區區一介散修，身家怎會比老夫還要豐厚！』」', buffDesc: '連擊上限 +50%，氣運保底 +0.3', val: { streak_cap: 0.50, luck_floor: 0.30 } },
+  { id: 't_art_3', cat: 'artifact', req: 75, tier: 3, name: '多寶天尊', desc: '「玄天之寶、造化至寶盡入你手，此界天道法則已被你徹底顛覆。」', buffDesc: '連擊上限 +150%，氣運保底 +0.8', val: { streak_cap: 1.50, luck_floor: 0.80 } },
   { id: 't_sec_1', cat: 'secret', req: 4, tier: 1, name: '博覽群書', desc: '「藏經閣內的玉簡被你翻了個遍，對各派功法皆有涉獵。」', buffDesc: '反噬基礎減傷 +10%', val: { sense_def: 0.10 } },
   { id: 't_sec_2', cat: 'secret', req: 9, tier: 2, name: '法體雙修', desc: '「功法龐雜卻互不衝突，靈力與肉身皆臻至化境，實力遠超同階修士。」', buffDesc: '氣血上限加成 +20%，神識減傷 +15%', val: { hp: 0.20, sense_def: 0.15 } },
   { id: 't_sec_3', cat: 'secret', req: 13, tier: 3, name: '萬法歸一', desc: '「天下萬般神仙妙法，在你眼中皆如掌上觀紋，直指大道本源。」', buffDesc: '氣血上限 +50%，反噬與神識減傷皆 +30%', val: { hp: 0.50, sense_def: 0.30, def: 0.30 } },
@@ -289,13 +335,12 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // 每次狀態更新，寫入 localStorage (加入防抖機制)
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
       localStorage.setItem('xianxia_master_v69', JSON.stringify(player));
       setSaveIndicator(true);
       setTimeout(() => setSaveIndicator(false), 2000);
-    }, 1000); // 延遲 1 秒寫入，避免頻繁 I/O 阻塞主執行緒
+    }, 1000);
     return () => clearTimeout(debounceTimer);
   }, [player]);
 
@@ -465,11 +510,15 @@ export default function App() {
   const [isKilling, setIsKilling] = useState(false); 
   const [isHealing, setIsHealing] = useState(false); 
 
+  // 修改：移除法寶的等級加成，單次獲取即巔峰
   const getMultiplier = (type) => {
     let mult = 1.0;
     BASIC_SKILLS.forEach(s => { if (player.basicSkills?.[s.id] > 0 && s.val?.[type]) mult += s.val[type] * player.basicSkills[s.id]; });
     Object.entries(player.secretBooks || {}).forEach(([id, lvl]) => { const book = SECRET_BOOKS.find(x => x.id === id); if (book?.val?.[type]) mult += book.val[type] * lvl; });
-    (player.artifacts || []).forEach(id => { const item = ARTIFACT_POOL.find(a => a.id === id); const lvl = player.artifactLvls?.[id] || 0; if (item?.val?.[type]) mult += item.val[type] * (1 + lvl * 0.5); });
+    (player.artifacts || []).forEach(id => { 
+        const item = ARTIFACT_POOL.find(a => a.id === id); 
+        if (item?.val?.[type]) mult += item.val[type]; // 移除 *(1 + lvl*0.5)
+    });
     if (player.equippedTitle) { const activeTitle = TITLE_DATA.find(t => t.id === player.equippedTitle); if (activeTitle?.val?.[type]) mult += activeTitle.val[type]; }
     if (type === 'atk' || type === 'streak_cap') { const swordCount = (player.artifacts || []).filter(id => ARTIFACT_POOL.find(a => a.id === id)?.tags?.includes('sword')).length; if (swordCount >= 2) mult += 0.2 * swordCount; }
     if (type === 'qi' && (player.arrays?.qi || 0)) mult += player.arrays.qi * 0.05;
@@ -669,6 +718,41 @@ export default function App() {
     return [...unownedArts, ...unownedBooks];
   };
 
+  // 新增：連鎖突變演算法 (Cascading Mutation Engine)
+  const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
+      let currentTargetRarity = initialRarity;
+      let finalDrop = null;
+      let mutationLog = '';
+      let compensationCoins = 0;
+      
+      while (true) {
+          let pool = getUnownedPool(currentTargetRarity, arts, books);
+          if (pool.length > 0) {
+              finalDrop = pool[Math.floor(Math.random() * pool.length)];
+              break;
+          } else {
+              // 該階級已滿，獲取 80% 價值補償
+              let compValue = Math.floor((baseCost * 0.8) / RARITY[currentTargetRarity].weight);
+              compensationCoins += compValue;
+              mutationLog += `【${RARITY[currentTargetRarity].name}】圖鑑已滿，化為 ${formatNumber(compValue)} 靈石。`;
+              
+              if (currentTargetRarity === 'DIVINE') {
+                  mutationLog += `天道極限！`;
+                  break;
+              }
+              // 20% 機率突變至下一階級
+              if (Math.random() < 0.20) {
+                  let idx = RARITIES_ORDER.indexOf(currentTargetRarity);
+                  currentTargetRarity = RARITIES_ORDER[idx + 1];
+                  mutationLog += `✨機緣爆發，靈光躍升至【${RARITY[currentTargetRarity].name}】！`;
+              } else {
+                  break;
+              }
+          }
+      }
+      return { drop: finalDrop, coins: compensationCoins, log: mutationLog, finalRarity: currentTargetRarity };
+  };
+
   const handleComplete = (usedPill = false) => {
     const isUsingPill = usedPill === true;
     
@@ -784,43 +868,22 @@ export default function App() {
                 }
             }
 
-            let targetIdx = RARITIES_ORDER.indexOf(targetRarity);
-            let combinedPool = getUnownedPool(targetRarity, newArtifacts, newSecretBooks);
+            // 使用連鎖突變演算法
+            const result = resolveDropWithMutation(targetRarity, newArtifacts, newSecretBooks, gachaCost);
+            
+            nextCoins += result.coins;
+            if (!isUsingPill) nextLifetime.totalCoins += result.coins;
+            killLog += result.log;
 
-            if (combinedPool.length === 0) {
-                for (let i = targetIdx - 1; i >= 0; i--) {
-                    combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks);
-                    if (combinedPool.length > 0) {
-                        targetRarity = RARITIES_ORDER[i];
-                        break;
-                    }
-                }
-            }
-
-            // 修改：將 originalIdx 改為 targetIdx
-            if (combinedPool.length === 0) {
-                for (let i = targetIdx + 1; i < RARITIES_ORDER.length; i++) {
-                    combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks);
-                    if (combinedPool.length > 0) {
-                        targetRarity = RARITIES_ORDER[i];
-                        break;
-                    }
-                }
-            }
-
-            if (combinedPool.length > 0) {
-                const drop = combinedPool[Math.floor(Math.random() * combinedPool.length)];
+            if (result.drop) {
+                const drop = result.drop;
                 if (drop.poolType === 'art') {
                     newArtifacts.push(drop.id);
-                    killLog += ` 🎁 斬獲【${RARITY[targetRarity].name}】法寶「${drop.name}」！`;
+                    killLog += ` 🎁 斬獲【${RARITY[result.finalRarity].name}】法寶「${drop.name}」！`;
                 } else {
                     newSecretBooks[drop.id] = 1;
-                    killLog += ` 📜 獲得【${RARITY[targetRarity].name}】功法「${drop.name}」！`;
+                    killLog += ` 📜 獲得【${RARITY[result.finalRarity].name}】功法「${drop.name}」！`;
                 }
-            } else {
-                const compQi = Math.floor((100 * monster.tier) / RARITY[targetRarity].weight);
-                nextQi += compQi;
-                killLog += ` ✨ 擊殺珍稀妖獸，汲取本源獲得修為 ${formatNumber(compQi)}！`;
             }
         }
 
@@ -924,44 +987,22 @@ export default function App() {
                 }
             }
 
-            let originalIdx = RARITIES_ORDER.indexOf(targetRarity);
-            let combinedPool = getUnownedPool(targetRarity, newArtifacts, newSecretBooks);
+            // 使用連鎖突變演算法
+            const result = resolveDropWithMutation(targetRarity, newArtifacts, newSecretBooks, gachaCost);
+            
+            nextCoins += result.coins;
+            if (!isUsingPill) nextLifetime.totalCoins += result.coins;
+            fortuneLog += result.log;
 
-            if (combinedPool.length === 0) {
-                for (let i = originalIdx - 1; i >= 0; i--) {
-                    combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks);
-                    if (combinedPool.length > 0) {
-                        targetRarity = RARITIES_ORDER[i];
-                        break;
-                    }
-                }
-            }
-
-            if (combinedPool.length === 0) {
-                for (let i = originalIdx + 1; i < RARITIES_ORDER.length; i++) {
-                    combinedPool = getUnownedPool(RARITIES_ORDER[i], newArtifacts, newSecretBooks);
-                    if (combinedPool.length > 0) {
-                        targetRarity = RARITIES_ORDER[i];
-                        break;
-                    }
-                }
-            }
-
-            if (combinedPool.length > 0) {
-                const drop = combinedPool[Math.floor(Math.random() * combinedPool.length)];
+            if (result.drop) {
+                const drop = result.drop;
                 if (drop.poolType === 'art') {
                     newArtifacts.push(drop.id);
-                    fortuneLog = ` 🏺 【異寶出世】霞光萬丈，喜獲【${RARITY[targetRarity].name}】法寶「${drop.name}」！`;
+                    fortuneLog += ` 🏺 【異寶出世】霞光萬丈，喜獲【${RARITY[result.finalRarity].name}】法寶「${drop.name}」！`;
                 } else {
                     newSecretBooks[drop.id] = 1;
-                    fortuneLog = ` 📜 【殘卷現世】機緣巧合，領悟【${RARITY[targetRarity].name}】功法「${drop.name}」！`;
+                    fortuneLog += ` 📜 【殘卷現世】機緣巧合，領悟【${RARITY[result.finalRarity].name}】功法「${drop.name}」！`;
                 }
-            } else {
-                const topRarity = 'DIVINE';
-                const compCoins = Math.floor((0.1 * gachaCost) / RARITY[topRarity].weight);
-                nextCoins += compCoins;
-                if (!isUsingPill) nextLifetime.totalCoins += compCoins;
-                fortuneLog = ` ✨ 【天道反哺】此界寶物已盡數入您手中！天道降下 ${formatNumber(compCoins)} 靈石補償！`;
             }
         }
       }
@@ -1026,38 +1067,31 @@ export default function App() {
       targetRarity = 'RARE';
     }
     
-    let targetIdx = RARITIES_ORDER.indexOf(targetRarity);
-    let combinedPool = getUnownedPool(targetRarity, player.artifacts || [], player.secretBooks || {});
-    
-    if (combinedPool.length === 0) {
-        for (let i = targetIdx - 1; i >= 0; i--) {
-            combinedPool = getUnownedPool(RARITIES_ORDER[i], player.artifacts || [], player.secretBooks || {});
-            if (combinedPool.length > 0) {
-                targetRarity = RARITIES_ORDER[i];
-                break;
+    // 使用連鎖突變演算法
+    const result = resolveDropWithMutation(targetRarity, player.artifacts || [], player.secretBooks || {}, gachaCost);
+
+    setPlayer(p => {
+        let nextCoins = (isFree ? p.coins : p.coins - gachaCost) + result.coins;
+        let nextFree = isFree ? p.freeGacha - 1 : p.freeGacha;
+        let nextArts = p.artifacts || [];
+        let nextBooks = { ...p.secretBooks };
+
+        if (result.drop) {
+            if (result.drop.poolType === 'art') {
+                nextArts = [...nextArts, result.drop.id];
+            } else {
+                nextBooks[result.drop.id] = 1;
             }
         }
-    }
-    
-    if (combinedPool.length > 0) {
-      const drop = combinedPool[Math.floor(Math.random() * combinedPool.length)];
-      setPlayer(p => ({ 
-        ...p, 
-        coins: isFree ? p.coins : p.coins - gachaCost, 
-        freeGacha: isFree ? p.freeGacha - 1 : p.freeGacha,
-        artifacts: drop.poolType === 'art' ? [...(p.artifacts || []), drop.id] : p.artifacts,
-        secretBooks: drop.poolType === 'book' ? { ...(p.secretBooks || {}), [drop.id]: 1 } : p.secretBooks
-      }));
-      setCelebration({ name: drop.name });
-      addLog(`[萬寶樓] 靈光乍現！獲得【${RARITY[targetRarity].name}】${drop.poolType === 'art' ? '法寶' : '功法'}「${drop.name}」！`);
-    } else { 
-      const compCoins = Math.floor((0.1 * gachaCost) / RARITY[targetRarity].weight);
-      setPlayer(p => ({ 
-        ...p, 
-        coins: (isFree ? p.coins : p.coins - gachaCost) + compCoins, 
-        freeGacha: isFree ? p.freeGacha - 1 : p.freeGacha
-      })); 
-      addLog(`[萬寶樓] 該品階與以下寶物已盡數收入囊中！天道補償 ${formatNumber(compCoins)} 靈石。`); 
+
+        return { ...p, coins: nextCoins, freeGacha: nextFree, artifacts: nextArts, secretBooks: nextBooks };
+    });
+
+    if (result.drop) {
+        setCelebration({ name: result.drop.name });
+        addLog(`[萬寶樓] ${result.log ? result.log + ' ' : ''}獲得【${RARITY[result.finalRarity].name}】${result.drop.poolType === 'art' ? '法寶' : '功法'}「${result.drop.name}」！`);
+    } else {
+        addLog(`[萬寶樓] ${result.log}`);
     }
   };
 
@@ -1070,15 +1104,6 @@ export default function App() {
     }
   };
 
-  const handleUpgradeArtifact = (artId, rarity) => {
-    const currentLvl = player.artifactLvls[artId] || 0;
-    const cost = Math.floor(RARITY_BASE_COST[rarity] * Math.pow(1.8, currentLvl) * forgeDiscount);
-    if (player.coins >= cost && currentLvl < 5) { 
-      setPlayer(p => ({ ...p, coins: p.coins - cost, artifactLvls: { ...p.artifactLvls, [artId]: currentLvl + 1 }, streakShields: maxStreakShields })); 
-      addLog(`[血煉] 【${ARTIFACT_POOL.find(x=>x.id===artId).name}】至 Lv.${currentLvl + 1}。`);
-    }
-  };
-
   const toggleTimer = () => { 
     if (!isActive) { 
       const endTime = Date.now() + (timeLeft * 1000);
@@ -1088,7 +1113,6 @@ export default function App() {
     } 
   };
 
-  // 修改：計時器背景防卡死
   useEffect(() => {
     const syncTime = () => {
       if (isActive && targetEndTime && !showGiveUpWarning) {
@@ -1377,8 +1401,8 @@ export default function App() {
                      <p className="text-white/70 font-bold">裝備 2 把以上「劍類」法寶，每把劍額外提升 20% 戰力與連擊上限。擁有「連擊護盾」時，能為你抵擋一次致死打擊或強行收功反噬。</p>
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Compass size={18}/> 氣運與圖鑑保底</h3>
-                     <p className="text-white/70 font-bold">「氣運」會放大抽獎機率。當該稀有度法寶與功法皆已集滿時，系統會向下尋找未擁有圖鑑；若向下無果，則觸發靈石與修為期望值(EV)補償。</p>
+                     <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Compass size={18}/> 連鎖突變 (抽卡機制)</h3>
+                     <p className="text-white/70 font-bold">當某階級法寶全數收集完畢時，後續抽中該階級將獲得 80% 的靈石補償，並有 <span className="text-amber-400">20% 機率引發「突變」</span>，強行躍升至下一階級。</p>
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-400 flex flex-col gap-2 shadow-inner">
                      <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Pill size={18}/> 頓悟與丹毒冷卻</h3>
@@ -1784,10 +1808,13 @@ export default function App() {
             {activeTab === 'artifacts' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 animate-pop-in pb-10">
                 {ARTIFACT_POOL.map(art => {
-                  const unlocked = (player.artifacts || []).includes(art.id), lvl = player.artifactLvls?.[art.id]||0, cost = Math.floor(RARITY_BASE_COST[art.rarity]*Math.pow(1.8,lvl)*forgeDiscount);
+                  const unlocked = (player.artifacts || []).includes(art.id);
                   return unlocked ? (
-                    <div key={art.id} className={`p-8 rounded-2xl border bg-black/60 border-white/20 flex flex-col justify-between shadow-inner min-h-[16rem]`}><div className="z-10"><h4 className={`font-black text-xl ${RARITY[art.rarity].color} tracking-tighter drop-shadow-md`}>{art.name} <span className="opacity-60 text-xs float-right font-mono text-white mt-1">Lv.{lvl}</span></h4><p className="text-sm text-white/70 mt-5 italic leading-relaxed uppercase tracking-widest">「{art.desc}」</p></div>{lvl < 5 && <button onClick={()=>handleUpgradeArtifact(art.id, art.rarity)} disabled={player.coins < cost} className="mt-8 w-full py-4 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black transition-all border border-white/20 disabled:opacity-30">血煉 ({formatNumber(cost)} 靈石)</button>}</div>
-                  ) : <div key={art.id} className="p-8 rounded-2xl border-2 border-dashed border-white/10 bg-black/50 flex flex-col items-center justify-center opacity-50 min-h-[16rem]"><EyeOff size={40} className="text-white/30 mb-5"/><p className="text-xs font-black text-white/50 uppercase tracking-[0.3em]">寶光內斂：{RARITY[art.rarity].name}</p></div>;
+                    <div key={art.id} className={`p-8 rounded-2xl border bg-black/60 border-white/20 flex flex-col justify-center shadow-inner min-h-[14rem]`}>
+                        <h4 className={`font-black text-xl ${RARITY[art.rarity].color} tracking-tighter drop-shadow-md mb-4`}>{art.name}</h4>
+                        <p className="text-sm text-white/70 italic leading-relaxed uppercase tracking-widest">「{art.desc}」</p>
+                    </div>
+                  ) : <div key={art.id} className="p-8 rounded-2xl border-2 border-dashed border-white/10 bg-black/50 flex flex-col items-center justify-center opacity-50 min-h-[14rem]"><EyeOff size={40} className="text-white/30 mb-5"/><p className="text-xs font-black text-white/50 uppercase tracking-[0.3em]">寶光內斂：{RARITY[art.rarity].name}</p></div>;
                 })}
               </div>
             )}
