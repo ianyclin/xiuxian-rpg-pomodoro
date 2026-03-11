@@ -631,24 +631,37 @@ const BOSS_POOL = [
  */
 
 export default function App() {
+/**
+   * ========================================================
+   * 2. 玩家狀態與系統陣法 (Player State & Core Systems)
+   * ========================================================
+   */
+
   const defaultPlayerState = { 
     realmIndex: 0, qi: 0, qiToNext: 250, vitality: 100, baseMaxVitality: 100, coins: 0, baseCombat: 150, 
     artifacts: [], artifactLvls: {}, basicSkills: {}, secretBooks: {}, arrays: { qi: 0, def: 0 }, 
     streakCount: 0, streakShields: 0, luck: 1.0, totalFocusTime: 0, history: [], hasAscended: false,
     lifetimeStats: { kills: 0, focusCount: 0, totalCoins: 0 },
-    unlockedTitles: [], equippedTitle: null, freeGacha: 0, epiphanyPills: 0, lastPillTime: 0,
+    unlockedTitles: [], equippedTitle: null, 
+    dailyGacha: 0,    // ✨ 每日機緣 (上限 1)
+    awardGacha: 0,    // ✨ 稱號功勳 (永久累積)
+    epiphanyPills: 0, lastPillTime: 0,
     activeCompanion: null, companionKills: {},
-    freeGacha: 0,
-    lastDailyTime: 0, // 新增：紀錄上次領取每日機緣的時間戳
-    logs: ['【天道印記】仙途漫漫，唯『靜心專注』方能證道。以現世之光陰，化此界之修為。摒棄雜念，祝道友仙運隆昌。'] 
+    lastDailyTime: 0, // 紀錄上次領取每日機緣的時間戳
+    logs: ['【天道印記】仙途漫漫，唯『靜心專注』方能證道。以現世之光陰，化此界之修為。'] 
   };
 
-const [player, setPlayer] = useState(() => {
+  const [player, setPlayer] = useState(() => {
     try {
       const saved = localStorage.getItem('xianxia_master_v69');
       if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+              // 🔄 數據遷移：自動將舊版的 freeGacha 轉移至新的永久池 awardGacha
+              if (parsed.freeGacha !== undefined) {
+                parsed.awardGacha = (parsed.awardGacha || 0) + parsed.freeGacha;
+                delete parsed.freeGacha;
+              }
               return { ...defaultPlayerState, ...parsed };
           }
       }
@@ -656,6 +669,7 @@ const [player, setPlayer] = useState(() => {
     } catch (e) { return defaultPlayerState; }
   });
 
+  // 🎵 音效陣法初始化 (保留原本 Ref)
   const focusEndAudioRef = useRef(null);
   const breakEndAudioRef = useRef(null);
   const activeRealmRef = useRef(null);
@@ -664,12 +678,15 @@ const [player, setPlayer] = useState(() => {
     breakEndAudioRef.current = new Audio('https://actions.google.com/sounds/v1/water/water_drop.ogg');
   }, []);
 
+  // ⏰ 世界運轉計時器 (每秒刷新 now 狀態)
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, []);
 
+  // 💾 自動存檔與雲端同步 (帶 Debounce 邏輯)
+  const [saveIndicator, setSaveIndicator] = useState(false);
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
       localStorage.setItem('xianxia_master_v69', JSON.stringify(player));
@@ -678,26 +695,28 @@ const [player, setPlayer] = useState(() => {
     }, 1000);
     return () => clearTimeout(debounceTimer);
   }, [player]);
-useEffect(() => {
-    const now = new Date();
+
+  // ☀️ 每日機緣重置陣法 (早上 08:00)
+  useEffect(() => {
+    const todayNow = new Date();
     const lastClaim = new Date(player.lastDailyTime || 0);
     
-    // 計算邏輯：將時間減去 8 小時，若日期不同，則代表跨過了早晨 8 點
+    // 計算邏輯：將時間減去 8 小時，若日期不同，則代表跨過了早上 8 點
     const getAdjustedDate = (date) => {
       const d = new Date(date);
       d.setHours(d.getHours() - 8);
       return d.toDateString();
     };
 
-    if (getAdjustedDate(now) !== getAdjustedDate(lastClaim)) {
+    if (getAdjustedDate(todayNow) !== getAdjustedDate(lastClaim)) {
       setPlayer(p => ({
         ...p,
-        freeGacha: (p.freeGacha || 0) + 1,
+        dailyGacha: 1, // ✨ 強制設為 1，不領取明日不補，不可累積
         lastDailyTime: Date.now()
       }));
-      addLog("☀️ 【每日機緣】晨曦初露，天道感應道友勤勉，賜予「免費尋寶」一次！");
+      addLog("☀️ 【每日機緣】晨曦初露，今日份的保底尋寶機緣已就緒（提醒：每日機緣不可累積，不領則廢，請及時使用）。");
     }
-  }, []); // 僅在每次重新整理網頁時判定一次
+  }, []); // 僅在開啟網頁時判定一次
   const generateMonsterState = (realmIdx, currentQi, qiToNext) => {
     const isBossReady = currentQi >= qiToNext;
     const nTier = realmIdx + 1;
@@ -796,9 +815,9 @@ useEffect(() => {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
     let newlyUnlocked = [];
-    let newFreeGacha = player.freeGacha || 0;
+    let addedAwardGacha = 0; // 紀錄本次新獲得的稱號次數
     
     TITLE_DATA.forEach(t => {
        if (!(player.unlockedTitles || []).includes(t.id)) {
@@ -820,21 +839,25 @@ useEffect(() => {
           
           if (conditionMet) {
              newlyUnlocked.push(t.id);
-             newFreeGacha += 1;
+             addedAwardGacha += 1;
           }
        }
     });
   
-if (newlyUnlocked.length > 0) {
+    if (newlyUnlocked.length > 0) {
        setPlayer(p => {
           const updatedUnlocked = [...(p.unlockedTitles || []), ...newlyUnlocked];
-          const updatedLogs = [...(p.logs || [])]; // 加入 || [] 防護
+          const updatedLogs = [...(p.logs || [])];
           newlyUnlocked.forEach(id => {
              const titleName = TITLE_DATA.find(x => x.id === id).name;
-             const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-             updatedLogs.unshift(`[${timeStr}] 🏆 【天道恩賜】解鎖稱號「${titleName}」！獲贈免費尋寶 1 次！`);
+             updatedLogs.unshift(`🏆 【天道恩賜】解鎖稱號「${titleName}」！獲贈永久尋寶次數 1 次！`);
           });
-          return { ...p, unlockedTitles: updatedUnlocked, freeGacha: newFreeGacha, logs: updatedLogs.slice(0, 200) };
+          return { 
+            ...p, 
+            unlockedTitles: updatedUnlocked, 
+            awardGacha: (p.awardGacha || 0) + addedAwardGacha, // 注入永久功勳池
+            logs: updatedLogs.slice(0, 200) 
+          };
        });
     }
   }, [player.lifetimeStats, player.artifacts, player.basicSkills, player.secretBooks]);
@@ -1689,13 +1712,18 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
     }
   };
 
-  const handleGacha = () => {
-    const isFree = (player.freeGacha || 0) > 0;
+const handleGacha = () => {
+    // ⚔️ 判斷機緣優先級：1. 每日機緣 (優先) -> 2. 稱號功勳 (次之)
+    const useDaily = (player.dailyGacha || 0) > 0;
+    const useAward = !useDaily && (player.awardGacha || 0) > 0;
+    const isFree = useDaily || useAward;
+
+    // 若無免費次數且靈石不足，則無法開陣
     if (!isFree && player.coins < gachaCost) return;
     
+    // 🎲 天道演算：稀有度判定 (保留你原本的 luckVal 算法)
     const roll = Math.random(); 
     let targetRarity = 'COMMON';
-    
     let accum = 0;
     const sortedRarities = Object.entries(RARITY).sort((a,b) => a[1].weight - b[1].weight);
     for (let [r, data] of sortedRarities) {
@@ -1706,15 +1734,21 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
         }
     }
     
+    // ✨ 機緣保底：凡使用免費次數，強制法寶(RARE)起步，跳過凡/靈品
     if (isFree && ['COMMON', 'UNCOMMON'].includes(targetRarity)) {
       targetRarity = 'RARE';
     }
     
+    // 🌀 連鎖突變機制 (保留原本的大一統掉落邏輯)
     const result = resolveDropWithMutation(targetRarity, player.artifacts || [], player.secretBooks || {}, gachaCost);
 
     setPlayer(p => {
         let nextCoins = (isFree ? p.coins : p.coins - gachaCost) + result.coins;
-        let nextFree = isFree ? p.freeGacha - 1 : p.freeGacha;
+        
+        // 💰 精準扣除次數：優先消耗每日，每日沒了才扣稱號
+        let nextDaily = useDaily ? 0 : p.dailyGacha;
+        let nextAward = useAward ? p.awardGacha - 1 : p.awardGacha;
+        
         let nextArts = p.artifacts || [];
         let nextBooks = { ...p.secretBooks };
 
@@ -1726,11 +1760,23 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
             }
         }
 
-        return { ...p, coins: nextCoins, freeGacha: nextFree, artifacts: nextArts, secretBooks: nextBooks };
+        return { 
+          ...p, 
+          coins: nextCoins, 
+          dailyGacha: nextDaily, 
+          awardGacha: nextAward, 
+          artifacts: nextArts, 
+          secretBooks: nextBooks 
+        };
     });
 
+    // 🎊 顯化異象 (保留原本的慶祝與日誌邏輯)
     if (result.drop) {
-        setCelebration({ name: result.drop.name, quote: '機緣已至，重寶出世！', drops: [`${RARITY[result.finalRarity].name} ${result.drop.poolType === 'art' ? '法寶' : '功法'}`] });
+        setCelebration({ 
+          name: result.drop.name, 
+          quote: '機緣已至，重寶出世！', 
+          drops: [`${RARITY[result.finalRarity].name} ${result.drop.poolType === 'art' ? '法寶' : '功法'}`] 
+        });
         addLog(`[萬寶樓] ${result.log ? result.log + ' ' : ''}獲得【${RARITY[result.finalRarity].name}】${result.drop.poolType === 'art' ? '法寶' : '功法'}「${result.drop.name}」！`);
     } else {
         addLog(`[萬寶樓] ${result.log}`);
