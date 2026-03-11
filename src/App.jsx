@@ -31,6 +31,17 @@ const database = getDatabase(app);
 
 const CHANGELOG_DATA = [
   {
+    version: "v3.7.0",
+    date: "2026-03-11",
+    title: "晨曦機緣與洞府玄光",
+    desc: "天道酬勤，每日八點靈氣重聚。",
+    changes: [
+      "實裝【每日機緣】：每日早上 08:00 定時重置。每日首次登入修仙大陣，皆可獲得天道賜予的免費尋寶機會一次。",
+      "優化【引導亮點】：將免費尋寶提醒移至「洞府淬煉」分頁，並改為低調的「微弱呼吸紅點」，導向更直觀的收益轉化點。",
+      "清理【介面冗餘】：移除頁尾名號頭銜的數字通知，進一步淨化視覺空間。"
+    ]
+  },
+  {
     version: "v3.6.0",
     date: "2026-03-11",
     title: "天機化隱與萬法歸一",
@@ -627,6 +638,8 @@ export default function App() {
     lifetimeStats: { kills: 0, focusCount: 0, totalCoins: 0 },
     unlockedTitles: [], equippedTitle: null, freeGacha: 0, epiphanyPills: 0, lastPillTime: 0,
     activeCompanion: null, companionKills: {},
+    freeGacha: 0,
+    lastDailyTime: 0, // 新增：紀錄上次領取每日機緣的時間戳
     logs: ['【天道印記】仙途漫漫，唯『靜心專注』方能證道。以現世之光陰，化此界之修為。摒棄雜念，祝道友仙運隆昌。'] 
   };
 
@@ -665,7 +678,26 @@ const [player, setPlayer] = useState(() => {
     }, 1000);
     return () => clearTimeout(debounceTimer);
   }, [player]);
+useEffect(() => {
+    const now = new Date();
+    const lastClaim = new Date(player.lastDailyTime || 0);
+    
+    // 計算邏輯：將時間減去 8 小時，若日期不同，則代表跨過了早晨 8 點
+    const getAdjustedDate = (date) => {
+      const d = new Date(date);
+      d.setHours(d.getHours() - 8);
+      return d.toDateString();
+    };
 
+    if (getAdjustedDate(now) !== getAdjustedDate(lastClaim)) {
+      setPlayer(p => ({
+        ...p,
+        freeGacha: (p.freeGacha || 0) + 1,
+        lastDailyTime: Date.now()
+      }));
+      addLog("☀️ 【每日機緣】晨曦初露，天道感應道友勤勉，賜予「免費尋寶」一次！");
+    }
+  }, []); // 僅在每次重新整理網頁時判定一次
   const generateMonsterState = (realmIdx, currentQi, qiToNext) => {
     const isBossReady = currentQi >= qiToNext;
     const nTier = realmIdx + 1;
@@ -2388,17 +2420,24 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
         <div className="bg-slate-950/90 backdrop-blur-3xl rounded-2xl border border-white/10 shadow-2xl flex flex-col h-[800px] overflow-hidden">
           <div className="flex bg-black/80 border-b border-white/10 p-2 gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
             {[
-              { id: 'log', label: '修行日誌', icon: History },
-              { id: 'skills', label: '功法祕籍', icon: ScrollText },
-              { id: 'forge', label: '洞府淬煉', icon: Hammer },
-              { id: 'artifacts', label: '法寶庫', icon: Box },
-              { id: 'companions', label: '道侶紅顏', icon: Heart },
-              { id: 'insights', label: '識海投影', icon: Activity }
-            ].map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 py-4 md:py-5 rounded-xl text-xs md:text-sm font-black uppercase flex flex-col items-center justify-center gap-2 transition-all min-w-[80px] ${activeTab===tab.id ? 'bg-white/15 text-white shadow-inner border border-white/20' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}>
-                <tab.icon size={18} className={`md:size-[20px] ${tab.id === 'companions' && activeTab===tab.id ? 'text-pink-400 fill-current' : ''}`}/> <span>{tab.label}</span>
-              </button>
-            ))}
+  { id: 'log', label: '修行日誌', icon: History },
+  { id: 'skills', label: '功法祕籍', icon: ScrollText },
+  { id: 'forge', label: '洞府淬煉', icon: Hammer, hasNotify: (player.freeGacha > 0) }, // 加入亮點判定
+  { id: 'artifacts', label: '法寶庫', icon: Box },
+  { id: 'companions', label: '道侶紅顏', icon: Heart },
+  { id: 'insights', label: '識海投影', icon: Activity }
+].map(tab => (
+  <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 py-4 md:py-5 ...`}>
+    <div className="relative"> {/* 加入 relative 容器 */}
+      <tab.icon size={18} className={`...`} />
+      {/* 🔴 呼吸紅色亮點 */}
+      {tab.hasNotify && (
+        <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_#f43f5e]" />
+      )}
+    </div>
+    <span>{tab.label}</span>
+  </button>
+))}
           </div>
 
           <div className="p-5 md:p-10 overflow-y-auto flex-1 custom-scrollbar">
