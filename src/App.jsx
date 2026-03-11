@@ -2298,13 +2298,6 @@ if (newlyUnlocked.length > 0) {
              </button>
            ))}
         </div>
-
-        {combatPrediction && !isActive && (
-          <div key={combatPrediction.status} className={`mb-8 px-4 py-3 rounded-xl border ${combatPrediction.bg} ${combatPrediction.border} flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-[11px] sm:text-xs md:text-sm font-black tracking-widest ${combatPrediction.color} max-w-xl mx-auto shadow-inner animate-pop-in text-center leading-relaxed`}>
-             <Eye size={16} className="fill-current opacity-80 animate-pulse shrink-0"/>
-             <span>{combatPrediction.text}</span>
-          </div>
-        )}
         
         {mode === 'focus' ? (
           <div className={isActive ? 'hidden' : 'block'}>
@@ -2321,15 +2314,6 @@ if (newlyUnlocked.length > 0) {
             </div>
             <div className="text-[10px] font-mono text-white/40 text-center mb-10">氣血 {formatNumber(monster.hp)} / {formatNumber(monster.maxHp)} ｜ 戰力 {formatNumber(monster.atk)}</div>
             
-            {/* ✨ 補上「天機」顯示區 */}
-            <div className="mt-4 flex flex-col items-center gap-1 animate-breath pointer-events-none">
-               <div className="text-[10px] text-cyan-400/50 font-black tracking-[0.3em] uppercase">
-                 ─── 天機推演 ───
-               </div>
-               <div className="text-sm text-white/40 font-bold tracking-widest italic">
-                 {combatPrediction?.text}
-               </div>
-            </div>
           </div>
         ) : (
           <div className={`flex justify-center items-center gap-3 mb-10 text-sm md:text-base tracking-[0.6em] font-black uppercase text-cyan-400 animate-pulse ${isActive ? 'hidden' : 'flex'}`}>
@@ -2357,7 +2341,15 @@ if (newlyUnlocked.length > 0) {
               </button>
             )}
           </div>
-          
+          {/* ✨ 沉浸式天機顯示 (極簡無框、慢速呼吸) */}
+          {combatPrediction && !isActive && mode === 'focus' && (
+            <div 
+              className={`text-xs sm:text-sm font-bold tracking-widest italic opacity-40 ${combatPrediction.color} animate-pulse pointer-events-none -mt-2`}
+              style={{ animationDuration: '4s' }}
+            >
+              「天機推演，{combatPrediction.text}」
+            </div>
+          )}
           {(player.epiphanyPills || 0) > 0 && mode === 'focus' && (
             <button 
               onClick={() => canUsePill && handleComplete(true)} 
