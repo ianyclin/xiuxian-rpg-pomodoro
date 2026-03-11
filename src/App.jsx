@@ -1504,7 +1504,7 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
         }
         
         setMonster(generateMonsterState(nextRealm, nextQi, nextQiToNext));
-      } else {
+} else {
         const isBigAttack = Math.random() < 0.20; 
         const atkName = isBigAttack ? monster.bAtkName : monster.sAtkName;
         let nextMonsterHp = newHp; 
@@ -1535,6 +1535,7 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
             nextVitality -= actualDamage;
             let scaleLog = enemyTimeScale > 1.1 ? ` (同步蓄力 ${(enemyTimeScale).toFixed(1)}倍)` : '';
             
+            // ✨ 天道修補：嚴格的死亡順序判定
             if (nextVitality <= 0) {
                 if (nextShields > 0) {
                     nextShields -= 1;
@@ -1549,6 +1550,7 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
                     showToast('danger', '妖獸反撲造成致命傷！', [`✨ 觸發涅槃重生`]);
                 } else {
                     nextVitality = Math.floor(maxVitality * 0.5);
+                    // 💀 死亡重罰：扣除 20% 當前總修為 (包含剛獲得的)
                     nextQi = Math.floor(nextQi * 0.8); 
                     nextStreak = 0;
                     nextShields = 0;
@@ -1578,10 +1580,11 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
         }
       }
 
+      // ... 奇遇判定 (保留不變)
       let fortuneLog = '';
       if (!isDeadFromCounter && Math.random() < (0.10 * luckVal * timeRatio)) {
+        // ... (中間的奇遇 fRoll 邏輯完全保持原樣，不要動它) ...
         const fRoll = Math.random() * 100;
-        
         if (fRoll < 25) {
             const extraQi = Math.floor(passiveQi * 2);
             nextQi += extraQi;
@@ -1624,13 +1627,10 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
                     break;
                 }
             }
-
             const result = resolveDropWithMutation(targetRarity, newArtifacts, newSecretBooks, gachaCost);
-            
             nextCoins += result.coins;
             if (!isUsingPill) nextLifetime.totalCoins += result.coins;
             fortuneLog += result.log;
-
             if (result.drop) {
                 const drop = result.drop;
                 if (drop.poolType === 'art') {
@@ -1649,11 +1649,12 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
         }
       }
 
-// ✨ 天道修補：拔除 !monster.isBoss 的特權，徹底落實「靈氣化晶」法則
+      // ✨ 天道修補：嚴格的靈氣化晶判定 (必須在死亡判定之後)
+      // 拔除了 !monster.isBoss 的豁免權。只要打完，修為超過上限，一律化晶！
       let bottleneckLog = '';
       if (nextQi > nextQiToNext) {
           const overflow = nextQi - nextQiToNext;
-          nextQi = nextQiToNext; // 強制將修為鎖死在當前上限
+          nextQi = nextQiToNext; // 🔒 丹田鎖死，確保不會出現 1450 / 612 這種荒謬現象
           
           const crystalizedCoins = Math.floor(overflow * 0.3); 
           const finalCoins = Math.max(1, crystalizedCoins); 
@@ -1667,6 +1668,8 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
 
       const dmgLog = isCrit ? `🔥 【爆擊】造成 ${formatNumber(actualDamage)} 傷害。` : `[運功] 造成 ${formatNumber(actualDamage)} 傷害。`;
       addLog(`${dmgLog} ${killLog || `獲修為 ${formatNumber(passiveQi)}。`}${fortuneLog}${compLog}${bottleneckLog}`);
+      
+      // ... 後續的 setPlayer 保持不變 ...
 
       setPlayer(p => ({
           ...p,
