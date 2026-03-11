@@ -932,43 +932,21 @@ if (newlyUnlocked.length > 0) {
     return Math.floor(offense * defense);
   }, [currentCombatPower, critRate, critDmg, maxVitality, dmgTakenPct, evadeRate]);
 
-  const combatPrediction = useMemo(() => {
+const combatPrediction = useMemo(() => {
     if (!monster) return null;
-    const actualCombatPower = currentCombatPower; 
-    const minDmg = actualCombatPower * 0.6; 
-    const maxDmg = actualCombatPower * 2.4; 
+    const minDmg = currentCombatPower * 0.6; // 最低保底傷害
+    const maxDmg = currentCombatPower * 2.4; // 爆發最高傷害
 
-    if (maxDmg < monster.hp * 0.8) {
-      return {
-        status: 'DANGER',
-        text: "死氣逼人",
-        color: "text-rose-400",
-        bg: "bg-rose-950/40",
-        border: "border-rose-500/50",
-        animate: "animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.3)]",
-        icon: "💀"
-      };
+    // 1. 必敗 (最高傷害打不滿妖獸血量，極度危險)
+    if (maxDmg < monster.hp) {
+      return { status: 'DANGER', text: "感應靈壓...兇險萬分...", color: "text-rose-500" };
     }
+    // 2. 必勝 (最低傷害大於妖獸血量，穩穩拿下)
     if (minDmg >= monster.hp) {
-      return {
-        status: 'SAFE',
-        text: "微末之流",
-        color: "text-slate-400",
-        bg: "bg-slate-900/40",
-        border: "border-slate-700/50",
-        animate: "opacity-80 hover:opacity-100 transition-opacity duration-1000",
-        icon: "🍃"
-      };
+      return { status: 'SAFE', text: "靈壓感應...十拿九穩...", color: "text-cyan-400" };
     }
-    return {
-      status: 'UNKNOWN',
-      text: "靈壓激盪",
-      color: "text-amber-400",
-      bg: "bg-amber-950/40",
-      border: "border-amber-600/40",
-      animate: "animate-pulse shadow-[0_0_10px_rgba(251,191,36,0.2)]",
-      icon: "☯️"
-    };
+    // 3. 變數 (最低打不死，最高打得死，全看爆擊)
+    return { status: 'UNKNOWN', text: "靈壓感應...或可一試...", color: "text-amber-500" };
   }, [monster, currentCombatPower]);
 
   const getExportString = () => {
@@ -2341,13 +2319,13 @@ if (newlyUnlocked.length > 0) {
               </button>
             )}
           </div>
-          {/* ✨ 沉浸式天機顯示 (極簡無框、慢速呼吸) */}
+{/* ✨ 沉浸式天機顯示 (極簡無框、慢速呼吸) */}
           {combatPrediction && !isActive && mode === 'focus' && (
             <div 
               className={`text-xs sm:text-sm font-bold tracking-widest italic opacity-40 ${combatPrediction.color} animate-pulse pointer-events-none -mt-2`}
               style={{ animationDuration: '4s' }}
             >
-              「天機推演，{combatPrediction.text}」
+              「{combatPrediction.text}」
             </div>
           )}
           {(player.epiphanyPills || 0) > 0 && mode === 'focus' && (
