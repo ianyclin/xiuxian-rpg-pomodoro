@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, BarChart3, Save, Pill, HelpCircle, ShieldAlert, Award, Heart, Copy, Download, FileText } from 'lucide-react';
-
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, ChartColumn, Save, Pill, CircleHelp, ShieldAlert, Award, Heart, Copy, Download, FileText } from 'lucide-react';
+// 註：全文中原本使用 <HelpCircle /> 的地方需改為 <CircleHelp />
+// 全文中原本使用 <BarChart3 /> 的地方需改為 <ChartColumn />
 /**
  * ========================================================
  * 0. 天道雲端初始化 (Firebase Setup)
@@ -617,10 +618,15 @@ export default function App() {
     logs: ['【天道印記】仙途漫漫，唯『靜心專注』方能證道。以現世之光陰，化此界之修為。摒棄雜念，祝道友仙運隆昌。'] 
   };
 
-  const [player, setPlayer] = useState(() => {
+const [player, setPlayer] = useState(() => {
     try {
       const saved = localStorage.getItem('xianxia_master_v69');
-      if (saved) return { ...defaultPlayerState, ...JSON.parse(saved) };
+      if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+              return { ...defaultPlayerState, ...parsed };
+          }
+      }
       return defaultPlayerState;
     } catch (e) { return defaultPlayerState; }
   });
@@ -785,10 +791,10 @@ export default function App() {
        }
     });
   
-    if (newlyUnlocked.length > 0) {
+if (newlyUnlocked.length > 0) {
        setPlayer(p => {
           const updatedUnlocked = [...(p.unlockedTitles || []), ...newlyUnlocked];
-          const updatedLogs = [...p.logs];
+          const updatedLogs = [...(p.logs || [])]; // 加入 || [] 防護
           newlyUnlocked.forEach(id => {
              const titleName = TITLE_DATA.find(x => x.id === id).name;
              const timeStr = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
@@ -926,7 +932,7 @@ export default function App() {
     return Math.floor(offense * defense);
   }, [currentCombatPower, critRate, critDmg, maxVitality, dmgTakenPct, evadeRate]);
 
-  const combatPrediction = React.useMemo(() => {
+  const combatPrediction = useMemo(() => {
     if (!monster) return null;
     const actualCombatPower = currentCombatPower; 
     const minDmg = actualCombatPower * 0.6; 
@@ -1702,7 +1708,7 @@ export default function App() {
     }
   }, [isActive, targetEndTime, showGiveUpWarning]);
 
-      const getStatBreakdown = React.useCallback((type) => {
+      const getStatBreakdown = useCallback((type) => {
         let breakdown = [];
         
         BASIC_SKILLS.forEach(s => {
