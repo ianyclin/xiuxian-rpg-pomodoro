@@ -849,6 +849,20 @@ if (newlyUnlocked.length > 0) {
   const [activeTab, setActiveTab] = useState('log');
   const [showRealmGuide, setShowRealmGuide] = useState(false);
   const [showStatsReport, setShowStatsReport] = useState(false);
+  const [activeStat, setActiveStat] = useState(null); // 紀錄當前選中的屬性
+
+  // ✨ 神識自動對焦：當點擊屬性後，自動捲動至視窗中心 (解決手機端被擋住的問題)
+  useEffect(() => {
+    if (activeStat && showStatsReport) {
+      const timer = setTimeout(() => {
+        const element = document.getElementById(`stat-row-${activeStat}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [activeStat, showStatsReport]);
   const [showGuide, setShowGuide] = useState(false); 
   const [showTitles, setShowTitles] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -1802,21 +1816,29 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
         return breakdown;
       }, [player, luckCritBonus, luckEvadeBonus, luckReviveBonus]);
 
-      const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
+const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
         const breakdown = getStatBreakdown(type);
+        const isSelected = activeStat === type; // 檢查是否被選中
+
         return (
-          <div className="group relative border-b border-white/5 py-2">
-            <div className="flex justify-between text-sm items-center cursor-help">
+          <div 
+            id={`stat-row-${type}`} // 👈 加上 ID 供自動對焦使用
+            key={type}
+            onClick={() => setActiveStat(isSelected ? null : type)} // 點擊切換
+            className={`relative border-b border-white/5 py-4 px-2 transition-all cursor-pointer rounded-xl ${isSelected ? 'bg-white/5 ring-1 ring-white/10' : 'hover:bg-white/5'}`}
+          >
+            <div className="flex justify-between text-sm items-center">
               <span className="text-slate-300 font-bold flex flex-col">
-                 <span className="border-b border-dashed border-white/30 pb-0.5 inline-block w-fit">{title}</span>
-                 {subtext && <span className="text-[10px] text-white/40 font-mono mt-1">{subtext}</span>}
+                  <span className={`border-b border-dashed border-white/30 pb-0.5 inline-block w-fit ${isSelected ? 'text-emerald-400' : ''}`}>{title}</span>
+                  {subtext && <span className="text-[10px] text-white/40 font-mono mt-1">{subtext}</span>}
               </span>
               <span className={`${colorClass} font-mono font-black text-base`}>{displayValue}</span>
             </div>
             
-            {breakdown.length > 0 && (
-              <div className="hidden group-hover:block mt-2 p-3 rounded-lg bg-black/80 border border-white/10 text-xs text-white/70 space-y-1.5 animate-pop-in shadow-xl absolute z-50 w-full left-0 top-full">
-                <div className="flex justify-between text-white/40 mb-2 border-b border-white/10 pb-1">
+            {/* ✨ 改為：當選中時 (isSelected) 才原地展開內容 */}
+            {isSelected && breakdown.length > 0 && (
+              <div className="mt-3 p-3 rounded-lg bg-black/80 border border-white/10 text-[11px] text-white/70 space-y-2 animate-pop-in">
+                <div className="flex justify-between text-white/40 mb-1 border-b border-white/10 pb-1">
                    <span>來源拆解</span><span>加成數值</span>
                 </div>
                 {breakdown.map((b, i) => (
