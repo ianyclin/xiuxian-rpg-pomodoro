@@ -371,7 +371,6 @@ const SECRET_BOOKS = [
   { id: 's_11', rarity: 'DIVINE', name: '涅槃金身', desc: '不死不滅。復活機率 +8%/級', val: { revive: 0.08 } },
   { id: 's_12', rarity: 'RARE', name: '百脈煉寶訣', desc: '肉身融寶。洞府成本 -5%/級', val: { forge_discount: 0.05 } },
   { id: 's_13', rarity: 'EPIC', name: '明清靈目', desc: '看破虛妄。氣運保底 +0.1/級', val: { luck_floor: 0.10 } },
-// --- 新增 6 部原著絕學 ---
   { id: 's_15', rarity: 'EPIC', name: '劍影分光術', desc: '極限劍修。戰力+15%，連擊效率+15%/級', val: { atk: 0.15, streak_eff: 0.15 } },
   { id: 's_16', rarity: 'LEGENDARY', name: '疾風九變', desc: '極致身法。閃避率+6%，連擊上限+20%/級', val: { evade: 0.06, streak_cap: 0.20 } },
   { id: 's_17', rarity: 'UNCOMMON', name: '玄陰經', desc: '捨棄防禦。爆擊率+5%，防禦-3%/級', val: { crit: 0.05, def: -0.03 } },
@@ -415,10 +414,10 @@ const COMPANIONS = [
     id: 'c_chen', name: '陳巧倩', unlockIdx: 4, desc: '「韓師弟，你真的不明白我的心意嗎？」落雲宗師姐，對你一往情深，至死未嫁。', 
     buffType: 'atk', buffName: '痴情劍意', buffDesc: '總戰力加成', tiers: [5, 10, 20, 30],
     quotes: [
-      ['韓師弟，你也來參加血色禁地試煉嗎？', '多謝師弟出手相救，巧倩感激不盡...'], // Tier 0: 初識
-      ['師弟，這是我熬製的靈湯，你且喝下。', '只要能默默為你護法，巧倩便心滿意足了。'], // Tier 1: 相知
-      ['師弟，你...你真的不明白我的心意嗎？', '無論你去哪裡，巧倩都願意追隨。', '看著你修煉的側臉，總讓我微微失神...'], // Tier 2: 傾心
-      ['師弟的背影，巧倩這輩子都不會忘記。', '哪怕是粉身碎骨，我也要護你周全！', '此生能與師弟結為道侶，巧倩死而無憾。'] // Tier 3: 生死
+      ['韓師弟，你也來參加血色禁地試煉嗎？', '多謝師弟出手相救，巧倩感激不盡...'], 
+      ['師弟，這是我熬製的靈湯，你且喝下。', '只要能默默為你護法，巧倩便心滿意足了。'], 
+      ['師弟，你...你真的不明白我的心意嗎？', '無論你去哪裡，巧倩都願意追隨。', '看著你修煉的側臉，總讓我微微失神...'], 
+      ['師弟的背影，巧倩這輩子都不會忘記。', '哪怕是粉身碎骨，我也要護你周全！', '此生能與師弟結為道侶，巧倩死而無憾。'] 
     ] 
   },
   { 
@@ -628,7 +627,7 @@ export default function App() {
 
   const focusEndAudioRef = useRef(null);
   const breakEndAudioRef = useRef(null);
-  const activeRealmRef = useRef(null); // ✨ 加入這行，這就是鎖定境界用的「神識錨點」
+  const activeRealmRef = useRef(null);
   useEffect(() => {
     focusEndAudioRef.current = new Audio('https://actions.google.com/sounds/v1/alarms/meditation_bell.ogg');
     breakEndAudioRef.current = new Audio('https://actions.google.com/sounds/v1/water/water_drop.ogg');
@@ -648,25 +647,24 @@ export default function App() {
     }, 1000);
     return () => clearTimeout(debounceTimer);
   }, [player]);
-  // ✨ 天道對焦：當境界提升或結束專注時，自動將當前境界捲動至螢幕中央
+
   useEffect(() => {
-    // 邏輯判定：非專注狀態下（UI可見時）且錨點已繫定
     if (!isActive && activeRealmRef.current) {
       activeRealmRef.current.scrollIntoView({
-        behavior: 'smooth', // 平滑滑動，增加修仙飄逸感
-        inline: 'center',   // 🚀 核心：強制水平居中
-        block: 'nearest'    // 垂直方向保持不動
+        behavior: 'smooth', 
+        inline: 'center',   
+        block: 'nearest'    
       });
     }
-  }, [player.realmIndex, isActive]); // 監聽境界變動與專注狀態
+  }, [player.realmIndex, isActive]); 
 
-const generateMonsterState = (realmIdx, currentQi, qiToNext) => {
+  const generateMonsterState = (realmIdx, currentQi, qiToNext) => {
     const isBossReady = currentQi >= qiToNext;
     const nTier = realmIdx + 1;
     const isFinal = realmIdx === REALMS.length - 1;
     const majorName = REALMS[realmIdx].majorName;
     
-    let mName, sAtkName, bAtkName, isBoss, mQuote; // 新增 mQuote
+    let mName, sAtkName, bAtkName, isBoss, mQuote;
     let bossMult = 1;
 
     if (isBossReady || isFinal) {
@@ -674,7 +672,7 @@ const generateMonsterState = (realmIdx, currentQi, qiToNext) => {
         mName = `${bData.name} [死劫/瓶頸]`;
         sAtkName = bData.s;
         bAtkName = bData.b;
-        mQuote = bData.q; // 抓取 Boss 語錄
+        mQuote = bData.q; 
         isBoss = true;
         bossMult = isFinal ? 20 : 4; 
     } else {
@@ -683,7 +681,7 @@ const generateMonsterState = (realmIdx, currentQi, qiToNext) => {
         mName = mData.name;
         sAtkName = mData.s;
         bAtkName = mData.b;
-        mQuote = mData.q; // 抓取小怪語錄
+        mQuote = mData.q; 
         isBoss = false;
         bossMult = 1;
     }
@@ -695,10 +693,9 @@ const generateMonsterState = (realmIdx, currentQi, qiToNext) => {
         mName = '【九九重劫】';
         sAtkName = '五行神雷';
         bAtkName = '紫霄神雷劫';
-        mQuote = '轟隆隆！天道無情，逆天者，當受神雷洗禮！'; // 終極死劫專屬
+        mQuote = '轟隆隆！天道無情，逆天者，當受神雷洗禮！'; 
     }
 
-    // 將 quote 回傳
     return { name: mName, hp: nHp, maxHp: nHp, tier: nTier, atk: mAtk, sAtkName, bAtkName, isBoss, quote: mQuote };
   };
 
@@ -719,7 +716,7 @@ const generateMonsterState = (realmIdx, currentQi, qiToNext) => {
       localStorage.setItem('xianxia_monster_v69', JSON.stringify(monster));
   }, [monster]);
 
-const totalSP = useMemo(() => {
+  const totalSP = useMemo(() => {
     let total = 0;
     for (let i = 1; i <= player.realmIndex; i++) {
       total += REALMS[i]?.isMajor ? 5 : 3;
@@ -729,7 +726,6 @@ const totalSP = useMemo(() => {
 
   const availableSP = useMemo(() => {
     const basicSpent = Object.values(player.basicSkills || {}).reduce((a, b) => a + b, 0);
-    // 機緣祕籍：只有「超過 1 級」的部分才扣 SP (第 1 級視為撿到的機緣)
     const secretSpent = Object.values(player.secretBooks || {}).reduce((a, b) => {
       return a + (b > 0 ? b - 1 : 0); 
     }, 0);
@@ -738,9 +734,7 @@ const totalSP = useMemo(() => {
 
   const [saveIndicator, setSaveIndicator] = useState(false);
   const [globalStats, setGlobalStats] = useState({ focus: 0, ascensions: 0 });
-// --- 新增這行：防止時空亂流的神識鎖 ---
   const sessionLockRef = useRef(false);
-  // 新增：階層式反饋 Toast 狀態
   const [toast, setToast] = useState(null);
 
   const showToast = (type, msg, drops = []) => {
@@ -881,20 +875,17 @@ const totalSP = useMemo(() => {
     return mult;
   };
 
-const currentRealmData = REALMS[player.realmIndex];
+  const currentRealmData = REALMS[player.realmIndex];
   const activeColorClass = REALM_COLORS[currentRealmData.color] || REALM_COLORS.slate;
 
   const luckVal = getMultiplier('luck_floor');
   const currentFate = LUCK_FATES.find(f => luckVal >= f.min) || LUCK_FATES[LUCK_FATES.length - 1];
   
-  // --- 新增：天道庇護 (運氣轉化為實戰 RNG 屬性微加成) ---
   const extraLuck = Math.max(0, luckVal - 1.0);
-  const luckCritBonus = extraLuck * 0.015;  // 每多 1 點氣運，+1.5% 爆擊率
-  const luckEvadeBonus = extraLuck * 0.01;  // 每多 1 點氣運，+1.0% 閃避率
-  const luckReviveBonus = extraLuck * 0.005; // 每多 1 點氣運，+0.5% 復活率
-  // -----------------------------------------------------
+  const luckCritBonus = extraLuck * 0.015;  
+  const luckEvadeBonus = extraLuck * 0.01;  
+  const luckReviveBonus = extraLuck * 0.005; 
 
-  // 將微加成融合進原始數值中
   const rawEvade = getMultiplier('evade') - 1 + luckEvadeBonus;
   const evadeRate = Math.min(0.75, rawEvade);
   const overflowEvade = Math.max(0, rawEvade - 0.75);
@@ -926,72 +917,53 @@ const currentRealmData = REALMS[player.realmIndex];
   const arrayDefCost = Math.floor(4000 * Math.pow(1.35, (player.arrays?.def || 0)) * forgeDiscount);
   const gachaCost = Math.floor(5000 * Math.pow(1.15, player.realmIndex) * forgeDiscount);
 
-const pillCooldownRemaining = player.lastPillTime ? Math.max(0, 3600 - Math.floor((now - player.lastPillTime) / 1000)) : 0;
+  const pillCooldownRemaining = player.lastPillTime ? Math.max(0, 3600 - Math.floor((now - player.lastPillTime) / 1000)) : 0;
   const canUsePill = (player.epiphanyPills || 0) > 0 && pillCooldownRemaining === 0;
 
-  // --- ✨ 新增：綜合靈壓 (CP) 計算 ---
   const comprehensiveCP = useMemo(() => {
     const offense = currentCombatPower * (1 + critRate * (critDmg - 1));
     const defense = (maxVitality / 100) * (100 / dmgTakenPct) * (1 + evadeRate);
     return Math.floor(offense * defense);
   }, [currentCombatPower, critRate, critDmg, maxVitality, dmgTakenPct, evadeRate]);
 
-// 🔮 靜態神識感應：精準數值對齊版 (修復白屏與欺詐 Bug)
-const combatPrediction = React.useMemo(() => {
-  if (!monster) return null;
+  const combatPrediction = React.useMemo(() => {
+    if (!monster) return null;
+    const actualCombatPower = currentCombatPower; 
+    const minDmg = actualCombatPower * 0.6; 
+    const maxDmg = actualCombatPower * 2.4; 
 
-  // 1. 修復白屏：直接使用 currentCombatPower 
-  // (注意：currentCombatPower 內部已經乘過 comboMultiplier 了，切勿重複乘算)
-  const actualCombatPower = currentCombatPower; 
-
-  // 2. 修復數值欺詐：完全對齊 handleComplete 的 (focusDuration / 1500) 邏輯
-  // 15m = 900s / 1500 = 0.6x
-  // 60m = 3600s / 1500 = 2.4x
-  const minDmg = actualCombatPower * 0.6; 
-  const maxDmg = actualCombatPower * 2.4; 
-
-  // --- 1. 極度威脅 (死氣逼人) ---
-  // 如果 60m (2.4x) 全力一擊都打不到怪物 80% 的血
-  if (maxDmg < monster.hp * 0.8) {
+    if (maxDmg < monster.hp * 0.8) {
+      return {
+        status: 'DANGER',
+        text: "死氣逼人",
+        color: "text-rose-400",
+        bg: "bg-rose-950/40",
+        border: "border-rose-500/50",
+        animate: "animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.3)]",
+        icon: "💀"
+      };
+    }
+    if (minDmg >= monster.hp) {
+      return {
+        status: 'SAFE',
+        text: "微末之流",
+        color: "text-slate-400",
+        bg: "bg-slate-900/40",
+        border: "border-slate-700/50",
+        animate: "opacity-80 hover:opacity-100 transition-opacity duration-1000",
+        icon: "🍃"
+      };
+    }
     return {
-      status: 'DANGER',
-      text: "死氣逼人",
-      color: "text-rose-400",
-      bg: "bg-rose-950/40",
-      border: "border-rose-500/50",
-      animate: "animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.3)]",
-      icon: "💀"
+      status: 'UNKNOWN',
+      text: "靈壓激盪",
+      color: "text-amber-400",
+      bg: "bg-amber-950/40",
+      border: "border-amber-600/40",
+      animate: "animate-pulse shadow-[0_0_10px_rgba(251,191,36,0.2)]",
+      icon: "☯️"
     };
-  }
-
-  // --- 2. 毫無威脅 (微末之流) ---
-  // 如果只用 15m (0.6x) 的隨手一擊也能秒殺怪物
-  if (minDmg >= monster.hp) {
-    return {
-      status: 'SAFE',
-      text: "微末之流",
-      color: "text-slate-400",
-      bg: "bg-slate-900/40",
-      border: "border-slate-700/50",
-      animate: "opacity-80 hover:opacity-100 transition-opacity duration-1000",
-      icon: "🍃"
-    };
-  }
-
-  // --- 3. 存在變數 (靈壓激盪) ---
-  // 介於 0.6x ~ 2.4x 之間，需要玩家自行決定時長與祈求爆擊
-  return {
-    status: 'UNKNOWN',
-    text: "靈壓激盪",
-    color: "text-amber-400",
-    bg: "bg-amber-950/40",
-    border: "border-amber-600/40",
-    animate: "animate-pulse shadow-[0_0_10px_rgba(251,191,36,0.2)]",
-    icon: "☯️"
-  };
-
-// ⚠️ 依賴陣列改為 currentCombatPower，只要戰力或連擊變動，天機即時刷新
-}, [monster, currentCombatPower]);
+  }, [monster, currentCombatPower]);
 
   const getExportString = () => {
       try {
@@ -1047,7 +1019,7 @@ const combatPrediction = React.useMemo(() => {
     }
   };
 
-const handleRebuildBase = () => {
+  const handleRebuildBase = () => {
     if (player.realmIndex === 0) {
       alert("已是一介凡人，無可散功。");
       return;
@@ -1056,7 +1028,6 @@ const handleRebuildBase = () => {
       const newRealm = player.realmIndex - 1;
       const newQiToNext = Math.floor(250 * Math.pow(1.35, newRealm));
       
-      // 核心修正：將所有已學會的祕籍降回 Lv.1，保留圖鑑不消失！
       const resetSecrets = Object.keys(player.secretBooks || {}).reduce((acc, key) => {
           acc[key] = 1; 
           return acc;
@@ -1068,7 +1039,7 @@ const handleRebuildBase = () => {
         qi: 0, 
         qiToNext: newQiToNext, 
         basicSkills: {}, 
-        secretBooks: resetSecrets, // 套用不滅法則
+        secretBooks: resetSecrets, 
         activeCompanion: null 
       }));
       setMonster(generateMonsterState(newRealm, 0, newQiToNext));
@@ -1086,14 +1057,14 @@ const handleRebuildBase = () => {
   };
 
   const executeGiveUp = () => {
-    sessionLockRef.current = true; // <-- 新增這行上鎖
+    sessionLockRef.current = true; 
     setShowGiveUpWarning(false);
     setIsActive(false); 
     setTargetEndTime(null);
     
     const elapsedTime = focusDuration - timeLeft;
 
-if (elapsedTime <= 60) {
+    if (elapsedTime <= 60) {
         showToast('focus', '【神識收攏】開陣未滿 1 分鐘，無傷退回。');
         addLog(`💨 【神識收攏】開陣未滿 1 分鐘，靈氣尚未入體，無傷退回。`);
         setTimeLeft(focusDuration);
@@ -1185,7 +1156,7 @@ if (elapsedTime <= 60) {
   };
 
   const handleSkipBreak = () => {
-    sessionLockRef.current = true; // <-- 新增這行上鎖
+    sessionLockRef.current = true; 
     setIsActive(false);
     setTargetEndTime(null);
     setMode('focus');
@@ -1231,7 +1202,7 @@ if (elapsedTime <= 60) {
       return { drop: finalDrop, coins: compensationCoins, log: mutationLog, finalRarity: currentTargetRarity };
   };
 
-const handleComplete = (usedPill = false) => {
+  const handleComplete = (usedPill = false) => {
     if (sessionLockRef.current) return; 
     sessionLockRef.current = true;  
   
@@ -1580,9 +1551,8 @@ const handleComplete = (usedPill = false) => {
                 collectedDrops.push(`💰 突變補償：${formatNumber(result.coins)} 靈石`);
             }
         }
-      } // ✨ 奇遇區塊確實結束於此
+      }
 
-      // --- ✨ 瓶頸法則 2.0 (修正版)：天道損耗 ---
       let bottleneckLog = '';
       if (!monster.isBoss && nextQi > nextQiToNext) {
           const overflow = nextQi - nextQiToNext;
@@ -1687,7 +1657,6 @@ const handleComplete = (usedPill = false) => {
     });
 
     if (result.drop) {
-        // 保留抽獎的 Celebration 作為拆盲盒的樂趣
         setCelebration({ name: result.drop.name, quote: '機緣已至，重寶出世！', drops: [`${RARITY[result.finalRarity].name} ${result.drop.poolType === 'art' ? '法寶' : '功法'}`] });
         addLog(`[萬寶樓] ${result.log ? result.log + ' ' : ''}獲得【${RARITY[result.finalRarity].name}】${result.drop.poolType === 'art' ? '法寶' : '功法'}「${result.drop.name}」！`);
     } else {
@@ -1706,9 +1675,7 @@ const handleComplete = (usedPill = false) => {
 
   const toggleTimer = () => { 
     if (!isActive) { 
-      // --- 新增這行：開始新周天時解鎖 ---
       sessionLockRef.current = false;
-      
       const endTime = Date.now() + (timeLeft * 1000);
       setIsActive(true); 
       setTargetEndTime(endTime);
@@ -1734,42 +1701,33 @@ const handleComplete = (usedPill = false) => {
       return () => { clearInterval(interval); document.removeEventListener('visibilitychange', syncTime); };
     }
   }, [isActive, targetEndTime, showGiveUpWarning]);
-// ==========================================
-      // ✨ 屬性溯源陣法與透視鏡 (放在 InsightsChart 之前最安全)
-      // ==========================================
+
       const getStatBreakdown = React.useCallback((type) => {
         let breakdown = [];
         
-        // 1. 基礎功法
         BASIC_SKILLS.forEach(s => {
           if (player.basicSkills?.[s.id] > 0 && s.val?.[type]) {
             breakdown.push({ label: `功法 (${s.name})`, val: s.val[type] * player.basicSkills[s.id] });
           }
         });
-        // 2. 機緣祕籍
         Object.entries(player.secretBooks || {}).forEach(([id, lvl]) => {
           const book = SECRET_BOOKS.find(x => x.id === id);
           if (book?.val?.[type]) breakdown.push({ label: `祕籍 (${book.name})`, val: book.val[type] * lvl });
         });
-        // 3. 裝備法寶
         (player.artifacts || []).forEach(id => {
           const item = ARTIFACT_POOL.find(a => a.id === id);
           if (item?.val?.[type]) breakdown.push({ label: `法寶 (${item.name})`, val: item.val[type] });
         });
-        // 4. 頭銜稱號
         if (player.equippedTitle) {
           const activeTitle = TITLE_DATA.find(t => t.id === player.equippedTitle);
           if (activeTitle?.val?.[type]) breakdown.push({ label: `稱號 (${activeTitle.name})`, val: activeTitle.val[type] });
         }
-        // 5. 劍陣共鳴
         if (type === 'atk' || type === 'streak_cap') {
           const swordCount = (player.artifacts || []).filter(id => ARTIFACT_POOL.find(a => a.id === id)?.tags?.includes('sword')).length;
           if (swordCount >= 2) breakdown.push({ label: `劍陣共鳴 (${swordCount}把劍)`, val: 0.2 * swordCount });
         }
-        // 6. 陣法加持
         if (type === 'qi' && (player.arrays?.qi || 0)) breakdown.push({ label: `陣法 (聚靈大陣)`, val: player.arrays.qi * 0.05 });
         if (type === 'def' && (player.arrays?.def || 0)) breakdown.push({ label: `陣法 (顛倒五行)`, val: player.arrays.def * 0.05 });
-        // 7. 道侶護法
         if (player.activeCompanion) {
           const comp = COMPANIONS.find(c => c.id === player.activeCompanion);
           if (comp && comp.buffType === type) {
@@ -1778,7 +1736,6 @@ const handleComplete = (usedPill = false) => {
             if (tierIdx >= 0) breakdown.push({ label: `道侶 (${comp.name})`, val: type === 'luck_floor' ? comp.tiers[tierIdx] : comp.tiers[tierIdx] / 100 });
           }
         }
-        // 8. 天道氣運微加成 (隱藏屬性)
         if (type === 'crit' && luckCritBonus > 0) breakdown.push({ label: `天道庇護 (氣運溢出)`, val: luckCritBonus });
         if (type === 'evade' && luckEvadeBonus > 0) breakdown.push({ label: `天道庇護 (氣運溢出)`, val: luckEvadeBonus });
         if (type === 'revive' && luckReviveBonus > 0) breakdown.push({ label: `天道庇護 (氣運溢出)`, val: luckReviveBonus });
@@ -1815,8 +1772,6 @@ const handleComplete = (usedPill = false) => {
         );
       };
 
-      // 你的舊代碼在這裡
-      const InsightsChart = () => {
   const InsightsChart = () => {
     const data = player.history || [];
     if (data.length < 2) return <div className="h-full flex items-center justify-center text-white/10 uppercase tracking-widest font-bold text-xs">識海未成，尚無投影</div>;
@@ -2134,7 +2089,7 @@ const handleComplete = (usedPill = false) => {
         </div>
       )}
 
-{showStatsReport && (
+      {showStatsReport && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-3xl bg-[#0a0a0a] p-4 sm:p-6 md:p-10 rounded-2xl border border-cyan-900/50 shadow-2xl flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4 flex-shrink-0">
@@ -2212,7 +2167,7 @@ const handleComplete = (usedPill = false) => {
         </div>
       )}
 
-<div className={`w-full max-w-4xl mb-6 transition-all duration-500 z-10 font-bold px-2 md:px-0 mt-10 ${isActive ? 'hidden' : 'block'}`}>
+      <div className={`w-full max-w-4xl mb-6 transition-all duration-500 z-10 font-bold px-2 md:px-0 mt-10 ${isActive ? 'hidden' : 'block'}`}>
         <div className="flex flex-col items-center mb-8 h-10 justify-center">
           <h1 className="text-lg md:text-xl font-extralight tracking-[1.2em] text-white/30 uppercase font-bold drop-shadow-md">
             凡人修仙專注
@@ -2223,10 +2178,10 @@ const handleComplete = (usedPill = false) => {
         {/* --- 狀態主面板 --- */}
         <div className={`bg-slate-900/50 backdrop-blur-3xl p-5 md:p-8 rounded-xl border ${activeColorClass.border} relative shadow-2xl transition-all duration-500`}>
           
-          {/* 頂部資訊區塊 (左側：境界與靈壓 / 右側：資源數據) */}
+          {/* 頂部資訊區塊 */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-6 mb-6">
             
-            {/* --- 左側：境界、靈壓、命格、道侶 --- */}
+            {/* --- 左側 --- */}
             <div className="flex items-center gap-4 w-full md:flex-1 min-w-0">
                 <Shield size={36} className={`${activeColorClass.text} flex-shrink-0`}/>
                 
@@ -2236,13 +2191,11 @@ const handleComplete = (usedPill = false) => {
                     {currentRealmData.name}
                   </h2>
                   
-                  {/* 綜合靈壓 */}
                   <div className="flex items-center gap-2 mt-1">
                      <span className="text-[10px] text-white/50 uppercase tracking-widest">綜合靈壓</span>
                      <span className="text-sm font-mono font-black text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.8)] flex items-center gap-1.5"><Activity size={12}/> {formatNumber(comprehensiveCP)}</span>
                   </div>
 
-                  {/* 標籤群：命格與道侶 */}
                   <div className="flex flex-wrap items-center gap-2 mt-3">
                     <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-white/10 bg-black/40 text-[10px] sm:text-xs tracking-widest font-black ${currentFate.color}`}>
                       <Clover size={14} className="fill-current"/> 
@@ -2257,28 +2210,24 @@ const handleComplete = (usedPill = false) => {
                     )}
                   </div>
                   
-                  {/* 境界描述 */}
                   <p className={`text-xs md:text-sm leading-tight ${activeColorClass.text} font-bold mt-2 opacity-90 italic drop-shadow-md truncate`}>
                     {currentRealmData.desc}
                   </p>
                 </div>
             </div>
 
-            {/* --- 右側：靈石、SP、連擊、頓悟丹 --- */}
+            {/* --- 右側 --- */}
             <div className="grid grid-cols-2 sm:flex sm:flex-row sm:flex-nowrap justify-start md:justify-end items-start md:items-end gap-x-4 gap-y-4 w-full md:w-auto mt-4 md:mt-0">
-               
                <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-yellow-500 uppercase font-black flex items-center gap-1.5 mb-1"><Coins size={12}/> 靈石</span>
                  <span className="text-base text-yellow-500 font-mono font-bold drop-shadow-md">{formatNumber(player.coins)}</span>
                </div>
-               
                <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-cyan-400 uppercase font-black flex items-center gap-1.5 mb-1"><Zap size={12}/> SP</span>
                  <span className="text-base text-cyan-400 font-mono font-bold drop-shadow-md">
                    {formatNumber(availableSP)} <span className="text-[10px] opacity-40">/ {totalSP}</span>
                  </span>
                </div>
-               
                <div className="flex flex-col items-start md:items-end">
                  <span className="text-xs text-rose-500 uppercase font-black flex items-center gap-1.5 mb-1"><Sword size={12}/> 連擊</span>
                  <span className={`text-base text-rose-500 font-mono font-bold drop-shadow-md transition-all duration-500 flex items-center gap-1 ${comboMultiplier > 2.0 ? 'text-rose-300 scale-110 animate-pulse drop-shadow-[0_0_10px_rgba(244,63,94,0.8)]' : ''}`}>
@@ -2286,13 +2235,13 @@ const handleComplete = (usedPill = false) => {
                    {maxStreakShields > 0 && <span className="text-cyan-400 text-xs ml-1 flex items-center">🛡️{player.streakShields}</span>}
                  </span>
                </div>
-               
                <div className="flex flex-col items-start md:items-end font-bold">
                  <span className="text-xs text-amber-500 uppercase font-black flex items-center gap-1.5 mb-1"><Pill size={12}/> 頓悟丹</span>
                  <span className="text-base text-amber-500 font-mono font-bold drop-shadow-md">{formatNumber(player.epiphanyPills || 0)}</span>
                </div>
             </div>
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
             <div className="space-y-3 relative z-10">
                 <div className="flex justify-between text-xs uppercase font-black opacity-60 tracking-widest text-white">
@@ -2310,33 +2259,28 @@ const handleComplete = (usedPill = false) => {
           </div>
         </div>
 
-<div className="mt-6 flex flex-col gap-5">
-  {/* 這裡是境界橫桿的容器 */}
-  <div className="flex overflow-x-auto py-5 px-4 gap-8 bg-black/40 rounded-xl border border-white/10 flex-shrink-0 custom-scrollbar">
-    {REALMS.map((r, i) => (
-      <div 
-        key={i} 
-        // 🔮 關鍵：在此處繫上神識錨點
-        ref={i === player.realmIndex ? activeRealmRef : null} 
-        className={`flex flex-col items-center min-w-[90px] transition-all relative ${
-          i === player.realmIndex ? 'scale-110 opacity-100' : 'opacity-40'
-        }`}
-      >
-        {/* 境界數字標誌 (旋轉 45 度那個) */}
-        <div className={`w-10 h-10 rounded-lg border flex items-center justify-center font-black text-sm rotate-45 transition-all ${
-          i === player.realmIndex ? 'bg-white text-black rotate-0 shadow-2xl' : 'border-white/20 text-white'
-        }`}>
-          <span className={i === player.realmIndex ? '' : '-rotate-45'}>{i}</span>
+        <div className="mt-6 flex flex-col gap-5">
+          <div className="flex overflow-x-auto py-5 px-4 gap-8 bg-black/40 rounded-xl border border-white/10 flex-shrink-0 custom-scrollbar">
+            {REALMS.map((r, i) => (
+              <div 
+                key={i} 
+                ref={i === player.realmIndex ? activeRealmRef : null} 
+                className={`flex flex-col items-center min-w-[90px] transition-all relative ${
+                  i === player.realmIndex ? 'scale-110 opacity-100' : 'opacity-40'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-lg border flex items-center justify-center font-black text-sm rotate-45 transition-all ${
+                  i === player.realmIndex ? 'bg-white text-black rotate-0 shadow-2xl' : 'border-white/20 text-white'
+                }`}>
+                  <span className={i === player.realmIndex ? '' : '-rotate-45'}>{i}</span>
+                </div>
+                <span className="text-xs font-black mt-5 whitespace-nowrap uppercase tracking-tighter">
+                  {r.name}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
-        
-        {/* 境界名稱 */}
-        <span className="text-xs font-black mt-5 whitespace-nowrap uppercase tracking-tighter">
-          {r.name}
-        </span>
-      </div>
-    ))}
-  </div>
-</div>
       </div>
 
       <div className={`w-full max-w-4xl bg-slate-900/40 backdrop-blur-3xl p-8 md:p-14 rounded-2xl border ${mode === 'break' ? 'border-cyan-500/30' : 'border-white/10'} text-center z-10 shadow-2xl transition-all duration-700 ${isActive ? (mode === 'break' ? 'scale-[1.02] shadow-[0_0_50px_rgba(6,182,212,0.15)] my-auto' : 'scale-[1.02] shadow-[0_0_50px_rgba(16,185,129,0.15)] border-emerald-500/30 my-auto') : 'mb-8'}`}>
@@ -2348,32 +2292,38 @@ const handleComplete = (usedPill = false) => {
              </button>
            ))}
         </div>
-{/* --- ✨ 插入點：天機推演橫幅 --- */}
+
         {combatPrediction && !isActive && (
           <div key={combatPrediction.status} className={`mb-8 px-4 py-3 rounded-xl border ${combatPrediction.bg} ${combatPrediction.border} flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-[11px] sm:text-xs md:text-sm font-black tracking-widest ${combatPrediction.color} max-w-xl mx-auto shadow-inner animate-pop-in text-center leading-relaxed`}>
              <Eye size={16} className="fill-current opacity-80 animate-pulse shrink-0"/>
              <span>{combatPrediction.text}</span>
           </div>
         )}
-        {/* ------------------------------ */}
         
-{/* 尋找原本的這段代碼： */}
         {mode === 'focus' ? (
           <div className={isActive ? 'hidden' : 'block'}>
             <div className={`flex justify-center items-center gap-3 mb-2 text-sm md:text-base tracking-[0.6em] font-black uppercase transition-colors ${monster.name.includes('死劫') || monster.name.includes('劫') ? 'text-rose-500 animate-pulse' : 'text-rose-400'}`}>
               <Compass size={18}/> {monster.name}
             </div>
 
-            {/* --- ✨ 新增：妖獸挑釁語錄在這裡！ --- */}
-<div className="text-xs md:text-sm text-rose-200/70 italic font-bold mb-4 tracking-widest drop-shadow-md px-4 leading-relaxed">
-  「{monster.quote || '（惡狠狠的直盯著你，彷彿要將你生脫活剝...）'}」
-</div>
-            {/* ------------------------------------- */}
+            <div className="text-xs md:text-sm text-rose-200/70 italic font-bold mb-4 tracking-widest drop-shadow-md px-4 leading-relaxed">
+              「{monster.quote || '（惡狠狠的直盯著你，彷彿要將你生脫活剝...）'}」
+            </div>
 
             <div className="w-full max-w-xs mx-auto bg-black/60 rounded-full h-2.5 mb-1 overflow-hidden border border-white/10 shadow-inner">
                <div className="bg-gradient-to-r from-rose-900 to-rose-500 h-full transition-all duration-500 shadow-[0_0_10px_#f43f5e]" style={{ width: `${Math.min(100, (monster.hp / monster.maxHp) * 100)}%` }}></div>
             </div>
             <div className="text-[10px] font-mono text-white/40 text-center mb-10">氣血 {formatNumber(monster.hp)} / {formatNumber(monster.maxHp)} ｜ 戰力 {formatNumber(monster.atk)}</div>
+            
+            {/* ✨ 補上「天機」顯示區 */}
+            <div className="mt-4 flex flex-col items-center gap-1 animate-breath pointer-events-none">
+               <div className="text-[10px] text-cyan-400/50 font-black tracking-[0.3em] uppercase">
+                 ─── 天機推演 ───
+               </div>
+               <div className="text-sm text-white/40 font-bold tracking-widest italic">
+                 {combatPrediction?.text}
+               </div>
+            </div>
           </div>
         ) : (
           <div className={`flex justify-center items-center gap-3 mb-10 text-sm md:text-base tracking-[0.6em] font-black uppercase text-cyan-400 animate-pulse ${isActive ? 'hidden' : 'flex'}`}>
@@ -2417,9 +2367,9 @@ const handleComplete = (usedPill = false) => {
 
       <div className={`w-full max-w-4xl mt-4 transition-all duration-500 z-10 font-bold ${isActive ? 'hidden' : 'block'}`}>
         <div className="bg-slate-950/90 backdrop-blur-3xl rounded-2xl border border-white/10 shadow-2xl flex flex-col h-[800px] overflow-hidden">
-<div className="flex bg-black/80 border-b border-white/10 p-2 gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
+          <div className="flex bg-black/80 border-b border-white/10 p-2 gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
             {[
-              { id: 'log', label: '修行日誌', icon: History }, // 移至首位
+              { id: 'log', label: '修行日誌', icon: History },
               { id: 'skills', label: '功法祕籍', icon: ScrollText },
               { id: 'forge', label: '洞府淬煉', icon: Hammer },
               { id: 'artifacts', label: '法寶庫', icon: Box },
@@ -2437,9 +2387,7 @@ const handleComplete = (usedPill = false) => {
               <div className="space-y-14 animate-pop-in">
                 <div>
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b border-white/20 pb-4 gap-4">
-                    <h3 className="text-white/60 text-sm font-black uppercase tracking-widest">
-                      凡俗根基 (SP 研習)
-                    </h3>
+                    <h3 className="text-white/60 text-sm font-black uppercase tracking-widest">凡俗根基 (SP 研習)</h3>
                     <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
                       <span className="text-cyan-400 font-mono">可用 SP: {formatNumber(availableSP)} / {totalSP}</span>
                       <button onClick={handleRebuildBase} className="px-4 py-2.5 bg-rose-900/40 hover:bg-rose-700 text-rose-300 hover:text-white rounded-lg text-xs font-black border border-rose-500/50 transition-all flex items-center gap-2 shadow-lg">
@@ -2447,7 +2395,6 @@ const handleComplete = (usedPill = false) => {
                       </button>
                     </div>
                   </div>
-
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                   {BASIC_SKILLS.map(s => { const lvl = player.basicSkills?.[s.id] || 0; return (
                     <div key={s.id} className="p-5 rounded-xl border border-white/20 bg-white/5 flex flex-col justify-between h-56 shadow-inner group">
