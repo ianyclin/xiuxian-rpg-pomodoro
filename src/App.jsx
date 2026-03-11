@@ -1465,10 +1465,12 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
 
         const isFinalBoss = monster.name === '【九九重劫】';
         
-        if (isBossDefeated) {
+if (isBossDefeated) {
             if (isFinalBoss && !player.hasAscended) {
                 try { update(ref(database, 'globalStats'), { totalAscensions: increment(1) }); } catch(e) {}
                 nextHasAscended = true;
+                // ✨ 強化日誌：獨立顯示飛升，不跟戰鬥數據擠在一起
+                addLog(`🌌 【破空飛升】恭賀道友位列仙班，成就真仙之位！`); 
                 killLog = `🌌 【破空飛升】位列仙班！ ` + killLog;
                 
                 const quoteMsg = FEEDBACK_TEXTS.boss[Math.floor(Math.random() * FEEDBACK_TEXTS.boss.length)];
@@ -1479,9 +1481,13 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
                 nextQiToNext = Math.floor(nextQiToNext * 1.35);
                 if (!isUsingPill) nextHistory = [...nextHistory, { name: REALMS[nextRealm].name, time: nextTotalFocusTime }];
                 
+                // ✨ 天道修補：讓突破日誌獨立顯現，增加儀式感
+                addLog(`☄️ 【境界突破】恭喜道友成功斬滅死劫，晉升至「${REALMS[nextRealm].name}」！`);
+
                 const newCompanion = COMPANIONS.find(c => c.unlockIdx === nextRealm);
                 if (newCompanion) {
                     collectedDrops.unshift(`🌸 結識紅緣：【${newCompanion.name}】`);
+                    // 🛡️ 完整保留您原本的結緣文案！
                     addLog(`🏆 【仙緣】突破之際，你與【${newCompanion.name}】意外結識，可前往「道侶紅顏」邀其同行。`);
                 }
                 
@@ -2704,14 +2710,8 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
         <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4 w-full">
           
           <div className="w-full max-w-2xl grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 mx-auto">
-             <button onClick={() => setShowTitles(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-amber-400 hover:text-amber-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest relative">
+             <button onClick={() => setShowTitles(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-amber-400 hover:text-amber-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
                <Award size={16}/> <span className="whitespace-nowrap">名號頭銜</span>
-               {/* ✨ 雙軌制：顯示總免費次數的氣泡 */}
-               {((player.dailyGacha || 0) + (player.awardGacha || 0)) > 0 && (
-                 <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded-full animate-bounce">
-                   {(player.dailyGacha || 0) + (player.awardGacha || 0)}
-                 </span>
-               )}
              </button>
              <button onClick={() => setShowGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
                <HelpCircle size={16}/> <span className="whitespace-nowrap">修行指引</span>
