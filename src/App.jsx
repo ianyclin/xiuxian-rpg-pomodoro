@@ -1165,36 +1165,56 @@ const combatPrediction = useMemo(() => {
     return [...unownedArts, ...unownedBooks];
   };
 
-  const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
-      let currentTargetRarity = initialRarity;
+const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
+      let originalIdx = RARITIES_ORDER.indexOf(initialRarity);
       let finalDrop = null;
-      let mutationLog = '';
       let compensationCoins = 0;
-      
-      while (true) {
-          let pool = getUnownedPool(currentTargetRarity, arts, books);
+      let mutationLog = '';
+      let currentTargetRarity = initialRarity;
+
+      // 【階段一：順應天道，向下兼容】 (從當前階級開始，一路往下找)
+      for (let i = originalIdx; i >= 0; i--) {
+          let r = RARITIES_ORDER[i];
+          let pool = getUnownedPool(r, arts, books);
           if (pool.length > 0) {
               finalDrop = pool[Math.floor(Math.random() * pool.length)];
-              break;
-          } else {
-              let compValue = Math.floor((baseCost * 0.8) / RARITY[currentTargetRarity].weight);
-              compensationCoins += compValue;
-              mutationLog += `【${RARITY[currentTargetRarity].name}】圖鑑已滿，化為 ${formatNumber(compValue)} 靈石。`;
-              
-              if (currentTargetRarity === 'DIVINE') {
-                  mutationLog += `天道極限！`;
-                  break;
+              currentTargetRarity = r;
+              // 如果是向下找到的，給予提示
+              if (i < originalIdx) {
+                  mutationLog += `【${RARITY[initialRarity].name}】圖鑑已滿，靈力向下逸散，尋得【${RARITY[r].name}】。`;
               }
-              if (Math.random() < 0.20) {
-                  let idx = RARITIES_ORDER.indexOf(currentTargetRarity);
-                  currentTargetRarity = RARITIES_ORDER[idx + 1];
-                  mutationLog += `✨機緣爆發，躍升至【${RARITY[currentTargetRarity].name}】！`;
-              } else {
+              break;
+          }
+      }
+
+      // 【階段二：量變引起質變，向上連鎖突變】 (如果向下的低階全滿了，強行往上找，直到抽滿)
+      if (!finalDrop) {
+          for (let i = originalIdx + 1; i < RARITIES_ORDER.length; i++) {
+              let r = RARITIES_ORDER[i];
+              let pool = getUnownedPool(r, arts, books);
+              if (pool.length > 0) {
+                  finalDrop = pool[Math.floor(Math.random() * pool.length)];
+                  currentTargetRarity = r;
+                  mutationLog += `【機緣爆發】低階寶物已盡，氣運牽引，連鎖突變為【${RARITY[r].name}】！`;
                   break;
               }
           }
       }
-      return { drop: finalDrop, coins: compensationCoins, log: mutationLog, finalRarity: currentTargetRarity };
+
+      // 【階段三：萬法歸一，靈石補償】 (如果連最高階都滿了，代表全圖鑑 100% 畢業)
+      if (!finalDrop) {
+          // 以「初始判定」的稀有度計算天價補償 (越稀有的保底，補償越恐怖)
+          let compValue = Math.floor((baseCost * 1.5) / RARITY[initialRarity].weight);
+          compensationCoins = compValue;
+          mutationLog += `【天道盡頭】此界寶物已盡入你手，機緣化作 ${formatNumber(compValue)} 靈石！`;
+      }
+
+      return { 
+          drop: finalDrop, 
+          coins: compensationCoins, 
+          log: mutationLog, 
+          finalRarity: currentTargetRarity 
+      };
   };
 
   const handleComplete = (usedPill = false) => {
