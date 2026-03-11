@@ -2487,23 +2487,24 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
       <div className={`w-full max-w-4xl mt-4 transition-all duration-500 z-10 font-bold ${isActive ? 'hidden' : 'block'}`}>
         <div className="bg-slate-950/90 backdrop-blur-3xl rounded-2xl border border-white/10 shadow-2xl flex flex-col h-[800px] overflow-hidden">
           <div className="flex bg-black/80 border-b border-white/10 p-2 gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
-            {[
+{[
   { id: 'log', label: '修行日誌', icon: History },
   { id: 'skills', label: '功法祕籍', icon: ScrollText },
-  { id: 'forge', label: '洞府淬煉', icon: Hammer, hasNotify: (player.freeGacha > 0) }, // 加入亮點判定
+  // ✨ 將原本的 player.freeGacha 改為計算兩者的總和
+  { id: 'forge', label: '洞府淬煉', icon: Hammer, hasNotify: ((player.dailyGacha || 0) + (player.awardGacha || 0) > 0) }, 
   { id: 'artifacts', label: '法寶庫', icon: Box },
   { id: 'companions', label: '道侶紅顏', icon: Heart },
   { id: 'insights', label: '識海投影', icon: Activity }
 ].map(tab => (
-  <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 py-4 md:py-5 ...`}>
-    <div className="relative"> {/* 加入 relative 容器 */}
-      <tab.icon size={18} className={`...`} />
+  <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 py-4 md:py-5 text-center transition-all relative flex flex-col items-center justify-center gap-2 ${activeTab === tab.id ? 'text-white' : 'text-white/40 hover:text-white/70 hover:bg-white/5'}`}>
+    <div className="relative">
+      <tab.icon size={18} className={`${activeTab === tab.id ? 'drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]' : ''}`} />
       {/* 🔴 呼吸紅色亮點 */}
       {tab.hasNotify && (
         <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_#f43f5e]" />
       )}
     </div>
-    <span>{tab.label}</span>
+    <span className="text-[10px] md:text-xs tracking-widest font-black whitespace-nowrap">{tab.label}</span>
   </button>
 ))}
           </div>
@@ -2634,14 +2635,28 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                       <div className="bg-white/10 p-8 rounded-2xl border border-white/20 min-h-[14rem] flex flex-col justify-between shadow-inner"><div className="flex justify-between text-base text-white font-bold drop-shadow-md">顛倒五行陣 <span className="opacity-60 font-mono">Lv.{player.arrays?.def||0}</span></div><p className="text-sm opacity-70 italic text-white mt-2">全域減傷提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-4 mt-6 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">升級 ({formatNumber(arrayDefCost)} 靈石)</button></div>
                    </div>
                 </div>
-                <div className="bg-gradient-to-br from-white/10 to-transparent p-8 md:p-14 rounded-2xl border border-white/20 text-center relative overflow-hidden mt-8">
+<div className="bg-gradient-to-br from-white/10 to-transparent p-8 md:p-14 rounded-2xl border border-white/20 text-center relative overflow-hidden mt-8">
                   <h3 className="text-white font-black text-2xl uppercase mb-8 tracking-widest flex items-center justify-center gap-3"><Compass className="text-yellow-400"/> 萬寶樓尋寶</h3>
-                  {player.freeGacha > 0 && <p className="text-amber-400 text-sm font-bold mb-6 animate-pulse">您有 {player.freeGacha} 次【天道免費保底】抽獎機會！</p>}
+                  
+                  {/* ✨ 雙軌制：計算總免費次數，並給予文字提示 */}
+                  {((player.dailyGacha || 0) + (player.awardGacha || 0)) > 0 && (
+                    <p className="text-amber-400 text-sm font-bold mb-6 animate-pulse flex flex-col gap-1 items-center justify-center">
+                       <span>您有 {(player.dailyGacha || 0) + (player.awardGacha || 0)} 次【天道免費保底】抽獎機會！</span>
+                       <span className="text-[10px] text-amber-500/70 font-mono">(將優先消耗每日限時機緣)</span>
+                    </p>
+                  )}
+                  
                   <div className="flex justify-center gap-6 mb-12 overflow-x-auto pb-6 custom-scrollbar">
                      {Object.entries(RARITY).map(([k, r]) => (<div key={k} className="flex flex-col items-center min-w-[80px] opacity-80"><span className={`text-xs font-black uppercase ${r.color} drop-shadow-md`}>{r.name}</span><span className="text-sm font-mono mt-2 text-white">{(r.weight*100).toFixed(1)}%</span></div>))}
                   </div>
-                  <button onClick={handleGacha} disabled={player.freeGacha <= 0 && player.coins < gachaCost} className="px-8 md:px-20 py-6 md:py-8 bg-white/15 hover:bg-white text-white hover:text-black font-black rounded-2xl shadow-2xl transition-all whitespace-nowrap border border-white/30 disabled:opacity-30 flex items-center justify-center gap-4 mx-auto text-base md:text-lg">
-                    <Sparkles size={24}/> {player.freeGacha > 0 ? '免費保底尋寶' : `尋寶 (${formatNumber(gachaCost)} 靈石)`}
+                  
+                  {/* ✨ 雙軌制：按鈕判定更新 */}
+                  <button 
+                    onClick={handleGacha} 
+                    disabled={((player.dailyGacha || 0) + (player.awardGacha || 0)) <= 0 && player.coins < gachaCost} 
+                    className="px-8 md:px-20 py-6 md:py-8 bg-white/15 hover:bg-white text-white hover:text-black font-black rounded-2xl shadow-2xl transition-all whitespace-nowrap border border-white/30 disabled:opacity-30 flex items-center justify-center gap-4 mx-auto text-base md:text-lg"
+                  >
+                    <Sparkles size={24}/> {((player.dailyGacha || 0) + (player.awardGacha || 0)) > 0 ? '免費保底尋寶' : `尋寶 (${formatNumber(gachaCost)} 靈石)`}
                   </button>
                 </div>
               </div>
@@ -2678,7 +2693,12 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
           <div className="w-full max-w-2xl grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 mx-auto">
              <button onClick={() => setShowTitles(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-amber-400 hover:text-amber-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest relative">
                <Award size={16}/> <span className="whitespace-nowrap">名號頭銜</span>
-               {player.freeGacha > 0 && <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded-full animate-bounce">{player.freeGacha}</span>}
+               {/* ✨ 雙軌制：顯示總免費次數的氣泡 */}
+               {((player.dailyGacha || 0) + (player.awardGacha || 0)) > 0 && (
+                 <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded-full animate-bounce">
+                   {(player.dailyGacha || 0) + (player.awardGacha || 0)}
+                 </span>
+               )}
              </button>
              <button onClick={() => setShowGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
                <HelpCircle size={16}/> <span className="whitespace-nowrap">修行指引</span>
