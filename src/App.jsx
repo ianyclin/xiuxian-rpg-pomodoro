@@ -294,24 +294,25 @@ const GUIDE_REALMS = [
 ];
 
 // ==========================================
-// 萬寶錄 85+ 擴編
+// 萬寶錄 89+ 擴編
 // ==========================================
 const ARTIFACT_POOL = [
-  { id: 'a_c01', rarity: 'COMMON', name: '鐵木盾', desc: '抵禦外魔 (防禦減傷 +5%)', val: { def: 0.05 } },
-  { id: 'a_c02', rarity: 'COMMON', name: '青銅戈', desc: '凡兵銳氣 (基礎戰力 +5%)', val: { atk: 0.05 } },
+  // --- COMMON (凡品：凡人兵刃、低階殘次法器) ---
+  { id: 'a_c01', rarity: 'COMMON', name: '鐵木盾', desc: '低階法器 (防禦減傷 +5%)', val: { def: 0.05 } },
+  { id: 'a_c02', rarity: 'COMMON', name: '青銅戈', desc: '凡俗兵刃 (基礎戰力 +5%)', val: { atk: 0.05 } },
   { id: 'a_c03', rarity: 'COMMON', name: '凝神蒲團', desc: '固本培元 (回血+3%，修為+3%)', val: { heal_bonus: 0.03, qi: 0.03 } },
-  { id: 'a_c04', rarity: 'COMMON', name: '粗糙靈石袋', desc: '聚財之陣 (靈石掉落 +8%)', val: { stone: 0.08 } },
+  { id: 'a_c04', rarity: 'COMMON', name: '粗糙靈石袋', desc: '聚財之物 (靈石掉落 +8%)', val: { stone: 0.08 } },
   { id: 'a_c05', rarity: 'COMMON', name: '玄鐵刃', desc: '近戰利器 (基礎戰力 +6%)', val: { atk: 0.06 } },
-  { id: 'a_c06', rarity: 'COMMON', name: '飛蝗石', desc: '暗器連發 (連擊效率 +5%)', val: { streak_eff: 0.05 } },
+  { id: 'a_c06', rarity: 'COMMON', name: '飛蝗石', desc: '凡人暗器 (連擊效率 +5%)', val: { streak_eff: 0.05 } },
   { id: 'a_c07', rarity: 'COMMON', name: '聚氣散', desc: '臨時提氣 (修為獲取 +6%)', val: { qi: 0.06 } },
-  { id: 'a_c08', rarity: 'COMMON', name: '水罩符', desc: '水行護盾 (防禦減傷 +4%)', val: { def: 0.04 } },
-  { id: 'a_c09', rarity: 'COMMON', name: '烈陽劍', desc: '火行劍氣 (戰力+4%，劍陣部件)', val: { atk: 0.04 }, tags: ['sword'] },
-  { id: 'a_c10', rarity: 'COMMON', name: '冷月刀', desc: '冰寒之刃 (爆擊傷害 +10%)', val: { crit_dmg: 0.10 } },
-  { id: 'a_c11', rarity: 'COMMON', name: '踏雲靴', desc: '凡品輕功 (閃避率 +3%)', val: { evade: 0.03 } },
-  { id: 'a_c12', rarity: 'COMMON', name: '迷魂鐘', desc: '擾亂神識 (爆擊率 +3%)', val: { crit: 0.03 } },
-  { id: 'a_c13', rarity: 'COMMON', name: '金剛罩', desc: '硬氣功法 (氣血上限 +6%)', val: { hp: 0.06 } },
-  { id: 'a_c14', rarity: 'COMMON', name: '靈氣匣', desc: '儲存靈氣 (修為獲取 +5%)', val: { qi: 0.05 } },
-  { id: 'a_c15', rarity: 'COMMON', name: '青光劍', desc: '制式飛劍 (戰力+5%，劍陣部件)', val: { atk: 0.05 }, tags: ['sword'] },
+  { id: 'a_c08', rarity: 'COMMON', name: '水罩符', desc: '初階符籙 (防禦減傷 +4%)', val: { def: 0.04 } },
+  { id: 'a_c09', rarity: 'COMMON', name: '烈陽劍', desc: '火行低階飛劍 (戰力+4%，劍陣部件)', val: { atk: 0.04 }, tags: ['sword'] },
+  { id: 'a_c10', rarity: 'COMMON', name: '冷月刀', desc: '凡人寶刀 (爆擊傷害 +10%)', val: { crit_dmg: 0.10 } },
+  { id: 'a_c11', rarity: 'COMMON', name: '踏雲靴', desc: '凡俗輕功 (閃避率 +3%)', val: { evade: 0.03 } },
+  { id: 'a_c12', rarity: 'COMMON', name: '震天弓', desc: '七玄門神兵 (爆擊率 +3%)', val: { crit: 0.03 } }, // 📉 從靈品降級
+  { id: 'a_c13', rarity: 'COMMON', name: '金剛罩', desc: '凡人硬氣功 (氣血上限 +6%)', val: { hp: 0.06 } },
+  { id: 'a_c14', rarity: 'COMMON', name: '穿雲箭', desc: '配合震天弓使用 (修為獲取 +5%)', val: { qi: 0.05 } }, // 📉 從靈品降級
+  { id: 'a_c15', rarity: 'COMMON', name: '青光劍', desc: '黃楓谷制式飛劍 (戰力+5%，劍陣部件)', val: { atk: 0.05 }, tags: ['sword'] },
   { id: 'a_c16', rarity: 'COMMON', name: '黃絲網', desc: '束縛困敵 (神識減傷 +4%)', val: { sense_def: 0.04 } },
   { id: 'a_c17', rarity: 'COMMON', name: '巨鐵劍', desc: '沉重無比 (戰力+8%，閃避-2%)', val: { atk: 0.08, evade: -0.02 }, tags: ['sword'] },
   { id: 'a_c18', rarity: 'COMMON', name: '追風玉', desc: '提升遁速 (閃避率 +4%)', val: { evade: 0.04 } },
@@ -321,20 +322,21 @@ const ARTIFACT_POOL = [
   { id: 'a_c22', rarity: 'COMMON', name: '迷霧陣旗', desc: '基礎陣法 (閃避率 +4%)', val: { evade: 0.04 } },
   { id: 'a_c23', rarity: 'COMMON', name: '遁地符', desc: '五行遁術 (閃避率 +5%)', val: { evade: 0.05 } },
   { id: 'a_c24', rarity: 'COMMON', name: '引路蜂', desc: '尋寶靈蟲 (靈石掉落 +6%)', val: { stone: 0.06 } },
-  { id: 'a_c25', rarity: 'COMMON', name: '烏龍奪', desc: '詭異兵器 (爆傷+15%)', val: { crit_dmg: 0.15 } },
+  { id: 'a_c25', rarity: 'COMMON', name: '踏雪無痕靴', desc: '凡人絕頂輕功 (爆傷+15%)', val: { crit_dmg: 0.15 } }, // 📉 從靈品降級
 
-  { id: 'a_u01', rarity: 'UNCOMMON', name: '神風舟', desc: '御風而行 (閃避率 +8%)', val: { evade: 0.08 } },
-  { id: 'a_u02', rarity: 'UNCOMMON', name: '金蚨子母刃', desc: '奇門暗器 (戰力+12%，爆擊+5%)', val: { atk: 0.12, crit: 0.05 }, tags: ['sword'] },
-  { id: 'a_u03', rarity: 'UNCOMMON', name: '無形針', desc: '無影無蹤 (連擊效率+15%，爆擊+5%)', val: { streak_eff: 0.15, crit: 0.05 } },
+  // --- UNCOMMON (靈品：對應原著的「法器 Faqi」) ---
+  { id: 'a_u01', rarity: 'UNCOMMON', name: '神風舟', desc: '代步飛行法器 (閃避率 +8%)', val: { evade: 0.08 } },
+  { id: 'a_u02', rarity: 'UNCOMMON', name: '金蚨子母刃', desc: '成套頂階法器 (戰力+12%，爆擊+5%)', val: { atk: 0.12, crit: 0.05 }, tags: ['sword'] },
+  { id: 'a_u03', rarity: 'UNCOMMON', name: '無形針', desc: '無影無蹤的暗器法器 (連擊效率+15%，爆擊+5%)', val: { streak_eff: 0.15, crit: 0.05 } },
   { id: 'a_u04', rarity: 'UNCOMMON', name: '血玉髓', desc: '氣血滋養 (休息回血比例 +10%)', val: { heal_bonus: 0.10 } },
-  { id: 'a_u05', rarity: 'UNCOMMON', name: '玄鐵飛天盾', desc: '高階防禦 (防禦減傷 +10%)', val: { def: 0.10 } },
+  { id: 'a_u05', rarity: 'UNCOMMON', name: '玄鐵飛天盾', desc: '頂階防禦法器 (防禦減傷 +10%)', val: { def: 0.10 } },
   { id: 'a_u06', rarity: 'UNCOMMON', name: '天雷竹(殘)', desc: '辟邪神雷基底 (爆傷 +20%)', val: { crit_dmg: 0.20 } },
   { id: 'a_u07', rarity: 'UNCOMMON', name: '平山印', desc: '重壓攻擊 (戰力+15%)', val: { atk: 0.15 } },
   { id: 'a_u08', rarity: 'UNCOMMON', name: '引魂鐘', desc: '攻擊神識 (反噬減傷 +10%)', val: { sense_def: 0.10 } },
-  { id: 'a_u09', rarity: 'UNCOMMON', name: '踏雪無痕靴', desc: '高級輕功 (閃避率 +10%)', val: { evade: 0.10 } },
+  { id: 'a_u09', rarity: 'UNCOMMON', name: '烏龍奪', desc: '頂階詭異法器 (閃避率 +10%)', val: { evade: 0.10 } }, // 📈 從凡品升級
   { id: 'a_u10', rarity: 'UNCOMMON', name: '破甲錐', desc: '無視防禦 (爆擊傷害 +25%)', val: { crit_dmg: 0.25 } },
-  { id: 'a_u11', rarity: 'UNCOMMON', name: '震天弓', desc: '遠程殺伐 (戰力+12%，爆擊+6%)', val: { atk: 0.12, crit: 0.06 } },
-  { id: 'a_u12', rarity: 'UNCOMMON', name: '穿雲箭', desc: '配合震天弓 (連擊上限 +10%)', val: { streak_cap: 0.10 } },
+  { id: 'a_u11', rarity: 'UNCOMMON', name: '青蛟舟', desc: '蛟龍之鱗煉製法器 (戰力+12%，爆擊+6%)', val: { atk: 0.12, crit: 0.06 } }, // 🔄 修正名稱
+  { id: 'a_u12', rarity: 'UNCOMMON', name: '迷魂鐘', desc: '干擾神識 (連擊上限 +10%)', val: { streak_cap: 0.10 } },
   { id: 'a_u13', rarity: 'UNCOMMON', name: '縛妖索', desc: '專剋妖獸 (防禦減傷 +8%)', val: { def: 0.08 } },
   { id: 'a_u14', rarity: 'UNCOMMON', name: '青靈甲', desc: '木系戰甲 (氣血上限 +15%)', val: { hp: 0.15 } },
   { id: 'a_u15', rarity: 'UNCOMMON', name: '幻影陣盤', desc: '迷幻神識 (閃避率 +9%)', val: { evade: 0.09 } },
@@ -344,27 +346,29 @@ const ARTIFACT_POOL = [
   { id: 'a_u19', rarity: 'UNCOMMON', name: '攝魂鈴', desc: '神識攻擊 (反噬減傷 +12%)', val: { sense_def: 0.12 } },
   { id: 'a_u20', rarity: 'UNCOMMON', name: '高級儲物袋', desc: '極大空間 (靈石掉落 +20%)', val: { stone: 0.20 } },
 
-  { id: 'a_r01', rarity: 'RARE', name: '青蛟旗', desc: '妖魂鎮壓 (戰力加成 +25%)', val: { atk: 0.25 } },
-  { id: 'a_r02', rarity: 'RARE', name: '金光磚', desc: '重擊崩碎 (爆擊傷害 +40%)', val: { crit_dmg: 0.40 } },
+  // --- RARE (法寶：對應原著的「結丹期法寶 Fabao」與「符寶」) ---
+  { id: 'a_r01', rarity: 'RARE', name: '黃羅傘', desc: '結丹修士防禦法寶 (戰力加成 +25%)', val: { atk: 0.25 } }, // 🔄 替換青蛟旗
+  { id: 'a_r02', rarity: 'RARE', name: '金光磚符寶', desc: '結丹法寶威力分身 (爆擊傷害 +40%)', val: { crit_dmg: 0.40 } }, // 🔄 精確標註符寶
   { id: 'a_r03', rarity: 'RARE', name: '碧玉葫蘆', desc: '納寶空間 (靈石掉落 +40%)', val: { stone: 0.40 } },
-  { id: 'a_r04', rarity: 'RARE', name: '綠煌劍', desc: '毒性飛劍 (戰力+20%，劍陣)', val: { atk: 0.20 }, tags: ['sword'] },
+  { id: 'a_r04', rarity: 'RARE', name: '綠煌劍', desc: '毒性本命飛劍 (戰力+20%，劍陣)', val: { atk: 0.20 }, tags: ['sword'] },
   { id: 'a_r05', rarity: 'RARE', name: '降魔杖', desc: '佛門降魔 (防禦+15%，爆擊+8%)', val: { def: 0.15, crit: 0.08 } },
   { id: 'a_r06', rarity: 'RARE', name: '混元缽', desc: '混元之氣 (減傷+15%，修為+15%)', val: { def: 0.15, qi: 0.15 } },
   { id: 'a_r07', rarity: 'RARE', name: '巨劍門重劍', desc: '力劈華山 (戰力+30%，閃避-5%)', val: { atk: 0.30, evade: -0.05 }, tags: ['sword'] },
   { id: 'a_r08', rarity: 'RARE', name: '血毒刃', desc: '見血封喉 (爆傷+45%)', val: { crit_dmg: 0.45 } },
   { id: 'a_r09', rarity: 'RARE', name: '掩月雙環', desc: '合擊之術 (連擊效率 +30%)', val: { streak_eff: 0.30 } },
-  { id: 'a_r10', rarity: 'RARE', name: '烏黑魔匕', desc: '魔道暗器 (爆擊率 +12%)', val: { crit: 0.12 } },
+  { id: 'a_r10', rarity: 'RARE', name: '烏黑魔匕', desc: '魔道暗器法寶 (爆擊率 +12%)', val: { crit: 0.12 } },
   { id: 'a_r11', rarity: 'RARE', name: '雪晶珠', desc: '極寒冰域 (閃避+12%，減傷+10%)', val: { evade: 0.12, def: 0.10 } },
   { id: 'a_r12', rarity: 'RARE', name: '碧血帶', desc: '韌性極強 (氣血上限 +25%)', val: { hp: 0.25 } },
   { id: 'a_r13', rarity: 'RARE', name: '乾坤塔', desc: '鎮壓妖物 (防禦減傷 +20%)', val: { def: 0.20 } },
   { id: 'a_r14', rarity: 'RARE', name: '噬炎刀', desc: '吞噬火焰 (吸血 +5%)', val: { lifesteal: 0.05 } },
   { id: 'a_r15', rarity: 'RARE', name: '高階替身符', desc: '替死擋災 (復活機率 +8%)', val: { revive: 0.08 } },
 
-  { id: 'a_e01', rarity: 'EPIC', name: '虛天鼎 (仿)', desc: '鎮壓氣運 (減傷+20%，氣運保底+0.3)', val: { def: 0.20, luck_floor: 0.30 } },
-  { id: 'a_e02', rarity: 'EPIC', name: '風雷翅', desc: '迅捷如雷 (連擊效率+50%，閃避+12%)', val: { streak_eff: 0.50, evade: 0.12 } },
+  // --- EPIC (古寶：上古修士無法認主的強大遺寶 Gubao) ---
+  { id: 'a_e01', rarity: 'EPIC', name: '虛天鼎仿製品', desc: '鎮壓氣運 (減傷+20%，氣運保底+0.3)', val: { def: 0.20, luck_floor: 0.30 } }, // 🔄 精確命名
+  { id: 'a_e02', rarity: 'EPIC', name: '風雷翅', desc: '雷鵬之翼煉製古寶 (連擊效率+50%，閃避+12%)', val: { streak_eff: 0.50, evade: 0.12 } },
   { id: 'a_e03', rarity: 'EPIC', name: '紫羅極火', desc: '極寒之焰 (戰力+40%，爆傷+60%)', val: { atk: 0.40, crit_dmg: 0.60 } },
   { id: 'a_e04', rarity: 'EPIC', name: '嗜血幡', desc: '吸血魔器 (戰力+30%，吸血+10%)', val: { atk: 0.30, lifesteal: 0.10 } },
-  { id: 'a_e05', rarity: 'EPIC', name: '狼首玉如意', desc: '召喚銀狼 (氣血+40%，護盾+1)', val: { hp: 0.40, streak_shield: 1.0 } },
+  { id: 'a_e05', rarity: 'EPIC', name: '狼首玉如意', desc: '召喚銀狼古寶 (氣血+40%，護盾+1)', val: { hp: 0.40, streak_shield: 1.0 } },
   { id: 'a_e06', rarity: 'EPIC', name: '五色珠', desc: '五行相生 (全修為/靈石獲取 +30%)', val: { qi: 0.30, stone: 0.30 } },
   { id: 'a_e07', rarity: 'EPIC', name: '銅錢古寶', desc: '落寶金錢 (氣運保底+0.4，靈石+50%)', val: { luck_floor: 0.40, stone: 0.50 } },
   { id: 'a_e08', rarity: 'EPIC', name: '魔髓鑽', desc: '破防極致 (爆傷+80%，無視防禦)', val: { crit_dmg: 0.80 } },
@@ -373,23 +377,27 @@ const ARTIFACT_POOL = [
   { id: 'a_e11', rarity: 'EPIC', name: '萬年靈乳', desc: '瞬間恢復 (復活機率 +12%)', val: { revive: 0.12 } },
   { id: 'a_e12', rarity: 'EPIC', name: '太玄八卦圖', desc: '推演天機 (反噬減傷+40%，連擊上限+30%)', val: { sense_def: 0.40, streak_cap: 0.30 } },
 
-  { id: 'a_l01', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖 (連擊上限+80%，閃避+18%)', val: { streak_cap: 0.80, evade: 0.18 } },
+  // --- LEGENDARY (通天靈寶：靈界級別的頂尖寶物) ---
+  { id: 'a_l01', rarity: 'LEGENDARY', name: '八靈尺', desc: '空間封鎖靈寶 (連擊上限+80%，閃避+18%)', val: { streak_cap: 0.80, evade: 0.18 } },
   { id: 'a_l02', rarity: 'LEGENDARY', name: '青竹蜂雲劍', desc: '本命劍陣核心 (戰力+80%，連擊效率+80%)', val: { atk: 0.80, streak_eff: 0.80 }, tags: ['sword'] },
   { id: 'a_l03', rarity: 'LEGENDARY', name: '大衍神君傀儡', desc: '元嬰後期戰力 (氣血+120%，護盾+2)', val: { hp: 1.20, streak_shield: 2.0 } }, 
-  { id: 'a_l04', rarity: 'LEGENDARY', name: '黑風旗', desc: '空間法則 (閃避+20%，全減傷+40%)', val: { evade: 0.20, def: 0.40 } },
-  { id: 'a_l05', rarity: 'LEGENDARY', name: '三焰扇', desc: '三味真火 (戰力+90%，爆傷+100%)', val: { atk: 0.90, crit_dmg: 1.00 } },
+  { id: 'a_l04', rarity: 'LEGENDARY', name: '黑風旗', desc: '空間法則靈寶 (閃避+20%，全減傷+40%)', val: { evade: 0.20, def: 0.40 } },
+  { id: 'a_l05', rarity: 'LEGENDARY', name: '三焰扇', desc: '仿製靈寶 (戰力+90%，爆傷+100%)', val: { atk: 0.90, crit_dmg: 1.00 } },
   { id: 'a_l06', rarity: 'LEGENDARY', name: '萬妖幡', desc: '萬妖聽令 (氣血+100%，吸血+15%)', val: { hp: 1.00, lifesteal: 0.15 } },
   { id: 'a_l07', rarity: 'LEGENDARY', name: '五子同心魔', desc: '極凶之物 (戰力+110%，反噬防禦-20%)', val: { atk: 1.10, sense_def: -0.20 } },
   { id: 'a_l08', rarity: 'LEGENDARY', name: '成熟噬金蟲群', desc: '無物不噬 (戰力+100%，爆傷+120%)', val: { atk: 1.00, crit_dmg: 1.20 } },
+  { id: 'a_l09', rarity: 'LEGENDARY', name: '虛天寶鼎', desc: '人界第一通天靈寶 (減傷+120%，折扣-50%)', val: { def: 1.20, forge_discount: 0.50 } }, // 📉 從玄天降級
 
+  // --- MYTHIC (玄天之寶：一界法則凝聚而成的神物) ---
   { id: 'a_m01', rarity: 'MYTHIC', name: '玄天斬靈劍', desc: '斬裂法則 (戰力+200%，爆傷+250%)', val: { atk: 2.00, crit_dmg: 2.50 }, tags: ['sword'] },
   { id: 'a_m02', rarity: 'MYTHIC', name: '元磁神山', desc: '五行重力場 (戰力與減傷 +150%)', val: { atk: 1.50, def: 1.50 } },
-  { id: 'a_m03', rarity: 'MYTHIC', name: '虛天大鼎', desc: '鼎鎮山河 (減傷+120%，折扣-50%，氣運保底+0.8)', val: { def: 1.20, forge_discount: 0.50, luck_floor: 0.8 } },
+  { id: 'a_m03', rarity: 'MYTHIC', name: '玄天化道匣', desc: '玄天之寶 (戰力+180%，氣運保底+0.8)', val: { atk: 1.80, luck_floor: 0.8 } }, // 📈 替換虛天鼎
   { id: 'a_m04', rarity: 'MYTHIC', name: '玄天如意刃', desc: '空間切割 (連擊上限+150%，爆傷+150%)', val: { streak_cap: 1.50, crit_dmg: 1.50 }, tags: ['sword'] },
-  { id: 'a_m05', rarity: 'MYTHIC', name: '萬靈血璽', desc: '血祭一界 (戰力+250%，復活+15%，護盾+3)', val: { atk: 2.50, revive: 0.15, streak_shield: 3.0 } },
+  { id: 'a_m05', rarity: 'MYTHIC', name: '萬靈血璽', desc: '仙界謫仙之寶 (戰力+250%，復活+15%，護盾+3)', val: { atk: 2.50, revive: 0.15, streak_shield: 3.0 } },
 
-  { id: 'a_d01', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化 (靈氣+500%，靈石+300%)', val: { qi: 5.00, stone: 3.00 } },
-  { id: 'a_d02', rarity: 'DIVINE', name: '游天鯤鵬翎', desc: '跨越界域 (閃避+25%，連擊效率+200%)', val: { evade: 0.25, streak_eff: 2.00 } },
+  // --- DIVINE (造化至寶：超越法則的存在) ---
+  { id: 'a_d01', rarity: 'DIVINE', name: '掌天瓶', desc: '奪天地造化催熟靈草 (靈氣+500%，靈石+300%)', val: { qi: 5.00, stone: 3.00 } },
+  { id: 'a_d02', rarity: 'DIVINE', name: '游天鯤鵬翎', desc: '跨越界域真靈之羽 (閃避+25%，連擊效率+200%)', val: { evade: 0.25, streak_eff: 2.00 } },
   { id: 'a_d03', rarity: 'DIVINE', name: '金闕玉書', desc: '仙界天書 (靈石+600%，氣運保底+1.5)', val: { stone: 6.00, luck_floor: 1.50 } }
 ];
 
