@@ -1606,7 +1606,7 @@ const handleComplete = (usedPill = false) => {
           collectedDrops.push(`💎 殘留靈石：${formatNumber(finalCoins)}`);
       }
 
-      // 產生最終日誌並匯總 (已加入 bottleneckLog)
+// 產生最終日誌並匯總 (已加入 bottleneckLog)
       const dmgLog = isCrit ? `🔥 【爆擊】造成 ${formatNumber(actualDamage)} 傷害。` : `[運功] 造成 ${formatNumber(actualDamage)} 傷害。`;
       addLog(`${dmgLog} ${killLog || `獲修為 ${formatNumber(passiveQi)}。`}${fortuneLog}${compLog}${bottleneckLog}`);
 
@@ -1630,23 +1630,34 @@ const handleComplete = (usedPill = false) => {
           history: nextHistory,
           hasAscended: nextHasAscended,
           lifetimeStats: nextLifetime
-      }));
-      setMode('break'); setTimeLeft(5 * 60);
+      })); // ✨ 關鍵：確保 setPlayer 在這裡正確閉合！
+
+      setMode('break'); 
+      setTimeLeft(5 * 60);
 
     } else { 
+      // 這裡處理 mode === 'break' 結束時的邏輯
       if (breakEndAudioRef.current) breakEndAudioRef.current.play().catch(() => {});
-      setMode('focus'); setTimeLeft(focusDuration); 
+      
+      setMode('focus'); 
+      setTimeLeft(focusDuration); 
+      
       const heal = Math.floor(maxVitality * healPct);
       setPlayer(p => ({ 
         ...p, 
         vitality: Math.min(maxVitality, p.vitality + heal),
         streakShields: maxStreakShields 
       }));
+      
       addLog(`🧘‍♂️ 【周天圓滿】吐納調息結束，靈氣滋養受損經脈，恢復了 ${formatNumber(heal)} 氣血。`); 
+      
       const msg = FEEDBACK_TEXTS.break[Math.floor(Math.random() * FEEDBACK_TEXTS.break.length)];
       showToast('break', msg, [`🧘‍♂️ 恢復了 ${formatNumber(heal)} 氣血`]);
     }
-  };
+  }; // ✨ 關鍵：確保 handleComplete 函式在這裡正確結束！
+
+  // 下面應該緊接著是 handleGacha
+  const handleGacha = () => {
 
   const handleGacha = () => {
     const isFree = (player.freeGacha || 0) > 0;
