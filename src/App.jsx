@@ -934,20 +934,31 @@ if (newlyUnlocked.length > 0) {
 
 const combatPrediction = useMemo(() => {
     if (!monster) return null;
-    const minDmg = currentCombatPower * 0.6; // 最低保底傷害
-    const maxDmg = currentCombatPower * 2.4; // 爆發最高傷害
+    
+    // 基礎計算
+    const baseAtk = currentCombatPower; 
+    const minTimeMult = 0.6; // 15分鐘
+    const maxTimeMult = 2.4; // 60分鐘
 
-    // 1. 必敗 (最高傷害打不滿妖獸血量，極度危險)
-    if (maxDmg < monster.hp) {
-      return { status: 'DANGER', text: "靈壓感應...兇險萬分...", color: "text-rose-500" };
+    // 這裡納入爆擊倍率計算潛力
+    // 如果爆擊了，最高傷害會再乘以 critDmg
+    const potentialMaxDmg = baseAtk * maxTimeMult * critDmg; 
+    const stableMinDmg = baseAtk * minTimeMult;
+
+    // 1. 兇險萬分：即使閉關 60 分鐘且觸發「爆擊」，傷害仍不足以擊殺妖獸
+    if (potentialMaxDmg < monster.hp) {
+      return { status: 'DANGER', text: "感應靈壓...兇險萬分...", color: "text-rose-500" };
     }
-    // 2. 必勝 (最低傷害大於妖獸血量，穩穩拿下)
-    if (minDmg >= monster.hp) {
+
+    // 2. 十拿九穩：只需短修 15 分鐘，且在「不爆擊」的情況下就能穩殺
+    if (stableMinDmg >= monster.hp) {
       return { status: 'SAFE', text: "靈壓感應...十拿九穩...", color: "text-cyan-400" };
     }
-    // 3. 變數 (最低打不死，最高打得死，全看爆擊)
+
+    // 3. 或可一試：介於兩者之間。
+    // 代表你可能需要更長的專注時間，或者需要賭那一記「爆擊」來破敵
     return { status: 'UNKNOWN', text: "靈壓感應...或可一試...", color: "text-amber-500" };
-  }, [monster, currentCombatPower]);
+  }, [monster, currentCombatPower, critDmg]); // 記得把 critDmg 加入依賴陣列
 
   const getExportString = () => {
       try {
