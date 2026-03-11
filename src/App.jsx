@@ -628,6 +628,7 @@ export default function App() {
 
   const focusEndAudioRef = useRef(null);
   const breakEndAudioRef = useRef(null);
+  const activeRealmRef = useRef(null); // ✨ 加入這行，這就是鎖定境界用的「神識錨點」
   useEffect(() => {
     focusEndAudioRef.current = new Audio('https://actions.google.com/sounds/v1/alarms/meditation_bell.ogg');
     breakEndAudioRef.current = new Audio('https://actions.google.com/sounds/v1/water/water_drop.ogg');
