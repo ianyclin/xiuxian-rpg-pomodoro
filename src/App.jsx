@@ -654,16 +654,6 @@ const [player, setPlayer] = useState(() => {
     return () => clearTimeout(debounceTimer);
   }, [player]);
 
-  useEffect(() => {
-    if (!isActive && activeRealmRef.current) {
-      activeRealmRef.current.scrollIntoView({
-        behavior: 'smooth', 
-        inline: 'center',   
-        block: 'nearest'    
-      });
-    }
-  }, [player.realmIndex, isActive]); 
-
   const generateMonsterState = (realmIdx, currentQi, qiToNext) => {
     const isBossReady = currentQi >= qiToNext;
     const nTier = realmIdx + 1;
@@ -829,6 +819,16 @@ if (newlyUnlocked.length > 0) {
   const [isCritStrike, setIsCritStrike] = useState(false); 
   const [isKilling, setIsKilling] = useState(false); 
   const [isHealing, setIsHealing] = useState(false); 
+  
+  useEffect(() => {
+    if (!isActive && activeRealmRef.current) {
+      activeRealmRef.current.scrollIntoView({
+        behavior: 'smooth', 
+        inline: 'center',   
+        block: 'nearest'    
+      });
+    }
+  }, [player.realmIndex, isActive]); 
 
   const sortedArtifacts = useMemo(() => {
     const weight = { 'COMMON': 1, 'UNCOMMON': 2, 'RARE': 3, 'EPIC': 4, 'LEGENDARY': 5, 'MYTHIC': 6, 'DIVINE': 7 };
