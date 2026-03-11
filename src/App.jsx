@@ -1232,15 +1232,14 @@ if (elapsedTime <= 60) {
   };
 
 const handleComplete = (usedPill = false) => {
-  // --- 新增這兩行：如果已經在結算中，直接擋下後續的重複觸發 ---
     if (sessionLockRef.current) return; 
     sessionLockRef.current = true;  
   
-  const isUsingPill = usedPill === true;
+    const isUsingPill = usedPill === true;
     
     setIsActive(false); 
     setTargetEndTime(null);
-    let collectedDrops = []; // 收集本次專注的所有掉落物與高光資訊
+    let collectedDrops = []; 
     
     if (mode === 'focus') {
       if (focusEndAudioRef.current) focusEndAudioRef.current.play().catch(() => {});
@@ -1287,7 +1286,6 @@ const handleComplete = (usedPill = false) => {
       let nextBaseCombat = player.baseCombat;
       let nextBaseMaxVitality = player.baseMaxVitality;
       
-      // 修正後：依據專注時長，給予對應的連擊層數 (15m=1, 25m=2, 45m=3, 60m=4)
       const addedStreak = Math.round(focusDuration / 900);
       let nextStreak = player.streakCount + addedStreak;
       let nextShields = maxStreakShields; 
@@ -1315,7 +1313,6 @@ const handleComplete = (usedPill = false) => {
           const oldTier = getCompanionTier(oldExp);
           const newTier = getCompanionTier(newExp);
           
-          // 安全鎖定矩陣索引
           const tierIdx = Math.max(0, Math.min(newTier, compData.quotes.length - 1));
           const quotePool = compData.quotes[tierIdx];
           const randomQuote = quotePool[Math.floor(Math.random() * quotePool.length)];
@@ -1355,9 +1352,8 @@ const handleComplete = (usedPill = false) => {
             nextLifetime.totalCoins += killCoin;
         }
 
-// 修正後：60m 為 10% 基準，並受到氣運微幅加持
-        const basePillRate = 0.10 * (focusDuration / 3600); // 依時長比例縮放
-        const finalPillRate = basePillRate * luckVal; // 氣運極高者，可稍微突破上限
+        const basePillRate = 0.10 * (focusDuration / 3600); 
+        const finalPillRate = basePillRate * luckVal; 
 
         if (Math.random() < finalPillRate) {
             nextPills += 1;
@@ -1584,10 +1580,7 @@ const handleComplete = (usedPill = false) => {
                 collectedDrops.push(`💰 突變補償：${formatNumber(result.coins)} 靈石`);
             }
         }
-      }
-
-// ... (上面是奇遇 fortuneLog 的各種邏輯)
-      } // 這是奇遇區塊結束的右括號
+      } // ✨ 奇遇區塊確實結束於此
 
       // --- ✨ 瓶頸法則 2.0 (修正版)：天道損耗 ---
       let bottleneckLog = '';
@@ -1595,9 +1588,8 @@ const handleComplete = (usedPill = false) => {
           const overflow = nextQi - nextQiToNext;
           nextQi = nextQiToNext; 
           
-          // 【天道損耗】靈氣強行壓縮成實體，十不存三 (轉換率 0.3)
           const crystalizedCoins = Math.floor(overflow * 0.3); 
-          const finalCoins = Math.max(1, crystalizedCoins); // 保底 1 顆靈石
+          const finalCoins = Math.max(1, crystalizedCoins); 
           
           nextCoins += finalCoins;
           if (!isUsingPill) nextLifetime.totalCoins += finalCoins;
@@ -1606,7 +1598,6 @@ const handleComplete = (usedPill = false) => {
           collectedDrops.push(`💎 殘留靈石：${formatNumber(finalCoins)}`);
       }
 
-// 產生最終日誌並匯總 (已加入 bottleneckLog)
       const dmgLog = isCrit ? `🔥 【爆擊】造成 ${formatNumber(actualDamage)} 傷害。` : `[運功] 造成 ${formatNumber(actualDamage)} 傷害。`;
       addLog(`${dmgLog} ${killLog || `獲修為 ${formatNumber(passiveQi)}。`}${fortuneLog}${compLog}${bottleneckLog}`);
 
@@ -1630,13 +1621,12 @@ const handleComplete = (usedPill = false) => {
           history: nextHistory,
           hasAscended: nextHasAscended,
           lifetimeStats: nextLifetime
-      })); // ✨ 關鍵：確保 setPlayer 在這裡正確閉合！
+      }));
 
       setMode('break'); 
       setTimeLeft(5 * 60);
 
     } else { 
-      // 這裡處理 mode === 'break' 結束時的邏輯
       if (breakEndAudioRef.current) breakEndAudioRef.current.play().catch(() => {});
       
       setMode('focus'); 
@@ -1654,10 +1644,7 @@ const handleComplete = (usedPill = false) => {
       const msg = FEEDBACK_TEXTS.break[Math.floor(Math.random() * FEEDBACK_TEXTS.break.length)];
       showToast('break', msg, [`🧘‍♂️ 恢復了 ${formatNumber(heal)} 氣血`]);
     }
-  }; // ✨ 關鍵：確保 handleComplete 函式在這裡正確結束！
-
-  // 下面應該緊接著是 handleGacha
-  const handleGacha = () => {
+  };
 
   const handleGacha = () => {
     const isFree = (player.freeGacha || 0) > 0;
