@@ -648,6 +648,17 @@ export default function App() {
     }, 1000);
     return () => clearTimeout(debounceTimer);
   }, [player]);
+  // ✨ 天道對焦：當境界提升或結束專注時，自動將當前境界捲動至螢幕中央
+  useEffect(() => {
+    // 邏輯判定：非專注狀態下（UI可見時）且錨點已繫定
+    if (!isActive && activeRealmRef.current) {
+      activeRealmRef.current.scrollIntoView({
+        behavior: 'smooth', // 平滑滑動，增加修仙飄逸感
+        inline: 'center',   // 🚀 核心：強制水平居中
+        block: 'nearest'    // 垂直方向保持不動
+      });
+    }
+  }, [player.realmIndex, isActive]); // 監聽境界變動與專注狀態
 
 const generateMonsterState = (realmIdx, currentQi, qiToNext) => {
     const isBossReady = currentQi >= qiToNext;
@@ -2301,11 +2312,33 @@ const handleComplete = (usedPill = false) => {
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-5">
-           <div className="flex overflow-x-auto py-5 px-4 gap-8 bg-black/40 rounded-xl border border-white/10 flex-shrink-0 custom-scrollbar">
-             {REALMS.map((r, i) => (<div key={i} className={`flex flex-col items-center min-w-[90px] transition-all relative ${i===player.realmIndex?'scale-110 opacity-100':'opacity-40'}`}><div className={`w-10 h-10 rounded-lg border flex items-center justify-center font-black text-sm rotate-45 transition-all ${i===player.realmIndex?'bg-white text-black rotate-0 shadow-2xl':'border-white/20 text-white'}`}><span>{i}</span></div><span className="text-xs font-black mt-5 whitespace-nowrap uppercase tracking-tighter">{r.name}</span></div>))}
-           </div>
+<div className="mt-6 flex flex-col gap-5">
+  {/* 這裡是境界橫桿的容器 */}
+  <div className="flex overflow-x-auto py-5 px-4 gap-8 bg-black/40 rounded-xl border border-white/10 flex-shrink-0 custom-scrollbar">
+    {REALMS.map((r, i) => (
+      <div 
+        key={i} 
+        // 🔮 關鍵：在此處繫上神識錨點
+        ref={i === player.realmIndex ? activeRealmRef : null} 
+        className={`flex flex-col items-center min-w-[90px] transition-all relative ${
+          i === player.realmIndex ? 'scale-110 opacity-100' : 'opacity-40'
+        }`}
+      >
+        {/* 境界數字標誌 (旋轉 45 度那個) */}
+        <div className={`w-10 h-10 rounded-lg border flex items-center justify-center font-black text-sm rotate-45 transition-all ${
+          i === player.realmIndex ? 'bg-white text-black rotate-0 shadow-2xl' : 'border-white/20 text-white'
+        }`}>
+          <span className={i === player.realmIndex ? '' : '-rotate-45'}>{i}</span>
         </div>
+        
+        {/* 境界名稱 */}
+        <span className="text-xs font-black mt-5 whitespace-nowrap uppercase tracking-tighter">
+          {r.name}
+        </span>
+      </div>
+    ))}
+  </div>
+</div>
       </div>
 
       <div className={`w-full max-w-4xl bg-slate-900/40 backdrop-blur-3xl p-8 md:p-14 rounded-2xl border ${mode === 'break' ? 'border-cyan-500/30' : 'border-white/10'} text-center z-10 shadow-2xl transition-all duration-700 ${isActive ? (mode === 'break' ? 'scale-[1.02] shadow-[0_0_50px_rgba(6,182,212,0.15)] my-auto' : 'scale-[1.02] shadow-[0_0_50px_rgba(16,185,129,0.15)] border-emerald-500/30 my-auto') : 'mb-8'}`}>
