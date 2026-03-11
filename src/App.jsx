@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, ChartColumn, Save, Pill, CircleHelp, ShieldAlert, Award, Heart, Copy, Download, FileText } from 'lucide-react';
+import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, BarChart3, Save, Pill, HelpCircle, ShieldAlert, Award, Heart, Copy, Download, FileText } from 'lucide-react';
 // 註：全文中原本使用 <HelpCircle /> 的地方需改為 <CircleHelp />
 // 全文中原本使用 <BarChart3 /> 的地方需改為 <ChartColumn />
 /**
@@ -2033,7 +2033,7 @@ if (newlyUnlocked.length > 0) {
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-2xl bg-[#0a0a0a] p-4 sm:p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh]">
             <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
-               <h2 className="text-lg md:text-xl font-black text-white tracking-widest uppercase flex items-center gap-3"><CircleHelp className="text-emerald-400"/> 修行指引與祕訣</h2>
+               <h2 className="text-lg md:text-xl font-black text-white tracking-widest uppercase flex items-center gap-3"><HelpCircle className="text-emerald-400"/> 修行指引與祕訣</h2>
                <button onClick={() => setShowGuide(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
             </div>
             
@@ -2099,7 +2099,7 @@ if (newlyUnlocked.length > 0) {
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-3xl bg-[#0a0a0a] p-4 sm:p-6 md:p-10 rounded-2xl border border-cyan-900/50 shadow-2xl flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4 flex-shrink-0">
-               <h2 className="text-lg md:text-xl font-black text-cyan-400 tracking-widest uppercase flex items-center gap-3"><ChartColumn size={24}/> 屬性極限與轉化報告</h2>
+               <h2 className="text-lg md:text-xl font-black text-cyan-400 tracking-widest uppercase flex items-center gap-3"><BarChart3 size={24}/> 屬性極限與轉化報告</h2>
                <button onClick={() => setShowStatsReport(false)} className="p-4 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-all"><X size={24}/></button>
             </div>
             
@@ -2561,10 +2561,10 @@ if (newlyUnlocked.length > 0) {
                {player.freeGacha > 0 && <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded-full animate-bounce">{player.freeGacha}</span>}
              </button>
              <button onClick={() => setShowGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-               <CircleHelp size={16}/> <span className="whitespace-nowrap">修行指引</span>
+               <HelpCircle size={16}/> <span className="whitespace-nowrap">修行指引</span>
              </button>
              <button onClick={() => setShowStatsReport(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-               <ChartColumn size={16}/> <span className="whitespace-nowrap">屬性極限</span>
+               <BarChart3 size={16}/> <span className="whitespace-nowrap">屬性極限</span>
              </button>
              <button onClick={() => setShowRealmGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
                <BookOpen size={16}/> <span className="whitespace-nowrap">境界全覽</span>
