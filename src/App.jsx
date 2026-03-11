@@ -791,7 +791,6 @@ export default function App() {
     return Math.max(0, totalSP - basicSpent - secretSpent);
   }, [totalSP, player.basicSkills, player.secretBooks]);
 
-  const [saveIndicator, setSaveIndicator] = useState(false);
   const [globalStats, setGlobalStats] = useState({ focus: 0, ascensions: 0 });
   const sessionLockRef = useRef(false);
   const [toast, setToast] = useState(null);
