@@ -1574,8 +1574,29 @@ const handleComplete = (usedPill = false) => {
         }
       }
 
+// ... (上面是奇遇 fortuneLog 的各種邏輯)
+      } // 這是奇遇區塊結束的右括號
+
+      // --- ✨ 瓶頸法則 2.0 (修正版)：天道損耗 ---
+      let bottleneckLog = '';
+      if (!monster.isBoss && nextQi > nextQiToNext) {
+          const overflow = nextQi - nextQiToNext;
+          nextQi = nextQiToNext; 
+          
+          // 【天道損耗】靈氣強行壓縮成實體，十不存三 (轉換率 0.3)
+          const crystalizedCoins = Math.floor(overflow * 0.3); 
+          const finalCoins = Math.max(1, crystalizedCoins); // 保底 1 顆靈石
+          
+          nextCoins += finalCoins;
+          if (!isUsingPill) nextLifetime.totalCoins += finalCoins;
+          
+          bottleneckLog = ` ⚠️ 【境界瓶頸】丹田已滿，${formatNumber(overflow)} 點溢出靈氣在天地法則下劇烈消散，僅凝結出 ${formatNumber(finalCoins)} 顆靈石晶體。`;
+          collectedDrops.push(`💎 殘留靈石：${formatNumber(finalCoins)}`);
+      }
+
+      // 產生最終日誌並匯總 (已加入 bottleneckLog)
       const dmgLog = isCrit ? `🔥 【爆擊】造成 ${formatNumber(actualDamage)} 傷害。` : `[運功] 造成 ${formatNumber(actualDamage)} 傷害。`;
-      addLog(`${dmgLog} ${killLog || `獲修為 ${formatNumber(passiveQi)}。`}${fortuneLog}${compLog}`);
+      addLog(`${dmgLog} ${killLog || `獲修為 ${formatNumber(passiveQi)}。`}${fortuneLog}${compLog}${bottleneckLog}`);
 
       setPlayer(p => ({
           ...p,
