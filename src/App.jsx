@@ -1792,7 +1792,7 @@ const handleGacha = () => {
     }
   };
 
-  const toggleTimer = () => { 
+const toggleTimer = () => { 
     if (!isActive) { 
       sessionLockRef.current = false;
       const endTime = Date.now() + (timeLeft * 1000);
@@ -1802,13 +1802,23 @@ const handleGacha = () => {
     } 
   };
 
+  // ✨ 天道修補 1：使用 Ref 鎖定最新的結算邏輯，避免閉包導致「專注期間的升級被吃掉」
+  const latestHandleComplete = useRef(handleComplete);
+  useEffect(() => {
+    latestHandleComplete.current = handleComplete;
+  }, [handleComplete]);
+
+  // ✨ 天道修補 2：徹底封殺幽靈計時器
   useEffect(() => {
     const syncTime = () => {
+      // 🛡️ 核心防禦：如果正在結算中，徹底封鎖任何計時器的幽靈信號！
+      if (sessionLockRef.current) return; 
+
       if (isActive && targetEndTime && !showGiveUpWarning) {
         const remaining = Math.floor((targetEndTime - Date.now()) / 1000);
         if (remaining <= 0) {
           setTimeLeft(0);
-          handleComplete(false);
+          latestHandleComplete.current(false); // 調用最新狀態的結算
         } else {
           setTimeLeft(remaining);
         }
@@ -1819,7 +1829,7 @@ const handleGacha = () => {
       document.addEventListener('visibilitychange', syncTime);
       return () => { clearInterval(interval); document.removeEventListener('visibilitychange', syncTime); };
     }
-  }, [isActive, targetEndTime, showGiveUpWarning]);
+  }, [isActive, targetEndTime, showGiveUpWarning]); // 不依賴 handleComplete，確保計時器平滑運行
 
       const getStatBreakdown = useCallback((type) => {
         let breakdown = [];
