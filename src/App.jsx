@@ -31,6 +31,19 @@ const database = getDatabase(app);
 
 const CHANGELOG_DATA = [
   {
+    version: "v3.7.1",
+    date: "2026-03-11",
+    title: "時空定序與萬寶歸宗",
+    desc: "天道法則補全，徹底封印時空亂流，萬寶樓鑑寶系統全面升級。",
+    changes: [
+      "修復【時空亂流】：徹底封印因「閉包與幽靈計時器」導致的 00:00 卡死與專注期間升級回溯問題。",
+      "重構【靈氣化晶】：拔除死劫豁免權。只要結算時靈氣溢出丹田，必定觸發 30% 比例強制化晶，嚴格控管修為上限。",
+      "校準【生死法則】：死亡懲罰（扣除 20% 總修為）將絕對優先於化晶判定。身死道消者，靈氣消散，無法獲得任何靈石保底。",
+      "優化【萬寶圖鑑】：法寶庫新增「右上角專屬品階標籤」，並於修行指引中公開完整的法寶稀有度排序（凡品 ➔ 造化至寶）。",
+      "優化【天機史記】：境界突破與飛升仙界現在將於「修行日誌」中獨立成行，並以高光展示，彰顯修仙里程碑。"
+    ]
+  },
+  {
     version: "v3.7.0",
     date: "2026-03-11",
     title: "晨曦機緣與洞府玄光",
@@ -1784,8 +1797,7 @@ const handleGacha = () => {
         setCelebration({ 
           name: result.drop.name, 
           quote: '機緣已至，重寶出世！', 
-          drops: [`${RARITY[result.finalRarity].name} ${result.drop.poolType === 'art' ? '法寶' : '功法'}`] 
-        });
+drops: [`【${RARITY[result.finalRarity].name}級】${result.drop.poolType === 'art' ? '法寶' : '功法'}`]        });
         addLog(`[萬寶樓] ${result.log ? result.log + ' ' : ''}獲得【${RARITY[result.finalRarity].name}】${result.drop.poolType === 'art' ? '法寶' : '功法'}「${result.drop.name}」！`);
     } else {
         addLog(`[萬寶樓] ${result.log}`);
@@ -2220,9 +2232,16 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                      <h3 className="text-cyan-400 text-base flex items-center gap-2 font-black"><History size={18}/> 時長戰略 (15m vs 60m)</h3>
                      <p className="text-white/70 font-bold">道侶羈絆看「相伴時間」，不論短修或長關皆不浪費。但 <span className="text-amber-400">60m 具備 4 倍的掉寶率與奇遇機率</span>，是後期拼神寶與過死劫的唯一解。</p>
                    </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-500 flex flex-col gap-2 shadow-inner">
+<section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-500 flex flex-col gap-2 shadow-inner">
                      <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Compass size={18}/> 連鎖突變與投資學</h3>
-                     <p className="text-white/70 font-bold">前期靈石極缺，請優先升級「基礎戰力/氣血」與「陣法」，性價比最高。當你開始抽卡，若該階級圖鑑已滿，每次抽中將有 <span className="text-amber-400">20% 機率引發「突變」</span>躍升至下一階級！</p>
+                     <p className="text-white/70 font-bold mb-2">前期靈石極缺，請優先升級「基礎戰力/氣血」與「陣法」，性價比最高。當你開始抽卡，若該階級圖鑑已滿，每次抽中將有 <span className="text-amber-400">20% 機率引發「突變」</span>躍升至下一階級！</p>
+                     {/* ✨ 新增：稀有度排序指引 */}
+                     <div className="bg-black/40 p-3 rounded-lg border border-white/5 mt-2">
+                       <span className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">萬寶樓品階排序：</span>
+                       <span className="text-xs font-mono font-bold flex flex-wrap gap-1.5">
+                         <span className="text-slate-400">凡品</span> ➔ <span className="text-green-400">靈品</span> ➔ <span className="text-blue-400">法寶</span> ➔ <span className="text-purple-400">古寶</span> ➔ <span className="text-orange-400">通天靈寶</span> ➔ <span className="text-red-500">玄天之寶</span> ➔ <span className="text-yellow-400">造化至寶</span>
+                       </span>
+                     </div>
                    </section>
                    <section className="bg-white/5 p-5 rounded-xl border-l-4 border-amber-500 flex flex-col gap-2 shadow-inner">
                      <h3 className="text-amber-500 text-base flex items-center gap-2 font-black"><Award size={18}/> 名號白嫖法 (免費尋寶)</h3>
@@ -2680,13 +2699,18 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                 </div>
               </div>
             )}
-            {activeTab === 'artifacts' && (
+{activeTab === 'artifacts' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 animate-pop-in pb-10">
                 {sortedArtifacts.map(art => {
                   const unlocked = (player.artifacts || []).includes(art.id);
                   return unlocked ? (
-                    <div key={art.id} className={`p-8 rounded-2xl border bg-black/60 border-white/20 flex flex-col justify-center shadow-inner min-h-[14rem]`}>
-                        <h4 className={`font-black text-xl ${RARITY[art.rarity].color} tracking-tighter drop-shadow-md mb-4`}>{art.name}</h4>
+                    <div key={art.id} className={`p-8 rounded-2xl border bg-black/60 border-white/20 flex flex-col justify-center shadow-inner min-h-[14rem] relative overflow-hidden`}>
+                        {/* ✨ 新增：右上角品階標籤 */}
+                        <div className={`absolute top-0 right-0 px-3 py-1 text-[10px] font-black tracking-widest bg-white/10 ${RARITY[art.rarity].color} rounded-bl-xl border-b border-l border-white/10`}>
+                          {RARITY[art.rarity].name}
+                        </div>
+                        
+                        <h4 className={`font-black text-xl ${RARITY[art.rarity].color} tracking-tighter drop-shadow-md mb-4 mt-2`}>{art.name}</h4>
                         <p className="text-sm text-white/70 italic leading-relaxed uppercase tracking-widest">「{art.desc}」</p>
                     </div>
                   ) : <div key={art.id} className="p-8 rounded-2xl border-2 border-dashed border-white/10 bg-black/50 flex flex-col items-center justify-center opacity-50 min-h-[14rem]"><EyeOff size={40} className="text-white/30 mb-5"/><p className="text-xs font-black text-white/50 uppercase tracking-[0.3em]">寶光內斂：{RARITY[art.rarity].name}</p></div>;
