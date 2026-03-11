@@ -1649,10 +1649,11 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
         }
       }
 
+// ✨ 天道修補：拔除 !monster.isBoss 的特權，徹底落實「靈氣化晶」法則
       let bottleneckLog = '';
-      if (!monster.isBoss && nextQi > nextQiToNext) {
+      if (nextQi > nextQiToNext) {
           const overflow = nextQi - nextQiToNext;
-          nextQi = nextQiToNext; 
+          nextQi = nextQiToNext; // 強制將修為鎖死在當前上限
           
           const crystalizedCoins = Math.floor(overflow * 0.3); 
           const finalCoins = Math.max(1, crystalizedCoins); 
@@ -1660,8 +1661,8 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
           nextCoins += finalCoins;
           if (!isUsingPill) nextLifetime.totalCoins += finalCoins;
           
-          bottleneckLog = ` ⚠️ 【境界瓶頸】丹田已滿，${formatNumber(overflow)} 點溢出靈氣在天地法則下劇烈消散，僅凝結出 ${formatNumber(finalCoins)} 顆靈石晶體。`;
-          collectedDrops.push(`💎 殘留靈石：${formatNumber(finalCoins)}`);
+          bottleneckLog = ` ⚠️ 【境界瓶頸】丹田已滿，${formatNumber(overflow)} 點溢出靈氣劇烈消散，凝結出 ${formatNumber(finalCoins)} 顆靈石晶體。`;
+          collectedDrops.push(`💎 靈氣化晶：${formatNumber(finalCoins)} 靈石`);
       }
 
       const dmgLog = isCrit ? `🔥 【爆擊】造成 ${formatNumber(actualDamage)} 傷害。` : `[運功] 造成 ${formatNumber(actualDamage)} 傷害。`;
