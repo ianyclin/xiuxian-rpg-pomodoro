@@ -939,7 +939,7 @@ const combatPrediction = useMemo(() => {
 
     // 1. 必敗 (最高傷害打不滿妖獸血量，極度危險)
     if (maxDmg < monster.hp) {
-      return { status: 'DANGER', text: "感應靈壓...兇險萬分...", color: "text-rose-500" };
+      return { status: 'DANGER', text: "靈壓感應...兇險萬分...", color: "text-rose-500" };
     }
     // 2. 必勝 (最低傷害大於妖獸血量，穩穩拿下)
     if (minDmg >= monster.hp) {
