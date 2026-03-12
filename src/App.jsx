@@ -2423,26 +2423,21 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                 </div>
             </div>
 
-// START PATCH [UI 最終校準 - 狀態列對齊與丹藥色]
-            {/* --- 右側狀態列 --- */}
-            <div className="grid grid-cols-2 sm:flex sm:flex-row sm:flex-nowrap justify-start md:justify-end items-start md:items-end gap-x-4 gap-y-4 w-full md:w-auto mt-4 md:mt-0">
-               {/* 靈石 */}
+{/* --- 右側狀態列 --- */}
+            <div className="grid grid-cols-3 sm:flex sm:flex-row sm:flex-nowrap justify-start md:justify-end items-start md:items-end gap-x-4 gap-y-4 w-full md:w-auto mt-4 md:mt-0">
+               {/* 1. 靈石 */}
                <div className="flex flex-col items-start md:items-end">
                   <span className="text-xs text-yellow-500 uppercase font-black flex items-center gap-1.5 mb-1"><Coins size={12}/> 靈石</span>
                   <span className="text-base text-yellow-500 font-mono font-bold drop-shadow-md">{formatNumber(player.coins)}</span>
                </div>
 
-               {/* SP (強制 font-mono 並優化對齊) */}
-               <div className="flex flex-col items-start md:items-end">
-                  <span className="text-xs text-cyan-400 uppercase font-black flex items-center gap-1.5 mb-1"><Zap size={12}/> SP</span>
-                  <span className="text-base font-mono font-bold drop-shadow-md flex items-baseline gap-1">
-                     <span className="text-cyan-400">{formatNumber(availableSP)}</span>
-                     <span className="text-white/20 text-xs">/</span>
-                     <span className="text-white/40 text-xs">{totalSP}</span>
-                  </span>
+               {/* 2. 頓悟丹 */}
+               <div className="flex flex-col items-start md:items-end font-bold">
+                  <span className="text-xs text-amber-500 uppercase font-black flex items-center gap-1.5 mb-1"><Pill size={12}/> 頓悟丹</span>
+                  <span className="text-base text-amber-500 font-mono font-bold drop-shadow-md">{formatNumber(player.epiphanyPills || 0)}</span>
                </div>
 
-               {/* 連擊 (保留原本的護盾邏輯) */}
+               {/* 3. 連擊 */}
                <div className="flex flex-col items-start md:items-end">
                   <span className="text-xs text-rose-500 uppercase font-black flex items-center gap-1.5 mb-1"><Sword size={12}/> 連擊</span>
                   <span className={`text-base text-rose-500 font-mono font-bold drop-shadow-md transition-all duration-500 flex items-center gap-1 ${comboMultiplier > 2.0 ? 'text-rose-300 scale-110 animate-pulse drop-shadow-[0_0_10px_rgba(244,63,94,0.8)]' : ''}`}>
@@ -2450,14 +2445,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                      {maxStreakShields > 0 && <span className="text-cyan-400 text-xs ml-1 flex items-center">🛡️{player.streakShields}</span>}
                   </span>
                </div>
-
-               {/* 頓悟丹 (維持丹藥橙色) */}
-               <div className="flex flex-col items-start md:items-end font-bold">
-                  <span className="text-xs text-amber-500 uppercase font-black flex items-center gap-1.5 mb-1"><Pill size={12}/> 頓悟丹</span>
-                  <span className="text-base text-amber-500 font-mono font-bold drop-shadow-md">{formatNumber(player.epiphanyPills || 0)}</span>
-               </div>
             </div>
-// END PATCH [UI 最終校準 - 狀態列對齊與丹藥色]
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
             <div className="space-y-3 relative z-10">
@@ -2579,8 +2567,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
           <div className="flex bg-black/80 border-b border-white/10 p-2 gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
 {[
   { id: 'log', label: '修行日誌', icon: History },
-  { id: 'skills', label: '功法祕籍', icon: ScrollText },
-  // ✨ 將原本的 player.freeGacha 改為計算兩者的總和
+  { id: 'skills', label: '功法祕籍', icon: ScrollText, hasNotify: availableSP >= 1 }, // ✨ 新增：未使用的 SP 紅點提示
   { id: 'forge', label: '洞府淬煉', icon: Hammer, hasNotify: ((player.dailyGacha || 0) + (player.awardGacha || 0) > 0) }, 
   { id: 'artifacts', label: '法寶庫', icon: Box },
   { id: 'companions', label: '道侶紅顏', icon: Heart },
