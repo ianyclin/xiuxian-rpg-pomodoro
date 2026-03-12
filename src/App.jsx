@@ -2083,16 +2083,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
         );
       };
 
-  const InsightsChart = () => {
-    const data = player.history || [];
-    if (data.length < 2) return <div className="h-full flex items-center justify-center text-white/10 uppercase tracking-widest font-bold text-xs">識海未成，尚無投影</div>;
-    const maxT = Math.max(1, ...data.map(d => d.time || 0));
-    const points = data.map((d, i) => {
-      const x = (i / (data.length - 1)) * 100;
-      const y = 100 - ((d.time || 0) / maxT) * 100;
-      return `${isNaN(x) ? 0 : x},${isNaN(y) ? 0 : y}`;
-    }).join(' ');
- // START PATCH [5. 靈獸 UI 狀態與升級邏輯]
+// START PATCH [5. 靈獸 UI 狀態與升級邏輯]
   const [treasureTab, setTreasureTab] = useState('arts');
   
   // 屬性名稱轉譯器
@@ -2118,7 +2109,18 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
         addLog(`🐾 【萬獸突破】耗費 ${formatNumber(upCost)} 靈石，【${pet.name}】突破至 Lv.${lvl + 1}！`);
     }
   };
-// END PATCH [5. 靈獸 UI 狀態與升級邏輯]   
+// END PATCH [5. 靈獸 UI 狀態與升級邏輯]
+
+  const InsightsChart = () => {
+    const data = player.history || [];
+    if (data.length < 2) return <div className="h-full flex items-center justify-center text-white/10 uppercase tracking-widest font-bold text-xs">識海未成，尚無投影</div>;
+    const maxT = Math.max(1, ...data.map(d => d.time || 0));
+    const points = data.map((d, i) => {
+      const x = (i / (data.length - 1)) * 100;
+      const y = 100 - ((d.time || 0) / maxT) * 100;
+      return `${isNaN(x) ? 0 : x},${isNaN(y) ? 0 : y}`;
+    }).join(' ');
+   
     return (
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
         <polyline fill="none" stroke="rgba(16, 185, 129, 0.4)" strokeWidth="1.5" points={points} />
