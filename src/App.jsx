@@ -3150,7 +3150,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                 <div className="flex-1 relative border-l-2 border-b-2 border-white/20"><InsightsChart /></div>
               </div>
             )}
-// === 從這裡開始覆蓋直到文件結尾 ===
+// === 此處開始替換（包含修行日誌區塊與整個頁尾）===
             {activeTab === 'log' && (
               <div className="space-y-4 md:space-y-6 animate-pop-in pb-10">
                 {(player.logs || []).map((e, i) => (
@@ -3167,9 +3167,9 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                 ))}
               </div>
             )}
-          </div> {/* 1. 閉合內容內距層 (p-5 md:p-10) */}
-        </div> {/* 2. 閉合黑色卡片層 (bg-slate-950/90) */}
-      </div> {/* 3. 閉合分頁包裝層 (w-full max-w-4xl mt-4) */}
+          </div> {/* 1. 閉合 Tab Content (p-5 md:p-10) */}
+        </div> {/* 2. 閉合 Tab Box (bg-slate-950/90) */}
+      </div> {/* 3. 閉合 Tab Wrapper (w-full max-w-4xl mt-4) */}
 
       <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4 w-full">
         <div className="w-full max-w-2xl grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 mx-auto">
@@ -3211,6 +3211,6 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
             </button>
         </div>
       </footer>
-    </div> {/* 4. 閉合最外層 Root Div (min-h-screen) */}
+    </div> {/* 4. 閉合根節點 Root Div (min-h-screen) */}
   );
 }
