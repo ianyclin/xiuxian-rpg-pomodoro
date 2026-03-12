@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, BarChart3, Save, Pill, HelpCircle, ShieldAlert, Award, Heart, Copy, Download, FileText } from 'lucide-react';
-// 註：全文中原本使用 <HelpCircle /> 的地方需改為 <CircleHelp />
-// 全文中原本使用 <BarChart3 /> 的地方需改為 <ChartColumn />
+import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, ChartColumn, Save, Pill, CircleHelp, ShieldAlert, Award, Heart, Copy, Download, FileText } from 'lucide-react';
+
 /**
  * ========================================================
  * 0. 天道雲端初始化 (Firebase Setup)
@@ -30,6 +29,19 @@ const database = getDatabase(app);
  */
 
 const CHANGELOG_DATA = [
+  {
+    version: "v3.8.0",
+    date: "2026-03-12",
+    title: "離線閉關與萬寶異象",
+    desc: "突破時空限制，實裝真・離線修仙機制；萬寶樓重寶出世，天地異象降臨。",
+    changes: [
+      "實裝【離線閉關】：徹底擺脫手機休眠與背景查殺。將天地時鐘寫入本地識海，即便完全關閉網頁，陣法依然持續運轉，出關後自動結算修為與掉落。",
+      "實裝【萬寶異象】：尋寶新增「天機推演」懸念。重寶出世或機緣突變時，將引發螢幕震動與天地色變等強烈視覺反饋，極致還原開光爽感。",
+      "優化【面板精簡】：拔除主狀態列常駐的 SP 顯示，改為當 SP 充足時，於「功法祕籍」頁籤亮起微弱的呼吸紅點，大幅降低視覺雜訊。",
+      "優化【靈壓感知】：於主介面並列顯示「戰力」與「綜合靈壓」，並統一採用琥珀金發光視覺，讓道友能精準掌握硬輸出與整體底蘊。",
+      "修復【天道殘影】：修正境界突破時的日誌重複顯示問題，校準屬性極限面板的等寬字體對齊，並徹底清除舊版圖示的技術債。"
+    ]
+  },
   {
     version: "v3.7.1",
     date: "2026-03-11",
@@ -2215,7 +2227,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-2xl bg-[#0a0a0a] p-4 sm:p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh]">
             <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
-               <h2 className="text-lg md:text-xl font-black text-white tracking-widest uppercase flex items-center gap-3"><HelpCircle className="text-emerald-400"/> 修行指引與祕訣</h2>
+               <h2 className="text-lg md:text-xl font-black text-white tracking-widest uppercase flex items-center gap-3"><CircleHelp className="text-emerald-400"/> 修行指引與祕訣</h2>
                <button onClick={() => setShowGuide(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
             </div>
             
@@ -2288,7 +2300,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
           <div className="w-full max-w-3xl bg-[#0a0a0a] p-4 sm:p-6 md:p-10 rounded-2xl border border-cyan-900/50 shadow-2xl flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4 flex-shrink-0">
-               <h2 className="text-lg md:text-xl font-black text-cyan-400 tracking-widest uppercase flex items-center gap-3"><BarChart3 size={24}/> 屬性極限與轉化報告</h2>
+               <h2 className="text-lg md:text-xl font-black text-cyan-400 tracking-widest uppercase flex items-center gap-3"><ChartColumn size={24}/> 屬性極限與轉化報告</h2>
                <button onClick={() => setShowStatsReport(false)} className="p-4 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-all"><X size={24}/></button>
             </div>
             
@@ -2797,10 +2809,10 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                <Award size={16}/> <span className="whitespace-nowrap">名號頭銜</span>
              </button>
              <button onClick={() => setShowGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-               <HelpCircle size={16}/> <span className="whitespace-nowrap">修行指引</span>
+               <CircleHelp size={16}/> <span className="whitespace-nowrap">修行指引</span>
              </button>
              <button onClick={() => setShowStatsReport(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-               <BarChart3 size={16}/> <span className="whitespace-nowrap">屬性極限</span>
+               <ChartColumn size={16}/> <span className="whitespace-nowrap">屬性極限</span>
              </button>
              <button onClick={() => setShowRealmGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
                <BookOpen size={16}/> <span className="whitespace-nowrap">境界全覽</span>
