@@ -2503,7 +2503,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 pb-8">
                 
-                {/* --- 根基與倍率區 --- */}
+{/* --- 根基與倍率區 --- */}
                 <div className="space-y-2">
                   <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><ChevronsUp size={14}/> 根基與倍率 (BASE & MULTIPLIERS)</h3>
                   {renderStatRow('原始戰力', 'base_atk', formatNumber(player.baseCombat), null, 'text-rose-200')}
@@ -2517,28 +2517,28 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                 {/* --- 戰鬥極限區 --- */}
                 <div className="space-y-2">
                   <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><Flame size={14}/> 戰鬥極限 (COMBAT CAPS)</h3>
-                  {renderStatRow('爆擊率', 'crit', `${(critRate * 100).toFixed(1)}%`, '(溢出>95% 轉爆傷)', 'text-purple-400')}
-                  {renderStatRow('爆擊傷害', 'crit_dmg', `${(critDmg * 100).toFixed(0)}%`, '(極限 2000%)', 'text-rose-400')}
-                  {renderStatRow('連擊增傷上限', 'streak_cap', `+${((streakCap - 0.5) * 100).toFixed(0)}%`, '(極限 +800%)', 'text-rose-400')}
-                  {renderStatRow('連擊效率倍率', 'streak_eff', `x${streakEff.toFixed(2)}`, null, 'text-rose-400')}
+                  {renderStatRow('爆擊率', 'crit', `${(critRate * 100).toFixed(1)}%`, '(溢出>95% 轉爆傷)', 'text-purple-300')}
+                  {renderStatRow('爆擊傷害', 'crit_dmg', `${(critDmg * 100).toFixed(0)}%`, '(極限 2000%)', 'text-purple-500')}
+                  {renderStatRow('連擊增傷上限', 'streak_cap', `+${((streakCap - 0.5) * 100).toFixed(0)}%`, '(極限 +800%)', 'text-orange-300')}
+                  {renderStatRow('連擊效率倍率', 'streak_eff', `x${streakEff.toFixed(2)}`, null, 'text-orange-500')}
                 </div>
 
                 {/* --- 生存防禦區 --- */}
                 <div className="space-y-2">
                   <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><Shield size={14}/> 生存防禦 (DEFENSE)</h3>
-                  {renderStatRow('閃避免傷率', 'evade', `${(evadeRate * 100).toFixed(1)}%`, '(溢出>75% 轉連擊)', 'text-emerald-400')}
-                  {renderStatRow('涅槃復活率', 'revive', `${(reviveRate * 100).toFixed(1)}%`, '(極限 65%)', 'text-emerald-400')}
-                  {renderStatRow('反噬承傷比例', 'def', `${dmgTakenPct.toFixed(1)}%`, '(由顛倒五行與防禦力計算)', 'text-yellow-500')}
-                  {renderStatRow('神識感應減傷', 'sense_def', `${((Math.min(0.9, getMultiplier('sense_def') - 1)) * 100).toFixed(1)}%`, '(無視空間鎖定，極限 90%)', 'text-cyan-400')}
+                  {renderStatRow('閃避免傷率', 'evade', `${(evadeRate * 100).toFixed(1)}%`, '(溢出>75% 轉連擊)', 'text-teal-300')}
+                  {renderStatRow('涅槃復活率', 'revive', `${(reviveRate * 100).toFixed(1)}%`, '(極限 65%)', 'text-teal-500')}
+                  {renderStatRow('反噬承傷比例', 'def', `${dmgTakenPct.toFixed(1)}%`, '(由顛倒五行與防禦力計算)', 'text-blue-300')}
+                  {renderStatRow('神識感應減傷', 'sense_def', `${((Math.min(0.9, getMultiplier('sense_def') - 1)) * 100).toFixed(1)}%`, '(無視空間鎖定，極限 90%)', 'text-blue-500')}
                 </div>
 
                 {/* --- 機緣經濟區 --- */}
                 <div className="space-y-2">
                   <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><Compass size={14}/> 機緣經濟 (ECONOMY)</h3>
-                  {renderStatRow('氣運保底倍率', 'luck_floor', `x${getMultiplier('luck_floor').toFixed(2)}`, '(乘算奇遇與抽獎)', 'text-yellow-400')}
-                  {renderStatRow('洞府成本折扣', 'forge_discount', `${(forgeDiscount * 100).toFixed(0)}%`, '(極限降至 10%)', 'text-yellow-500')}
-                  {renderStatRow('真靈吸血比例', 'lifesteal', `${((getMultiplier('lifesteal') - 1) * 100).toFixed(1)}%`, '(爆擊時 30% 機率觸發)', 'text-rose-400')}
-                  {renderStatRow('休息回血比例', 'heal_bonus', `${(healPct * 100).toFixed(1)}%`, '(極限 80%)', 'text-emerald-400')}
+                  {renderStatRow('氣運保底倍率', 'luck_floor', `x${getMultiplier('luck_floor').toFixed(2)}`, '(乘算奇遇與抽獎)', 'text-amber-300')}
+                  {renderStatRow('洞府成本折扣', 'forge_discount', `${(forgeDiscount * 100).toFixed(0)}%`, '(極限降至 10%)', 'text-amber-500')}
+                  {renderStatRow('真靈吸血比例', 'lifesteal', `${((getMultiplier('lifesteal') - 1) * 100).toFixed(1)}%`, '(爆擊時 30% 機率觸發)', 'text-pink-400')}
+                  {renderStatRow('休息回血比例', 'heal_bonus', `${(healPct * 100).toFixed(1)}%`, '(極限 80%)', 'text-emerald-300')}
                 </div>
 
               </div>
