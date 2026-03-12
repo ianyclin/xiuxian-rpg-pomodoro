@@ -2965,13 +2965,14 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
               </div>
             )}
 
-            {activeTab === 'forge' && (
+{activeTab === 'forge' && (
               <div className="space-y-14 animate-pop-in pb-10">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 md:gap-8">
+                {/* 將 grid-cols-4 改為 md:grid-cols-2 實現 2x2 佈局 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                   <div className={`p-8 rounded-2xl border min-h-[16rem] flex flex-col justify-between group transition-all ${player.epiphanyPills > 0 ? 'bg-orange-950/40 border-orange-500/40 shadow-xl shadow-orange-900/20' : 'bg-white/10 border-white/20'}`}>
                     <div>
-                      <h3 className={`font-black text-xl tracking-tighter uppercase flex items-center gap-3 ${player.epiphanyPills > 0 ? 'text-orange-400' : 'text-white'}`}>
-                        <Pill size={24}/> 頓悟丹 {player.epiphanyPills > 0 ? `x${player.epiphanyPills}` : 'x0'}
+                      <h3 className={`font-black text-xl md:text-2xl tracking-tighter uppercase flex items-center gap-3 whitespace-nowrap ${player.epiphanyPills > 0 ? 'text-orange-400' : 'text-white'}`}>
+                        <Pill size={24} className="flex-shrink-0"/> 頓悟丹 {player.epiphanyPills > 0 ? `${player.epiphanyPills}枚` : '0枚'}
                       </h3>
                       <p className={`text-sm mt-3 italic tracking-widest leading-relaxed ${player.epiphanyPills > 0 ? 'text-white/70' : 'text-white/60'}`}>
                         點按可直接發動一次 25m 的蓄力攻擊。
@@ -2987,18 +2988,19 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                     </button>
                   </div>
                   <div className="p-8 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 min-h-[16rem] flex flex-col justify-between group shadow-xl shadow-emerald-900/20">
-                    <div><h3 className="text-emerald-400 font-black text-xl tracking-tighter uppercase flex items-center gap-3"><Pill size={24}/> 煉製回春丹</h3><p className="text-white/70 text-sm mt-3 italic tracking-widest leading-relaxed">恢復 50% 最大氣血。</p></div>
-                    <button onClick={handleHeal} disabled={player.coins < healCost || player.vitality >= maxVitality} className="w-full py-5 bg-emerald-900/80 hover:bg-emerald-600 text-emerald-100 rounded-xl font-black uppercase text-sm transition-all disabled:opacity-40 border border-emerald-500/50 mt-6">{player.vitality >= maxVitality ? '氣血已滿' : `煉丹 (${formatNumber(healCost)} 靈石)`}</button>
+                    <div><h3 className="text-emerald-400 font-black text-xl md:text-2xl tracking-tighter uppercase flex items-center gap-3 whitespace-nowrap"><Pill size={24} className="flex-shrink-0"/> 煉製回春丹</h3><p className="text-white/70 text-sm mt-3 italic tracking-widest leading-relaxed">恢復 50% 最大氣血。</p></div>
+                    <button onClick={handleHeal} disabled={player.coins < healCost || player.vitality >= maxVitality} className="w-full py-5 bg-emerald-900/80 hover:bg-emerald-600 text-emerald-100 rounded-xl font-black uppercase text-sm transition-all disabled:opacity-40 border border-emerald-500/50 mt-6 whitespace-nowrap">{player.vitality >= maxVitality ? '氣血已滿' : `煉丹 (${formatNumber(healCost)} 靈石)`}</button>
                   </div>
                   <div className="p-8 rounded-2xl bg-white/10 border border-white/20 min-h-[16rem] flex flex-col justify-between group">
-                      <div><h3 className="text-white font-black text-xl tracking-tighter uppercase">凝練劍光</h3><p className="text-white/60 text-sm mt-3 italic tracking-widest">基礎戰力 +100。<br/>(花費指數提升，無極限)</p></div>
-                      <button onClick={() => { if(player.coins >= upgCostAtk) setPlayer(p => ({ ...p, coins: p.coins - upgCostAtk, baseCombat: p.baseCombat + 100 })) }} disabled={player.coins < upgCostAtk} className="w-full py-5 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl font-black uppercase text-sm tracking-widest shadow-xl transition-all disabled:opacity-30 mt-6">祭煉 ({formatNumber(upgCostAtk)} 靈石)</button>
+                      <div><h3 className="text-white font-black text-xl md:text-2xl tracking-tighter uppercase whitespace-nowrap">凝練劍光</h3><p className="text-white/60 text-sm mt-3 italic tracking-widest">基礎戰力 +100。<br/>(花費指數提升，無極限)</p></div>
+                      <button onClick={() => { if(player.coins >= upgCostAtk) setPlayer(p => ({ ...p, coins: p.coins - upgCostAtk, baseCombat: p.baseCombat + 100 })) }} disabled={player.coins < upgCostAtk} className="w-full py-5 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl font-black uppercase text-sm tracking-widest shadow-xl transition-all disabled:opacity-30 mt-6 whitespace-nowrap">祭煉 ({formatNumber(upgCostAtk)} 靈石)</button>
                   </div>
                   <div className="p-8 rounded-2xl bg-white/10 border border-white/20 min-h-[16rem] flex flex-col justify-between group">
-                      <div><h3 className="text-white font-black text-xl tracking-tighter uppercase">熬煉肉身</h3><p className="text-white/60 text-sm mt-3 italic tracking-widest">氣血上限 +100。<br/>(花費指數提升，無極限)</p></div>
-                      <button onClick={() => { if(player.coins >= upgCostHp) setPlayer(p => ({ ...p, coins: p.coins - upgCostHp, baseMaxVitality: p.baseMaxVitality + 100, vitality: p.vitality + 100 })) }} disabled={player.coins < upgCostHp} className="w-full py-5 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl font-black uppercase text-sm tracking-widest shadow-xl transition-all disabled:opacity-30 mt-6">熬煉 ({formatNumber(upgCostHp)} 靈石)</button>
+                      <div><h3 className="text-white font-black text-xl md:text-2xl tracking-tighter uppercase whitespace-nowrap">熬煉肉身</h3><p className="text-white/60 text-sm mt-3 italic tracking-widest">氣血上限 +100。<br/>(花費指數提升，無極限)</p></div>
+                      <button onClick={() => { if(player.coins >= upgCostHp) setPlayer(p => ({ ...p, coins: p.coins - upgCostHp, baseMaxVitality: p.baseMaxVitality + 100, vitality: p.vitality + 100 })) }} disabled={player.coins < upgCostHp} className="w-full py-5 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl font-black uppercase text-sm tracking-widest shadow-xl transition-all disabled:opacity-30 mt-6 whitespace-nowrap">熬煉 ({formatNumber(upgCostHp)} 靈石)</button>
                   </div>
                 </div>
+                
                 <div className="space-y-6">
                    <h3 className="text-white/60 text-sm font-black uppercase border-b border-white/20 pb-4">陣法樞紐 (無上限)</h3>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
