@@ -1408,18 +1408,22 @@ const combatPrediction = useMemo(() => {
       return { drop: finalDrop, coins: compensationCoins, log: mutationLog, finalRarity: currentTargetRarity };
   };
 
-// START PATCH [4. 結算主動觸發與靈獸參戰]
-  const handleComplete = (usedPill = false) => {
+const handleComplete = (usedPill = false) => {
     if (sessionLockRef.current) return; 
     sessionLockRef.current = true;  
   
     const isUsingPill = usedPill === true;
     
+    // ✨ 關鍵改動：定義「有效時長」。若是用丹，強制設定為 1500 秒 (25分)
+    const effFocusDuration = isUsingPill ? 1500 : focusDuration;
+    // ✨ 關鍵改動：若是用丹，強制視為 'focus' (蓄力) 模式執行戰鬥
+    const currentMode = isUsingPill ? 'focus' : mode;
+    
     setIsActive(false); 
     setTargetEndTime(null);
     let collectedDrops = []; 
     
-    if (mode === 'focus') {
+    if (currentMode === 'focus') {
       if (focusEndAudioRef.current) focusEndAudioRef.current.play().catch(() => {});
       setIsAttacking(true); setTimeout(() => setIsAttacking(false), 500);
 
@@ -1433,22 +1437,24 @@ const combatPrediction = useMemo(() => {
       let nextCompanionKills = { ...(player.companionKills || {}) };
 
       if (isUsingPill) {
-          addLog(`💊 【歲月法則】吞服頓悟丹，瞬間出關！(此經歷不列入識海與生涯)`);
+          // 文案更新：符合道友要求的瞬發攻擊感
+          addLog(`💊 【歲月法則】吞服頓悟丹，發動等同 25 分鐘之蓄力一擊！`);
           nextPills -= 1;
           nextLastPillTime = Date.now(); 
       } else {
           nextLastPillTime = 0; 
           nextLifetime.focusCount += 1;
-          nextTotalFocusTime += focusDuration;
+          nextTotalFocusTime += effFocusDuration;
       }
 
       const isCrit = Math.random() < critRate;
-      const damageBase = Math.floor(currentCombatPower * (focusDuration / 1500));
-      let actualDamage = isCrit ? Math.floor(damageBase * critDmg) : damageBase; // ⚠️ 注意：改為 let
+      // ⚠️ 注意：這裡的計算全部改用 effFocusDuration
+      const damageBase = Math.floor(currentCombatPower * (effFocusDuration / 1500));
+      let actualDamage = isCrit ? Math.floor(damageBase * critDmg) : damageBase;
       
       if (isCrit) { setIsCritStrike(true); setTimeout(() => setIsCritStrike(false), 600); }
 
-      const timeRatio = focusDuration / 1500;
+      const timeRatio = effFocusDuration / 1500;
       const passiveQi = Math.floor(50 * Math.pow(1.18, player.realmIndex + 1) * getMultiplier('qi') * timeRatio);
       const passiveCoin = Math.floor(50 * Math.pow(1.15, player.realmIndex + 1) * getMultiplier('stone') * luckVal * timeRatio);
 
@@ -1618,21 +1624,22 @@ const combatPrediction = useMemo(() => {
             if (!isUsingPill) nextLifetime.totalCoins += result.coins;
             killLog += result.log;
 
-            if (result.drop) {
+if (result.drop) {
                 const drop = result.drop;
+                const rarityName = RARITY[result.finalRarity].name;
+                const dropDisplay = `【${rarityName}】${drop.name}`; // 統一格式
+                
                 if (drop.poolType === 'art') {
                     newArtifacts.push(drop.id);
-                    killLog += ` 🎁 斬獲【${RARITY[result.finalRarity].name}】法寶「${drop.name}」！`;
-                    collectedDrops.push(`🎁 ${RARITY[result.finalRarity].name}法寶：${drop.name}`);
+                    killLog += ` 🎁 斬獲${dropDisplay}！`;
                 } else if (drop.poolType === 'book') {
                     newSecretBooks[drop.id] = 1;
-                    killLog += ` 📜 獲得【${RARITY[result.finalRarity].name}】功法「${drop.name}」！`;
-                    collectedDrops.push(`📜 ${RARITY[result.finalRarity].name}功法：${drop.name}`);
+                    killLog += ` 📜 獲得${dropDisplay}！`;
                 } else if (drop.poolType === 'pet') {
                     nextPets[drop.id] = { lvl: 1, exp: 0 };
-                    killLog += ` 🐾 降伏【${RARITY[result.finalRarity].name}】靈寵「${drop.name}」！`;
-                    collectedDrops.push(`🐾 ${RARITY[result.finalRarity].name}靈寵：${drop.name}`);
+                    killLog += ` 🐾 降伏${dropDisplay}！`;
                 }
+                collectedDrops.push(dropDisplay); // 統一加入結算清單
             }
             if (result.coins > 0) {
                 collectedDrops.push(`💰 突變補償：${formatNumber(result.coins)} 靈石`);
@@ -1808,21 +1815,22 @@ const combatPrediction = useMemo(() => {
             nextCoins += result.coins;
             if (!isUsingPill) nextLifetime.totalCoins += result.coins;
             fortuneLog += result.log;
-            if (result.drop) {
+if (result.drop) {
                 const drop = result.drop;
+                const rarityName = RARITY[result.finalRarity].name;
+                const dropDisplay = `【${rarityName}】${drop.name}`;
+                
                 if (drop.poolType === 'art') {
                     newArtifacts.push(drop.id);
-                    fortuneLog += ` 🏺 【異寶出世】霞光萬丈，喜獲【${RARITY[result.finalRarity].name}】法寶「${drop.name}」！`;
-                    collectedDrops.push(`🏺 ${RARITY[result.finalRarity].name}法寶：${drop.name}`);
+                    fortuneLog += ` 🏺 【異寶出世】喜獲${dropDisplay}！`;
                 } else if (drop.poolType === 'book') {
                     newSecretBooks[drop.id] = 1;
-                    fortuneLog += ` 📜 【殘卷現世】機緣巧合，領悟【${RARITY[result.finalRarity].name}】功法「${drop.name}」！`;
-                    collectedDrops.push(`📜 ${RARITY[result.finalRarity].name}功法：${drop.name}`);
+                    fortuneLog += ` 📜 【殘卷現世】領悟${dropDisplay}！`;
                 } else if (drop.poolType === 'pet') {
                     nextPets[drop.id] = { lvl: 1, exp: 0 };
-                    fortuneLog += ` 🐾 【靈獸認主】天降祥瑞，獲得【${RARITY[result.finalRarity].name}】靈寵「${drop.name}」！`;
-                    collectedDrops.push(`🐾 ${RARITY[result.finalRarity].name}靈寵：${drop.name}`);
+                    fortuneLog += ` 🐾 【靈獸認主】獲得${dropDisplay}！`;
                 }
+                collectedDrops.push(dropDisplay);
             }
             if (result.coins > 0) {
                 collectedDrops.push(`💰 突變補償：${formatNumber(result.coins)} 靈石`);
@@ -2624,10 +2632,17 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                 <Shield size={36} className={`${activeColorClass.text} flex-shrink-0`}/>
                 
                 <div className="flex flex-col justify-center flex-1 min-w-0">
-                  <h2 className="text-xl sm:text-2xl font-black tracking-widest uppercase text-white drop-shadow-lg truncate flex items-center flex-wrap">
-                    {player.equippedTitle && <span className="text-amber-400 mr-2 border border-amber-500/50 bg-amber-950/50 px-2 py-0.5 rounded text-[10px] sm:text-xs tracking-widest relative -top-0.5">[{TITLE_DATA.find(t=>t.id===player.equippedTitle)?.name}]</span>}
-                    {currentRealmData.name}
-                  </h2>
+<div className="flex flex-col justify-center flex-1 min-w-0">
+                  <div className="flex items-center flex-wrap gap-2 mb-1">
+                    <h2 className="text-xl sm:text-2xl font-black tracking-widest uppercase text-white drop-shadow-lg">
+                      {currentRealmData.name}
+                    </h2>
+                    {player.equippedTitle && (
+                      <span className="inline-flex items-center text-amber-400 border border-amber-500/50 bg-amber-950/50 px-2 py-0.5 rounded text-[10px] sm:text-xs tracking-widest font-black shadow-[0_0_10px_rgba(245,158,11,0.2)]">
+                        [{TITLE_DATA.find(t=>t.id===player.equippedTitle)?.name}]
+                      </span>
+                    )}
+                  </div>
                   
 <div className="flex flex-wrap items-center gap-3 mt-1">
                      <div className="flex items-center gap-1.5">
@@ -2673,20 +2688,14 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
             </div>
 
 {/* --- 右側狀態列 --- */}
-            <div className="grid grid-cols-3 sm:flex sm:flex-row sm:flex-nowrap justify-start md:justify-end items-start md:items-end gap-x-4 gap-y-4 w-full md:w-auto mt-4 md:mt-0">
+            <div className="grid grid-cols-2 sm:flex sm:flex-row sm:flex-nowrap justify-start md:justify-end items-start md:items-end gap-x-6 gap-y-4 w-full md:w-auto mt-4 md:mt-0">
                {/* 1. 靈石 */}
                <div className="flex flex-col items-start md:items-end">
                   <span className="text-xs text-yellow-500 uppercase font-black flex items-center gap-1.5 mb-1"><Coins size={12}/> 靈石</span>
                   <span className="text-base text-yellow-500 font-mono font-bold drop-shadow-md">{formatNumber(player.coins)}</span>
                </div>
 
-               {/* 2. 頓悟丹 */}
-               <div className="flex flex-col items-start md:items-end font-bold">
-                  <span className="text-xs text-amber-500 uppercase font-black flex items-center gap-1.5 mb-1"><Pill size={12}/> 頓悟丹</span>
-                  <span className="text-base text-amber-500 font-mono font-bold drop-shadow-md">{formatNumber(player.epiphanyPills || 0)}</span>
-               </div>
-
-               {/* 3. 連擊 */}
+               {/* 2. 連擊 */}
                <div className="flex flex-col items-start md:items-end">
                   <span className="text-xs text-rose-500 uppercase font-black flex items-center gap-1.5 mb-1"><Sword size={12}/> 連擊</span>
                   <span className={`text-base text-rose-500 font-mono font-bold drop-shadow-md transition-all duration-500 flex items-center gap-1 ${comboMultiplier > 2.0 ? 'text-rose-300 scale-110 animate-pulse drop-shadow-[0_0_10px_rgba(244,63,94,0.8)]' : ''}`}>
@@ -2799,16 +2808,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
               「{combatPrediction.text}」
             </div>
           )}
-          {(player.epiphanyPills || 0) > 0 && mode === 'focus' && (
-            <button 
-              onClick={() => canUsePill && handleComplete(true)} 
-              disabled={!canUsePill}
-              className={`flex items-center justify-center gap-2 px-8 py-4 rounded-full text-xs sm:text-sm font-black tracking-widest transition-all border shadow-[0_0_15px_rgba(245,158,11,0.2)] ${canUsePill ? 'bg-amber-900/50 text-amber-400 hover:bg-amber-600 hover:text-white border-amber-500/50 cursor-pointer' : 'bg-slate-900/80 text-slate-500 border-slate-700/50 cursor-not-allowed opacity-80'} ${isActive ? 'opacity-30 hover:opacity-100' : ''}`}
-            >
-              <Pill size={16} className={canUsePill ? "animate-pulse" : ""}/> 
-              {canUsePill ? `吞服頓悟丹，瞬間出關 (餘 ${player.epiphanyPills})` : `丹毒未消 (需真實專注或待 ${formatTime(pillCooldownRemaining)})`}
-            </button>
-          )}
+
         </div>
       </div>
 
@@ -2818,7 +2818,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
 {[
   { id: 'log', label: '修行日誌', icon: History },
   { id: 'skills', label: '功法祕籍', icon: ScrollText, hasNotify: availableSP >= 1 }, // ✨ 新增：未使用的 SP 紅點提示
-  { id: 'forge', label: '洞府淬煉', icon: Hammer, hasNotify: ((player.dailyGacha || 0) + (player.awardGacha || 0) > 0) }, 
+  { id: 'forge', label: '洞府淬煉', icon: Hammer, hasNotify: ((player.dailyGacha || 0) + (player.awardGacha || 0) > 0) || (player.epiphanyPills || 0) > 0 },
   { id: 'artifacts', label: '藏寶閣', icon: Box },
   { id: 'companions', label: '道侶紅顏', icon: Heart },
   { id: 'insights', label: '識海投影', icon: Activity }
@@ -2941,7 +2941,25 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
 
             {activeTab === 'forge' && (
               <div className="space-y-14 animate-pop-in pb-10">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 md:gap-8">
+                  <div className={`p-8 rounded-2xl border min-h-[16rem] flex flex-col justify-between group transition-all ${player.epiphanyPills > 0 ? 'bg-orange-950/40 border-orange-500/40 shadow-xl shadow-orange-900/20' : 'bg-white/10 border-white/20'}`}>
+                    <div>
+                      <h3 className={`font-black text-xl tracking-tighter uppercase flex items-center gap-3 ${player.epiphanyPills > 0 ? 'text-orange-400' : 'text-white'}`}>
+                        <Pill size={24}/> 頓悟丹 {player.epiphanyPills > 0 ? `x${player.epiphanyPills}` : 'x0'}
+                      </h3>
+                      <p className={`text-sm mt-3 italic tracking-widest leading-relaxed ${player.epiphanyPills > 0 ? 'text-white/70' : 'text-white/60'}`}>
+                        點按可直接發動一次 25m 的蓄力攻擊。
+                        {pillCooldownRemaining > 0 && <span className="block text-rose-400 mt-1 font-mono">丹毒未消：{formatTime(pillCooldownRemaining)}</span>}
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => handleComplete(true)} 
+                      disabled={!canUsePill} 
+                      className={`w-full py-5 rounded-xl font-black uppercase text-sm transition-all border mt-6 tracking-widest ${canUsePill ? 'bg-orange-600 hover:bg-orange-500 text-white border-orange-400 shadow-lg' : 'bg-black/40 text-white/30 border-white/10 cursor-not-allowed'}`}
+                    >
+                      {player.epiphanyPills > 0 ? (canUsePill ? '吞服' : '丹毒未消') : '尚無丹藥'}
+                    </button>
+                  </div>
                   <div className="p-8 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 min-h-[16rem] flex flex-col justify-between group shadow-xl shadow-emerald-900/20">
                     <div><h3 className="text-emerald-400 font-black text-xl tracking-tighter uppercase flex items-center gap-3"><Pill size={24}/> 煉製回春丹</h3><p className="text-white/70 text-sm mt-3 italic tracking-widest leading-relaxed">恢復 50% 最大氣血。</p></div>
                     <button onClick={handleHeal} disabled={player.coins < healCost || player.vitality >= maxVitality} className="w-full py-5 bg-emerald-900/80 hover:bg-emerald-600 text-emerald-100 rounded-xl font-black uppercase text-sm transition-all disabled:opacity-40 border border-emerald-500/50 mt-6">{player.vitality >= maxVitality ? '氣血已滿' : `煉丹 (${formatNumber(healCost)} 靈石)`}</button>
@@ -3105,13 +3123,22 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                 <div className="flex-1 relative border-l-2 border-b-2 border-white/20"><InsightsChart /></div>
               </div>
             )}
-            {activeTab === 'log' && (
+{activeTab === 'log' && (
               <div className="space-y-4 md:space-y-6 animate-pop-in pb-10">
-                {(player.logs || []).map((e, i) => (<div key={i} className={`p-5 md:p-6 rounded-xl border border-white/20 text-xs md:text-sm leading-relaxed transition-all ${i===0?'bg-white/20 text-white shadow-xl animate-pulse':'bg-black/60 border-white/10 text-white/60'}`}>{e}</div>))}
+                {(player.logs || []).map((e, i) => (
+                  <div 
+                    key={i} 
+                    className={`p-5 md:p-6 rounded-xl border leading-relaxed transition-all whitespace-pre-wrap text-xs md:text-sm ${
+                      i === 0 
+                        ? 'bg-white/20 text-white shadow-xl animate-pulse border-white/20' 
+                        : 'bg-black/60 border-white/10 text-white/60'
+                    }`}
+                  >
+                    {e}
+                  </div>
+                ))}
               </div>
             )}
-          </div>
-        </div>
 
         <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4 w-full">
           
