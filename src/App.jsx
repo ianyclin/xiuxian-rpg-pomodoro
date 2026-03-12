@@ -1485,14 +1485,14 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
         }
 
         const isFinalBoss = monster.name === '【九九重劫】';
-        
-if (isBossDefeated) {
+
+        if (isBossDefeated) {
             if (isFinalBoss && !player.hasAscended) {
                 try { update(ref(database, 'globalStats'), { totalAscensions: increment(1) }); } catch(e) {}
                 nextHasAscended = true;
                 // ✨ 強化日誌：獨立顯示飛升，不跟戰鬥數據擠在一起
                 addLog(`🌌 【破空飛升】恭賀道友位列仙班，成就真仙之位！`); 
-                killLog = `🌌 【破空飛升】位列仙班！ ` + killLog;
+                killLog = ` 🌌 渡劫成功！` + killLog; // 🛠️ 修正：拔除重複對白，改為純粹的擊殺判定
                 
                 const quoteMsg = FEEDBACK_TEXTS.boss[Math.floor(Math.random() * FEEDBACK_TEXTS.boss.length)];
                 setCelebration({ name: '飛升仙界！成就真仙！', quote: quoteMsg, drops: collectedDrops });
@@ -1518,9 +1518,10 @@ if (isBossDefeated) {
                     quote: newCompanion ? `「${newCompanion.quotes[0][Math.floor(Math.random() * newCompanion.quotes[0].length)]}」` : quoteMsg, 
                     drops: collectedDrops 
                 });
-                killLog = `☄️ 【突破瓶頸】晉升至${REALMS[nextRealm].name}！` + killLog;
+                killLog = ` 💀 斬滅死劫！` + killLog; // 🛠️ 修正：拔除重複對白，改為純粹的擊殺判定
             }
         } else {
+
             killLog = `⚔️ 【擊殺】奪得修為 ${formatNumber(killQi)}！` + killLog;
             if (nextQi >= nextQiToNext) {
                 killLog += ` ⚡ 修為圓滿！死劫即將降臨，準備突破！`;
@@ -2273,9 +2274,6 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 pb-8">
                 
-// START PATCH [屬性極限原始數值擴充 v2]
-// 替換目標：App 組件中，屬性極限面板 (showStatsReport) 內的 {/* --- 基礎倍率區 --- */} 完整區塊
-
                 {/* --- 根基與倍率區 --- */}
                 <div className="space-y-2">
                   <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><ChevronsUp size={14}/> 根基與倍率 (BASE & MULTIPLIERS)</h3>
@@ -2286,8 +2284,6 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                   {renderStatRow('靈氣獲取倍率', 'qi', `x${getMultiplier('qi').toFixed(2)}`, null, 'text-cyan-400')}
                   {renderStatRow('靈石掉落倍率', 'stone', `x${getMultiplier('stone').toFixed(2)}`, null, 'text-yellow-400')}
                 </div>
-
-// END PATCH [屬性極限原始數值擴充 v2]
                 
                 {/* --- 戰鬥極限區 --- */}
                 <div className="space-y-2">
@@ -2374,12 +2370,16 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
 <div className="flex flex-wrap items-center gap-3 mt-1">
                      <div className="flex items-center gap-1.5">
                         <span className="text-[10px] text-white/50 uppercase tracking-widest">戰力</span>
-                        <span className="text-sm font-mono font-black text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.8)] flex items-center gap-1"><Sword size={12}/> {formatNumber(currentCombatPower)}</span>
+                        <span className="text-sm font-mono font-black text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.8)] flex items-center gap-1">
+                           <Sword size={12}/> {formatNumber(currentCombatPower)}
+                        </span>
                      </div>
                      <span className="text-white/20 text-[10px]">|</span>
                      <div className="flex items-center gap-1.5">
                         <span className="text-[10px] text-white/50 uppercase tracking-widest">綜合靈壓</span>
-                        <span className="text-sm font-mono font-black text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.8)] flex items-center gap-1"><Activity size={12}/> {formatNumber(comprehensiveCP)}</span>
+                        <span className="text-sm font-mono font-black text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.8)] flex items-center gap-1">
+                           <Activity size={12}/> {formatNumber(comprehensiveCP)}
+                        </span>
                      </div>
                   </div>
 
