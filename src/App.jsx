@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, BarChart3, Save, Pill, HelpCircle, ShieldAlert, Award, Heart, Copy, Download, FileText } from 'lucide-react';
-
-/**
+import { Play, Square, Skull, Shield, Zap, Flame, Wind, Coins, Hammer, Box, ScrollText, Network, AlertTriangle, EyeOff, Crown, ChevronsUp, RefreshCw, Zap as Lightning, CloudLightning, Info, Eye, Activity, Sparkles, Sword, Compass, Clover, Lock, BookOpen, X, History, BarChart3, Save, Pill, HelpCircle, ShieldAlert, Award, Heart, Copy, Download, FileText, Trophy } from 'lucide-react';/**
  * ========================================================
  * 0. 天道雲端初始化 (Firebase Setup)
  * ========================================================
@@ -742,17 +740,19 @@ export default function App() {
    * ========================================================
    */
 
-  const defaultPlayerState = { 
+const defaultPlayerState = { 
     realmIndex: 0, qi: 0, qiToNext: 250, vitality: 100, baseMaxVitality: 100, coins: 0, baseCombat: 150, 
     artifacts: [], artifactLvls: {}, basicSkills: {}, secretBooks: {}, arrays: { qi: 0, def: 0 }, 
     streakCount: 0, streakShields: 0, luck: 1.0, totalFocusTime: 0, history: [], hasAscended: false,
     lifetimeStats: { kills: 0, focusCount: 0, totalCoins: 0 },
     unlockedTitles: [], equippedTitle: null, 
-    dailyGacha: 0,    // ✨ 每日機緣 (上限 1)
-    awardGacha: 0,    // ✨ 稱號功勳 (永久累積)
+    dailyGacha: 0,    
+    awardGacha: 0,    
     epiphanyPills: 0, lastPillTime: 0,
     activeCompanion: null, companionKills: {},
-    lastDailyTime: 0, // 紀錄上次領取每日機緣的時間戳
+    lastDailyTime: 0, 
+    // ✨ 新增：萬仙榜道號與 ID
+    nickname: "", lastNicknameChange: 0, userId: crypto.randomUUID(),
     logs: ['【天道印記】仙途漫漫，唯『靜心專注』方能證道。以現世之光陰，化此界之修為。'] 
   };
 
@@ -773,7 +773,12 @@ export default function App() {
       return defaultPlayerState;
     } catch (e) { return defaultPlayerState; }
   });
-
+// ✨ 新增：萬仙榜的狀態與拉取函數
+  const [showRankings, setShowRankings] = useState(false);
+  const [rankings, setRankings] = useState({ realm: [], focus: [], power: [] });
+  const [activeRankTab, setActiveRankTab] = useState('realm');
+  const [isLoadingRank, setIsLoadingRank] = useState(false);
+  const [nicknameInput, setNicknameInput] = useState("");
   // 🎵 音效陣法初始化 (保留原本 Ref)
   const focusEndAudioRef = useRef(null);
   const breakEndAudioRef = useRef(null);
@@ -905,19 +910,70 @@ export default function App() {
     setTimeout(() => setToast(null), 4500);
   };
 
-  useEffect(() => {
-    const statsRef = ref(database, 'globalStats');
-    const unsubscribe = onValue(statsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data !== null) {
-        setGlobalStats({
-          focus: data.totalFocusCount || 0,
-          ascensions: data.totalAscensions || 0
+// ✨ Patch 2 開始：抓取全域數據 (因果刷新，取代原本的 onValue 監聽)
+  const fetchGlobalStats = async () => {
+    try {
+      import('firebase/database').then(({ get, ref }) => {
+        get(ref(database, 'globalStats')).then((snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            setGlobalStats({ focus: data.totalFocusCount || 0, ascensions: data.totalAscensions || 0 });
+          }
+        });
+      });
+    } catch (e) { console.error("天道感應失敗", e); }
+  };
+
+  // 初始載入時抓取一次全域數據
+  useEffect(() => { fetchGlobalStats(); }, []);
+
+  // 抓取萬仙榜資料
+  const fetchRankings = async () => {
+    setIsLoadingRank(true);
+    try {
+      const { get, child, ref } = await import('firebase/database');
+      const snapshot = await get(child(ref(database), 'rankings'));
+      if (snapshot.exists()) {
+        const data = Object.values(snapshot.val());
+        setRankings({
+          realm: [...data].sort((a, b) => b.realmIndex - a.realmIndex || b.qi - a.qi).slice(0, 50),
+          focus: [...data].sort((a, b) => b.totalFocusTime - a.totalFocusTime).slice(0, 50),
+          power: [...data].sort((a, b) => b.comprehensiveCP - a.comprehensiveCP).slice(0, 50),
         });
       }
-    });
-    return () => unsubscribe();
+    } catch (e) { console.error("萬仙榜感應失敗", e); }
+    setIsLoadingRank(false);
+  };
+
+  // 登錄道號邏輯
+  const handleSetNickname = () => {
+    const cooldown = 72 * 60 * 60 * 1000;
+    if (now - (player.lastNicknameChange || 0) < cooldown) {
+      alert("名諱凝定中，請待三日後再試。"); return;
+    }
+    if (nicknameInput.trim().length < 2 || nicknameInput.trim().length > 8) {
+      alert("道號需為 2 至 8 字。"); return;
+    }
+    setPlayer(p => ({ ...p, nickname: nicknameInput.trim(), lastNicknameChange: Date.now() }));
+    alert("道號已登錄天道玉牒！");
+  };
+
+  // 上傳至萬仙榜
+  const uploadRanking = useCallback(async (p, cp) => {
+    if (!p.nickname) return;
+    try {
+      const { update, ref } = await import('firebase/database');
+      const updateData = {};
+      const activeTitleName = p.equippedTitle ? TITLE_DATA.find(t=>t.id===p.equippedTitle)?.name : "隱世散修";
+      updateData[`rankings/${p.userId}`] = {
+        nickname: p.nickname, realmIndex: p.realmIndex, qi: p.qi,
+        totalFocusTime: p.totalFocusTime, comprehensiveCP: cp,
+        title: activeTitleName, lastUpdate: Date.now()
+      };
+      await update(ref(database), updateData);
+    } catch (e) { console.error("天道烙印失敗", e); }
   }, []);
+  // ✨ Patch 2 結束
 
 useEffect(() => {
     let newlyUnlocked = [];
@@ -1905,7 +1961,10 @@ if (result.drop) {
           lifetimeStats: nextLifetime,
           pets: nextPets // ✨ 萬獸覺醒：寫入靈獸歷練進度與新寵物
       }));
-
+// ✨ 在這裡加入上傳萬仙榜與刷新全局人數的邏輯
+      uploadRanking({ ...player, realmIndex: nextRealm, qi: nextQi, totalFocusTime: nextTotalFocusTime }, comprehensiveCP);
+      fetchGlobalStats();
+      
       setMode('break'); 
       setTimeLeft(5 * 60);
 
@@ -3164,13 +3223,80 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
         </div> {/* 2. 閉合 Tab Box Card */}
       </div> {/* 3. 閉合 Tab Wrapper */}
 
-      <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4 w-full">
-        <div className="w-full max-w-2xl grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 mx-auto">
-           <button onClick={() => setShowTitles(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-amber-400 hover:text-amber-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest"><Award size={16}/> <span className="whitespace-nowrap">名號頭銜</span></button>
-           <button onClick={() => setShowGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest"><HelpCircle size={16}/> <span className="whitespace-nowrap">修行指引</span></button>
-           <button onClick={() => setShowStatsReport(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest"><BarChart3 size={16}/> <span className="whitespace-nowrap">屬性極限</span></button>
-           <button onClick={() => setShowRealmGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest"><BookOpen size={16}/> <span className="whitespace-nowrap">境界全覽</span></button>
+{/* ✨ Patch 4 開始：萬仙榜彈窗 UI 與 底部導覽列重構 ✨ */}
+      {showRankings && (
+        <div className="fixed inset-0 z-[600] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
+          <div className="w-full max-w-4xl bg-[#0a0a0a] p-4 sm:p-6 md:p-8 rounded-2xl border border-amber-500/30 shadow-2xl flex flex-col max-h-[85vh] animate-pop-in">
+            <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
+               <h2 className="text-xl md:text-2xl font-black text-amber-400 tracking-widest uppercase flex items-center gap-3"><Trophy className="text-amber-500"/> 萬仙爭鋒榜</h2>
+               <button onClick={() => setShowRankings(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
+            </div>
+            
+            {/* 道號登錄區 */}
+            {!player.nickname ? (
+              <div className="p-6 md:p-10 text-center bg-amber-950/20 border border-amber-900/50 rounded-xl mb-4">
+                <p className="text-sm md:text-base text-amber-200 mb-6 leading-relaxed">欲在萬仙榜留名青史，請先賜下道號。<br/><span className="text-xs text-white/50">(2-8字，受天道法則限制，每三日僅能更名一次)</span></p>
+                <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+                  <input value={nicknameInput} onChange={e=>setNicknameInput(e.target.value)} className="bg-black/80 border border-white/20 px-6 py-4 flex-1 rounded-xl text-white text-center sm:text-left focus:border-amber-500 outline-none" placeholder="輸入道號..."/>
+                  <button onClick={handleSetNickname} className="bg-amber-600 hover:bg-amber-500 text-white px-8 py-4 rounded-xl font-black transition-colors whitespace-nowrap">刻錄天道</button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-start gap-4 mb-6 bg-black/40 p-2 rounded-xl border border-white/5 flex-shrink-0 overflow-x-auto custom-scrollbar">
+                <button onClick={()=>setActiveRankTab('realm')} className={`flex-1 min-w-[100px] py-4 text-xs md:text-sm font-bold rounded-lg uppercase tracking-widest transition-all ${activeRankTab==='realm'?'bg-amber-600 text-white shadow-md':'text-white/40 hover:text-white/80'}`}>境界榜</button>
+                <button onClick={()=>setActiveRankTab('focus')} className={`flex-1 min-w-[100px] py-4 text-xs md:text-sm font-bold rounded-lg uppercase tracking-widest transition-all ${activeRankTab==='focus'?'bg-amber-600 text-white shadow-md':'text-white/40 hover:text-white/80'}`}>歲月榜</button>
+                <button onClick={()=>setActiveRankTab('power')} className={`flex-1 min-w-[100px] py-4 text-xs md:text-sm font-bold rounded-lg uppercase tracking-widest transition-all ${activeRankTab==='power'?'bg-amber-600 text-white shadow-md':'text-white/40 hover:text-white/80'}`}>實力榜</button>
+              </div>
+            )}
+
+            {/* 榜單列表 */}
+            {player.nickname && (
+              <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3">
+                {rankings[activeRankTab].map((user, idx) => (
+                  <div key={idx} className={`p-4 md:p-5 rounded-xl flex items-center justify-between border transition-all ${idx === 0 ? 'bg-yellow-950/40 border-yellow-500/50 shadow-[0_0_15px_rgba(250,204,21,0.2)] scale-[1.02]' : idx === 1 ? 'bg-slate-800/60 border-slate-400/50' : idx === 2 ? 'bg-amber-950/30 border-amber-700/50' : 'bg-black/60 border-white/5'}`}>
+                    <div className="flex items-center gap-4 md:gap-6">
+                      <span className={`text-lg md:text-2xl font-black w-8 text-center ${idx === 0 ? 'text-yellow-400 drop-shadow-md' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-amber-600' : 'text-white/20'}`}>{idx + 1}</span>
+                      <div>
+                        <div className="text-sm md:text-base font-black text-white tracking-widest mb-1">{user.nickname} <span className="text-[10px] md:text-xs text-amber-500/70 border border-amber-500/30 bg-amber-950/50 px-1.5 py-0.5 rounded ml-1">[{user.title}]</span></div>
+                        <div className={`text-[10px] md:text-xs font-bold ${idx < 3 ? 'text-emerald-400' : 'text-white/50'}`}>{REALMS[user.realmIndex]?.name || '未知境界'}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[10px] text-white/40 uppercase tracking-widest mb-1">{activeRankTab === 'realm' ? '修為' : activeRankTab === 'focus' ? '總時長' : '綜合靈壓'}</div>
+                      <div className="text-sm md:text-base font-mono font-black text-cyan-400 drop-shadow-md">
+                        {activeRankTab === 'realm' ? formatNumber(user.qi) : activeRankTab === 'focus' ? `${formatNumber(Math.floor((user.totalFocusTime||0)/60))}m` : formatNumber(user.comprehensiveCP)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {rankings[activeRankTab].length === 0 && !isLoadingRank && <div className="text-center text-white/30 py-10 tracking-widest">天道茫茫，尚未有人登榜。</div>}
+              </div>
+            )}
+            
+            {player.nickname && (
+              <button onClick={fetchRankings} className="mt-6 py-4 w-full bg-white/5 border border-white/10 rounded-xl text-xs font-black text-white/50 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2 flex-shrink-0">
+                <RefreshCw size={16} className={isLoadingRank ? 'animate-spin' : ''}/> 感應最新天機
+              </button>
+            )}
+          </div>
         </div>
+      )}
+
+      {/* 底部導覽列 */}
+      <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4 w-full">
+        <div className="w-full max-w-3xl grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5 mb-4 mx-auto">
+           <button onClick={() => setShowTitles(true)} className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-black text-amber-400 hover:text-amber-300 transition-all bg-white/5 hover:bg-white/10 py-4 px-2 sm:px-6 rounded-2xl border border-white/10 backdrop-blur-md shadow-lg tracking-widest"><Award size={18}/> <span className="whitespace-nowrap">名號頭銜</span></button>
+           
+           <button onClick={() => { setShowGuide(true); setGuideTab('rules'); }} className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-4 px-2 sm:px-6 rounded-2xl border border-white/10 backdrop-blur-md shadow-lg tracking-widest"><HelpCircle size={18}/> <span className="whitespace-nowrap">修行指引</span></button>
+           
+           <button onClick={() => setShowStatsReport(true)} className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 py-4 px-2 sm:px-6 rounded-2xl border border-white/10 backdrop-blur-md shadow-lg tracking-widest"><BarChart3 size={18}/> <span className="whitespace-nowrap">屬性極限</span></button>
+           
+           <button onClick={() => { setShowRankings(true); fetchRankings(); }} className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-black text-yellow-500 hover:text-yellow-400 transition-all bg-yellow-950/30 hover:bg-yellow-900/50 border border-yellow-500/30 py-4 px-2 sm:px-6 rounded-2xl backdrop-blur-md shadow-[0_0_15px_rgba(234,179,8,0.2)] tracking-widest relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-500/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+              <Trophy size={18} className="animate-pulse"/> <span className="whitespace-nowrap">萬仙爭鋒</span>
+           </button>
+        </div>
+
         <div className="w-full max-w-2xl mb-8 flex justify-center">
            <button onClick={() => setShowSaveModal(true)} className="flex items-center justify-center gap-2 text-cyan-400 hover:text-cyan-300 transition-all bg-cyan-950/40 hover:bg-cyan-900/60 py-3 px-6 rounded-full border border-cyan-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(6,182,212,0.15)] font-black tracking-widest"><ScrollText size={16}/> 玉簡傳功 (進度跨裝置同步)</button>
         </div>
@@ -3181,6 +3307,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
             <button onClick={()=>{if(window.confirm('【天道輪迴】\n確定要刪除所有進度，重新投胎轉世嗎？\n所有成果將灰飛煙滅。')) { localStorage.clear(); window.location.reload(); }}} className="flex-1 sm:flex-none opacity-60 hover:opacity-100 transition-all border border-white/30 py-3 px-2 sm:px-6 rounded-2xl text-xs tracking-widest hover:bg-rose-900/60 hover:border-rose-500/60 hover:text-rose-200 flex flex-col items-center justify-center gap-1.5"><RefreshCw size={14}/> <span>輪迴轉世</span><span className="text-[9px] opacity-50 font-mono">(刪檔)</span></button>
         </div>
       </footer>
+      {/* ✨ Patch 4 結束 ✨ */}
     </div> // 4. 閉合根節點 Root Div (min-h-screen)
   );
 }
