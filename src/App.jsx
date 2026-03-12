@@ -2626,13 +2626,13 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                         {COMPANIONS.find(c=>c.id===player.activeCompanion)?.name} ({getCompanionTier(player.companionKills?.[player.activeCompanion]||0) >= 0 ? COMPANION_TIERS[getCompanionTier(player.companionKills?.[player.activeCompanion]||0)].name : '未結緣'})
                       </span>
                     )}
-                    // START PATCH [6. 主面板護法顯示]
+                  
                     {player.activePet && player.pets?.[player.activePet] && (
                       <span className="text-amber-400 border border-amber-500/50 bg-amber-950/50 px-2.5 py-1 rounded-md text-[10px] sm:text-xs tracking-widest flex items-center gap-1.5 whitespace-nowrap">
                         🐾 {PET_POOL.find(p=>p.id===player.activePet)?.name} (Lv.{player.pets[player.activePet].lvl})
                       </span>
                     )}
-// END PATCH [6. 主面板護法顯示]
+
                   </div>
                   
                   <p className={`text-xs md:text-sm leading-tight ${activeColorClass.text} font-bold mt-2 opacity-90 italic drop-shadow-md truncate`}>
