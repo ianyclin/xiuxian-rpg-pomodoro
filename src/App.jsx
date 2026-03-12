@@ -2462,7 +2462,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                   </span>
                </div>
             </div>
-
+</div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
             <div className="space-y-3 relative z-10">
                 <div className="flex justify-between text-xs uppercase font-black opacity-60 tracking-widest text-white">
