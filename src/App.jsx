@@ -884,11 +884,31 @@ useEffect(() => {
 
   const formatTime = (s) => `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
 
-  const [focusDuration, setFocusDuration] = useState(25 * 60);
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
-  const [targetEndTime, setTargetEndTime] = useState(null); 
-  const [isActive, setIsActive] = useState(false);
-  const [mode, setMode] = useState('focus'); 
+// START PATCH [離線閉關與時空定序]
+  const savedTimer = useMemo(() => {
+      try { return JSON.parse(localStorage.getItem('xianxia_timer_v69')); } catch(e) { return null; }
+  }, []);
+
+  const [focusDuration, setFocusDuration] = useState(savedTimer?.focusDuration || 25 * 60);
+  const [targetEndTime, setTargetEndTime] = useState(savedTimer?.targetEndTime || null);
+  const [isActive, setIsActive] = useState(savedTimer?.isActive || false);
+  const [mode, setMode] = useState(savedTimer?.mode || 'focus'); 
+  const [timeLeft, setTimeLeft] = useState(() => {
+      // 網頁重載時，精準校驗時間差
+      if (savedTimer?.isActive && savedTimer?.targetEndTime) {
+          const remain = Math.floor((savedTimer.targetEndTime - Date.now()) / 1000);
+          return Math.max(0, remain); // 若已超時，回傳 0 以利後續直接觸發結算
+      }
+      return savedTimer?.focusDuration || 25 * 60;
+  });
+
+  // 自動將時空狀態烙印至識海
+  useEffect(() => {
+      localStorage.setItem('xianxia_timer_v69', JSON.stringify({
+          focusDuration, targetEndTime, isActive, mode
+      }));
+  }, [focusDuration, targetEndTime, isActive, mode]);
+// END PATCH [離線閉關與時空定序]
   const [activeTab, setActiveTab] = useState('log');
   const [showRealmGuide, setShowRealmGuide] = useState(false);
   const [showStatsReport, setShowStatsReport] = useState(false);
