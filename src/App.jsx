@@ -3150,67 +3150,126 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                 <div className="flex-1 relative border-l-2 border-b-2 border-white/20"><InsightsChart /></div>
               </div>
             )}
-// === 此處開始替換（包含修行日誌區塊與整個頁尾）===
+// === [天道定序] 請替換 activeTab === 'artifacts' 及其後所有內容 ===
+            {activeTab === 'artifacts' && (
+              <div className="flex flex-col animate-pop-in pb-10">
+                <div className="flex gap-2 bg-black/60 p-1 rounded-lg border border-white/5 flex-shrink-0 mb-8 w-full max-w-sm mx-auto shadow-inner">
+                  <button onClick={() => setTreasureTab('arts')} className={`flex-1 py-3 text-xs md:text-sm font-bold rounded uppercase tracking-widest transition-all ${treasureTab === 'arts' ? 'bg-white/10 text-white shadow-md' : 'text-white/30 hover:text-white/80'}`}>萬寶圖鑑</button>
+                  <button onClick={() => setTreasureTab('pets')} className={`flex-1 py-3 text-xs md:text-sm font-bold rounded uppercase tracking-widest transition-all ${treasureTab === 'pets' ? 'bg-amber-900/40 text-amber-500 shadow-md' : 'text-amber-500/30 hover:text-amber-400/80'}`}>靈獸空間</button>
+                </div>
+
+                {treasureTab === 'arts' ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 animate-pop-in">
+                    {sortedArtifacts.map(art => {
+                      const unlocked = (player.artifacts || []).includes(art.id);
+                      return unlocked ? (
+                        <div key={art.id} className={`p-8 rounded-2xl border bg-black/60 border-white/20 flex flex-col justify-center shadow-inner min-h-[14rem] relative overflow-hidden group`}>
+                            <div className={`absolute top-0 right-0 px-3 py-1 text-[10px] font-black tracking-widest bg-white/10 ${RARITY[art.rarity].color} rounded-bl-xl border-b border-l border-white/10`}>
+                              {RARITY[art.rarity].name}
+                            </div>
+                            <h4 className={`font-black text-xl ${RARITY[art.rarity].color} tracking-tighter drop-shadow-md mb-4 mt-2`}>{art.name}</h4>
+                            <p className="text-sm text-white/70 italic leading-relaxed uppercase tracking-widest">「{art.desc}」</p>
+                        </div>
+                      ) : <div key={art.id} className="p-8 rounded-2xl border-2 border-dashed border-white/10 bg-black/50 flex flex-col items-center justify-center opacity-50 min-h-[14rem]"><EyeOff size={40} className="text-white/30 mb-5"/><p className="text-xs font-black text-white/50 uppercase tracking-[0.3em]">寶光內斂：{RARITY[art.rarity].name}</p></div>;
+                    })}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 animate-pop-in">
+                    {PET_POOL.map(pet => {
+                      const petInfo = player.pets?.[pet.id];
+                      const unlocked = !!petInfo;
+                      if (!unlocked) return <div key={pet.id} className="p-8 rounded-2xl border-2 border-dashed border-amber-900/30 bg-black/50 flex flex-col items-center justify-center opacity-50 min-h-[18rem]"><EyeOff size={40} className="text-amber-900/50 mb-5"/><p className="text-xs font-black text-amber-700/50 uppercase tracking-[0.3em]">獸影朦朧：{RARITY[pet.rarity].name}</p></div>;
+
+                      const lvl = petInfo.lvl;
+                      const exp = petInfo.exp || 0;
+                      // ✨ 修正 21.2：實裝金字塔階梯需求
+                      const reqExp = Math.floor(60 * Math.pow(1.5, lvl - 1));
+                      const isMax = lvl >= 10;
+                      const isActive = player.activePet === pet.id;
+                      const upCost = Math.floor(pet.baseCost * Math.pow(pet.costMult, lvl - 1) * forgeDiscount);
+
+                      return (
+                        <div key={pet.id} className={`p-6 md:p-8 rounded-2xl border transition-all flex flex-col justify-between min-h-[18rem] relative overflow-hidden ${isActive ? 'bg-amber-950/30 border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.15)]' : 'bg-black/60 border-white/10'}`}>
+                            <div className={`absolute top-0 right-0 px-3 py-1 text-[10px] font-black tracking-widest bg-white/10 ${RARITY[pet.rarity].color} rounded-bl-xl border-b border-l border-white/10`}>{RARITY[pet.rarity].name}</div>
+                            <div className="flex justify-between items-start mb-4 mt-1">
+                                <div>
+                                    <h4 className={`font-black text-xl md:text-2xl tracking-widest flex items-center gap-2 ${RARITY[pet.rarity].color} drop-shadow-md`}>{pet.name} {isActive && <span className="text-[10px] bg-amber-500 text-black px-2 py-0.5 rounded-full uppercase tracking-widest ml-2 animate-pulse">護法中</span>}</h4>
+                                    <div className="text-white/50 text-[10px] font-mono mt-2 tracking-widest">當前境界：Lv.{lvl} {isMax && '(已臻化境)'}</div>
+                                </div>
+                            </div>
+                            <div className="bg-black/40 rounded-xl p-4 md:p-5 border border-white/5 mb-5 flex-1 shadow-inner">
+                                <div className="text-[11px] md:text-xs space-y-2.5">
+                                    {Object.keys(pet.val).map(k => (
+                                       <div key={k} className="flex justify-between text-white/70 border-b border-white/5 pb-1.5">
+                                           <span>被動 [{getStatName(k)}]:</span>
+                                           <span className="font-mono text-emerald-400 font-bold">+{k === 'streak_cap' ? (pet.val[k] + (lvl-1)*pet.growth[k]).toFixed(2) : ((pet.val[k] + (lvl-1)*pet.growth[k])*100).toFixed(0) + '%'}</span>
+                                       </div>
+                                    ))}
+                                    <div className="flex justify-between text-white/70 border-b border-white/5 pb-1.5 pt-1">
+                                        <span className="text-amber-400/90 font-bold">神通 [{pet.triggerName}]:</span>
+                                        <span className="font-mono text-amber-400 font-black">觸發率 {((pet.triggerBase + (lvl-1)*pet.triggerGrowth)*100).toFixed(0)}%</span>
+                                    </div>
+                                    <div className="text-white/40 italic mt-3 leading-relaxed">"{pet.triggerDesc}"</div>
+                                </div>
+                            </div>
+                            <div className="bg-black/60 p-4 rounded-xl border border-white/5 text-xs shadow-inner">
+                                <div className="flex justify-between mb-2 text-[10px] uppercase tracking-widest">
+                                    <span className="text-white/50">相伴歷練 (專注)</span>
+                                    <span className="font-mono text-white/80">{isMax ? '∞' : `${exp} / ${reqExp} 載`}</span>
+                                </div>
+                                <div className="w-full bg-black/80 rounded-full h-1.5 mb-4 overflow-hidden border border-white/10">
+                                    <div className="bg-gradient-to-r from-amber-600 to-amber-400 h-full transition-all duration-1000 shadow-[0_0_10px_#fbbf24]" style={{width: isMax ? '100%' : `${Math.min(100, (exp/reqExp)*100)}%`}}></div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <button onClick={() => setPlayer(p => ({...p, activePet: isActive ? null : pet.id}))} className={`flex-1 py-3.5 rounded-lg border font-black transition-all text-[11px] tracking-widest ${isActive ? 'bg-amber-900/60 text-amber-400 border-amber-500/50 hover:bg-amber-950' : 'bg-white/10 text-white/80 border-white/20 hover:bg-white/20'}`}>{isActive ? '召回洞府' : '隨身護法'}</button>
+                                    {!isMax && <button onClick={() => handleUpgradePet(pet.id)} disabled={exp < reqExp || player.coins < upCost} className={`flex-[1.5] py-3.5 rounded-lg border font-black transition-all text-[11px] tracking-widest ${exp >= reqExp && player.coins >= upCost ? 'bg-emerald-900/80 text-emerald-300 border-emerald-500/50 hover:bg-emerald-600 hover:text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-black/50 text-white/30 border-white/5 cursor-not-allowed'}`}>{exp < reqExp ? `歷練不足` : `投餵突破 (${formatNumber(upCost)})`}</button>}
+                                </div>
+                            </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'insights' && (
+              <div className="h-[500px] md:h-[600px] animate-pop-in bg-black/60 rounded-2xl border border-white/20 shadow-inner p-6 md:p-12 flex flex-col">
+                <div className="flex justify-between items-center mb-10 opacity-70 text-xs font-black uppercase tracking-[0.4em] text-white"><span className="flex items-center gap-3"><Activity size={16}/> 識海投影 (修煉進程)</span><span>累計時間: {formatNumber(Math.floor((player.totalFocusTime || 0)/60))}m</span></div>
+                <div className="flex-1 relative border-l-2 border-b-2 border-white/20"><InsightsChart /></div>
+              </div>
+            )}
+
             {activeTab === 'log' && (
               <div className="space-y-4 md:space-y-6 animate-pop-in pb-10">
                 {(player.logs || []).map((e, i) => (
-                  <div 
-                    key={i} 
-                    className={`p-5 md:p-6 rounded-xl border leading-relaxed transition-all whitespace-pre-wrap text-xs md:text-sm ${
-                      i === 0 
-                        ? 'bg-white/20 text-white shadow-xl animate-pulse border-white/20' 
-                        : 'bg-black/60 border-white/10 text-white/60'
-                    }`}
-                  >
+                  <div key={i} className={`p-5 md:p-6 rounded-xl border leading-relaxed transition-all whitespace-pre-wrap text-xs md:text-sm ${i === 0 ? 'bg-white/20 text-white shadow-xl animate-pulse border-white/20' : 'bg-black/60 border-white/10 text-white/60'}`}>
                     {e}
                   </div>
                 ))}
               </div>
             )}
-          </div> {/* 1. 閉合 Tab Content (p-5 md:p-10) */}
-        </div> {/* 2. 閉合 Tab Box (bg-slate-950/90) */}
-      </div> {/* 3. 閉合 Tab Wrapper (w-full max-w-4xl mt-4) */}
+          </div> {/* 1. 閉合 Tab Content Container */}
+        </div> {/* 2. 閉合 Tab Box Card */}
+      </div> {/* 3. 閉合 Tab Wrapper */}
 
       <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4 w-full">
         <div className="w-full max-w-2xl grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 mx-auto">
-           <button onClick={() => setShowTitles(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-amber-400 hover:text-amber-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-             <Award size={16}/> <span className="whitespace-nowrap">名號頭銜</span>
-           </button>
-           <button onClick={() => setShowGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-             <HelpCircle size={16}/> <span className="whitespace-nowrap">修行指引</span>
-           </button>
-           <button onClick={() => setShowStatsReport(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-             <BarChart3 size={16}/> <span className="whitespace-nowrap">屬性極限</span>
-           </button>
-           <button onClick={() => setShowRealmGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-             <BookOpen size={16}/> <span className="whitespace-nowrap">境界全覽</span>
-           </button>
+           <button onClick={() => setShowTitles(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-amber-400 hover:text-amber-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest"><Award size={16}/> <span className="whitespace-nowrap">名號頭銜</span></button>
+           <button onClick={() => setShowGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest"><HelpCircle size={16}/> <span className="whitespace-nowrap">修行指引</span></button>
+           <button onClick={() => setShowStatsReport(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest"><BarChart3 size={16}/> <span className="whitespace-nowrap">屬性極限</span></button>
+           <button onClick={() => setShowRealmGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest"><BookOpen size={16}/> <span className="whitespace-nowrap">境界全覽</span></button>
         </div>
-
         <div className="w-full max-w-2xl mb-8 flex justify-center">
-           <button onClick={() => setShowSaveModal(true)} className="flex items-center justify-center gap-2 text-cyan-400 hover:text-cyan-300 transition-all bg-cyan-950/40 hover:bg-cyan-900/60 py-3 px-6 rounded-full border border-cyan-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(6,182,212,0.15)] font-black tracking-widest">
-             <ScrollText size={16}/> 玉簡傳功 (進度跨裝置同步)
-           </button>
+           <button onClick={() => setShowSaveModal(true)} className="flex items-center justify-center gap-2 text-cyan-400 hover:text-cyan-300 transition-all bg-cyan-950/40 hover:bg-cyan-900/60 py-3 px-6 rounded-full border border-cyan-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(6,182,212,0.15)] font-black tracking-widest"><ScrollText size={16}/> 玉簡傳功 (進度跨裝置同步)</button>
         </div>
-
         <p className="leading-relaxed">《凡人修仙傳》原著設定歸作者 忘語 所有</p>
-        <p className="opacity-80 leading-loose">
-          Created by <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 underline transition-all text-white">fb/指數三寶飯</a> 
-          <br className="block sm:hidden mt-2" />
-          <span className="sm:ml-3">with Gemini</span>
-        </p>
-        
+        <p className="opacity-80 leading-loose">Created by <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 underline transition-all text-white">fb/指數三寶飯</a> <br className="block sm:hidden mt-2" /><span className="sm:ml-3">with Gemini</span></p>
         <div className="flex w-full max-w-md justify-center gap-3 mt-4">
-            <button onClick={() => setShowChangelog(true)} className="flex-1 sm:flex-none opacity-60 hover:opacity-100 transition-all border border-white/30 py-3 px-2 sm:px-6 rounded-2xl text-xs tracking-widest hover:bg-emerald-900/60 hover:border-emerald-500/60 hover:text-emerald-200 flex flex-col items-center justify-center gap-1.5">
-              <span className="flex items-center gap-1.5 whitespace-nowrap"><FileText size={14}/> 天道紀元</span>
-              <span className="text-[9px] opacity-50 whitespace-nowrap tracking-[0.2em] font-mono">(版本紀錄)</span>
-            </button>
-            <button onClick={()=>{if(window.confirm('【天道輪迴】\n確定要刪除所有進度，重新投胎轉世嗎？\n所有成果將灰飛煙滅。')) { localStorage.clear(); window.location.reload(); }}} className="flex-1 sm:flex-none opacity-60 hover:opacity-100 transition-all border border-white/30 py-3 px-2 sm:px-6 rounded-2xl text-xs tracking-widest hover:bg-rose-900/60 hover:border-rose-500/60 hover:text-rose-200 flex flex-col items-center justify-center gap-1.5">
-              <span className="flex items-center gap-1.5 whitespace-nowrap"><RefreshCw size={14}/> 輪迴轉世</span>
-              <span className="text-[9px] opacity-50 whitespace-nowrap tracking-[0.2em] font-mono">(刪檔)</span>
-            </button>
+            <button onClick={() => setShowChangelog(true)} className="flex-1 sm:flex-none opacity-60 hover:opacity-100 transition-all border border-white/30 py-3 px-2 sm:px-6 rounded-2xl text-xs tracking-widest hover:bg-emerald-900/60 hover:border-emerald-500/60 hover:text-emerald-200 flex flex-col items-center justify-center gap-1.5"><FileText size={14}/> <span>天道紀元</span><span className="text-[9px] opacity-50 font-mono">(版本紀錄)</span></button>
+            <button onClick={()=>{if(window.confirm('【天道輪迴】\n確定要刪除所有進度，重新投胎轉世嗎？\n所有成果將灰飛煙滅。')) { localStorage.clear(); window.location.reload(); }}} className="flex-1 sm:flex-none opacity-60 hover:opacity-100 transition-all border border-white/30 py-3 px-2 sm:px-6 rounded-2xl text-xs tracking-widest hover:bg-rose-900/60 hover:border-rose-500/60 hover:text-rose-200 flex flex-col items-center justify-center gap-1.5"><RefreshCw size={14}/> <span>輪迴轉世</span><span className="text-[9px] opacity-50 font-mono">(刪檔)</span></button>
         </div>
       </footer>
-    </div> {/* 4. 閉合根節點 Root Div (min-h-screen) */}
+    </div> // 4. 閉合根節點 Root Div (min-h-screen)
   );
 }
