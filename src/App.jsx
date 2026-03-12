@@ -3151,7 +3151,8 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                 <div className="flex-1 relative border-l-2 border-b-2 border-white/20"><InsightsChart /></div>
               </div>
             )}
-{activeTab === 'log' && (
+// === 從這裡開始覆蓋直到文件結尾 ===
+            {activeTab === 'log' && (
               <div className="space-y-4 md:space-y-6 animate-pop-in pb-10">
                 {(player.logs || []).map((e, i) => (
                   <div 
@@ -3167,56 +3168,50 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                 ))}
               </div>
             )}
+          </div> {/* 1. 閉合內容內距層 (p-5 md:p-10) */}
+        </div> {/* 2. 閉合黑色卡片層 (bg-slate-950/90) */}
+      </div> {/* 3. 閉合分頁包裝層 (w-full max-w-4xl mt-4) */}
 
-        <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4 w-full">
-          
-          <div className="w-full max-w-2xl grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 mx-auto">
-             <button onClick={() => setShowTitles(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-amber-400 hover:text-amber-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-               <Award size={16}/> <span className="whitespace-nowrap">名號頭銜</span>
-             </button>
-             <button onClick={() => setShowGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-               <HelpCircle size={16}/> <span className="whitespace-nowrap">修行指引</span>
-             </button>
-             <button onClick={() => setShowStatsReport(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-               <BarChart3 size={16}/> <span className="whitespace-nowrap">屬性極限</span>
-             </button>
-             <button onClick={() => setShowRealmGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
-               <BookOpen size={16}/> <span className="whitespace-nowrap">境界全覽</span>
-             </button>
-          </div>
+      <footer className="pt-20 pb-32 text-center text-xs font-light text-white/50 tracking-[0.5em] uppercase flex flex-col items-center gap-6 z-10 px-4 w-full">
+        <div className="w-full max-w-2xl grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 mx-auto">
+           <button onClick={() => setShowTitles(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-amber-400 hover:text-amber-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+             <Award size={16}/> <span className="whitespace-nowrap">名號頭銜</span>
+           </button>
+           <button onClick={() => setShowGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-emerald-400 hover:text-emerald-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+             <HelpCircle size={16}/> <span className="whitespace-nowrap">修行指引</span>
+           </button>
+           <button onClick={() => setShowStatsReport(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-cyan-400 hover:text-cyan-300 transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+             <BarChart3 size={16}/> <span className="whitespace-nowrap">屬性極限</span>
+           </button>
+           <button onClick={() => setShowRealmGuide(true)} className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-white/60 hover:text-white transition-all bg-white/5 hover:bg-white/10 py-3 px-1 sm:px-4 sm:py-3.5 rounded-2xl sm:rounded-full border border-white/10 backdrop-blur-md shadow-lg tracking-widest">
+             <BookOpen size={16}/> <span className="whitespace-nowrap">境界全覽</span>
+           </button>
+        </div>
 
-          <div className="w-full max-w-2xl mb-8 flex justify-center">
-             <button onClick={() => setShowSaveModal(true)} className="flex items-center justify-center gap-2 text-cyan-400 hover:text-cyan-300 transition-all bg-cyan-950/40 hover:bg-cyan-900/60 py-3 px-6 rounded-full border border-cyan-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(6,182,212,0.15)] font-black tracking-widest">
-               <ScrollText size={16}/> 玉簡傳功 (進度跨裝置同步)
-             </button>
-          </div>
+        <div className="w-full max-w-2xl mb-8 flex justify-center">
+           <button onClick={() => setShowSaveModal(true)} className="flex items-center justify-center gap-2 text-cyan-400 hover:text-cyan-300 transition-all bg-cyan-950/40 hover:bg-cyan-900/60 py-3 px-6 rounded-full border border-cyan-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(6,182,212,0.15)] font-black tracking-widest">
+             <ScrollText size={16}/> 玉簡傳功 (進度跨裝置同步)
+           </button>
+        </div>
 
-          <p className="leading-relaxed">《凡人修仙傳》原著設定歸作者 忘語 所有</p>
-          <p className="opacity-80 leading-loose">
-            Created by <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 underline transition-all text-white">fb/指數三寶飯</a> 
-            <br className="block sm:hidden mt-2" />
-            <span className="sm:ml-3">with Gemini</span>
-          </p>
-          
-          <div className="flex w-full max-w-md justify-center gap-3 mt-4">
-              <button 
-                onClick={() => setShowChangelog(true)} 
-                className="flex-1 sm:flex-none opacity-60 hover:opacity-100 transition-all border border-white/30 py-3 px-2 sm:px-6 rounded-2xl text-xs tracking-widest hover:bg-emerald-900/60 hover:border-emerald-500/60 hover:text-emerald-200 flex flex-col items-center justify-center gap-1.5"
-              >
-                <span className="flex items-center gap-1.5 whitespace-nowrap"><FileText size={14}/> 天道紀元</span>
-                <span className="text-[9px] opacity-50 whitespace-nowrap tracking-[0.2em] font-mono">(版本紀錄)</span>
-              </button>
-              
-              <button 
-                onClick={()=>{if(window.confirm('【天道輪迴】\n確定要刪除所有進度，重新投胎轉世嗎？\n所有成果將灰飛煙滅。')) { localStorage.clear(); window.location.reload(); }}} 
-                className="flex-1 sm:flex-none opacity-60 hover:opacity-100 transition-all border border-white/30 py-3 px-2 sm:px-6 rounded-2xl text-xs tracking-widest hover:bg-rose-900/60 hover:border-rose-500/60 hover:text-rose-200 flex flex-col items-center justify-center gap-1.5"
-              >
-                <span className="flex items-center gap-1.5 whitespace-nowrap"><RefreshCw size={14}/> 輪迴轉世</span>
-                <span className="text-[9px] opacity-50 whitespace-nowrap tracking-[0.2em] font-mono">(刪檔)</span>
-              </button>
-          </div>
-        </footer>
-      </div>
-    </div>
+        <p className="leading-relaxed">《凡人修仙傳》原著設定歸作者 忘語 所有</p>
+        <p className="opacity-80 leading-loose">
+          Created by <a href="https://www.facebook.com/profile.php?id=100084000897269" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 underline transition-all text-white">fb/指數三寶飯</a> 
+          <br className="block sm:hidden mt-2" />
+          <span className="sm:ml-3">with Gemini</span>
+        </p>
+        
+        <div className="flex w-full max-w-md justify-center gap-3 mt-4">
+            <button onClick={() => setShowChangelog(true)} className="flex-1 sm:flex-none opacity-60 hover:opacity-100 transition-all border border-white/30 py-3 px-2 sm:px-6 rounded-2xl text-xs tracking-widest hover:bg-emerald-900/60 hover:border-emerald-500/60 hover:text-emerald-200 flex flex-col items-center justify-center gap-1.5">
+              <span className="flex items-center gap-1.5 whitespace-nowrap"><FileText size={14}/> 天道紀元</span>
+              <span className="text-[9px] opacity-50 whitespace-nowrap tracking-[0.2em] font-mono">(版本紀錄)</span>
+            </button>
+            <button onClick={()=>{if(window.confirm('【天道輪迴】\n確定要刪除所有進度，重新投胎轉世嗎？\n所有成果將灰飛煙滅。')) { localStorage.clear(); window.location.reload(); }}} className="flex-1 sm:flex-none opacity-60 hover:opacity-100 transition-all border border-white/30 py-3 px-2 sm:px-6 rounded-2xl text-xs tracking-widest hover:bg-rose-900/60 hover:border-rose-500/60 hover:text-rose-200 flex flex-col items-center justify-center gap-1.5">
+              <span className="flex items-center gap-1.5 whitespace-nowrap"><RefreshCw size={14}/> 輪迴轉世</span>
+              <span className="text-[9px] opacity-50 whitespace-nowrap tracking-[0.2em] font-mono">(刪檔)</span>
+            </button>
+        </div>
+      </footer>
+    </div> {/* 4. 閉合最外層 Root Div (min-h-screen) */}
   );
 }
