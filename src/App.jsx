@@ -2499,106 +2499,98 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
           </div>
         </div>
       )}
-
-      {showRealmGuide && (
+{showGuide && (
         <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
-          <div className="w-full max-w-4xl flex flex-col max-h-[80vh]">
+          <div className="w-full max-w-4xl bg-[#0a0a0a] p-4 sm:p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh] animate-pop-in">
             <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
-               <h2 className="text-xl md:text-2xl font-black text-white tracking-widest uppercase flex items-center gap-3"><BookOpen className="text-emerald-500"/> 天道經緯 (境界全覽)</h2>
-               <button onClick={() => setShowRealmGuide(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
-            </div>
-            <div className="w-full overflow-y-auto custom-scrollbar bg-[#0a0a0a]/80 rounded-xl border border-white/5 flex-1 shadow-2xl">
-              <table className="w-full text-left border-collapse min-w-[600px]">
-                  <thead>
-                    <tr className="text-xs text-white/30 uppercase tracking-widest border-b border-white/10 bg-black/50">
-                      <th className="py-5 px-6 font-mono">位階範圍</th>
-                      <th className="py-5 px-6">境界名號</th>
-                      <th className="py-5 px-6">神識導讀</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {GUIDE_REALMS.map((r, i) => (
-                      <tr key={i} className={`border-b border-white/5 transition-colors hover:bg-white/5`}>
-                        <td className="py-5 px-6 font-mono text-xs text-white/40">{r.range}</td>
-                        <td className={`py-5 px-6 font-black text-sm text-white/90`}>{r.name}</td>
-                        <td className="py-5 px-6 text-xs text-white/50 leading-relaxed italic font-bold">{r.desc}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showGuide && (
-        <div className="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center font-bold mt-8">
-          <div className="w-full max-w-2xl bg-[#0a0a0a] p-4 sm:p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[80vh]">
-            <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4 flex-shrink-0">
-               <h2 className="text-lg md:text-xl font-black text-white tracking-widest uppercase flex items-center gap-3"><HelpCircle className="text-emerald-400"/> 修行指引與祕訣</h2>
+               <h2 className="text-lg md:text-xl font-black text-white tracking-widest uppercase flex items-center gap-3"><HelpCircle className="text-emerald-400"/> 修行指引與經緯</h2>
                <button onClick={() => setShowGuide(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
             </div>
             
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-6 pb-6">
-              <div className="flex gap-2 bg-black/60 p-1 rounded-lg border border-white/5 flex-shrink-0">
-                <button onClick={() => setGuideTab('rules')} className={`flex-1 py-4 text-xs md:text-sm font-bold rounded uppercase tracking-widest transition-all ${guideTab === 'rules' ? 'bg-white/10 text-white shadow-inner' : 'text-white/30 hover:text-white/80'}`}>基礎法則</button>
-                <button onClick={() => setGuideTab('tips')} className={`flex-1 py-4 text-xs md:text-sm font-bold rounded uppercase tracking-widest transition-all ${guideTab === 'tips' ? 'bg-amber-900/30 text-amber-500 shadow-inner' : 'text-amber-500/30 hover:text-amber-400/80'}`}>機制與祕訣 (TIPS)</button>
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex gap-2 bg-black/60 p-1 rounded-lg border border-white/5 flex-shrink-0 mb-6">
+                <button onClick={() => setGuideTab('rules')} className={`flex-1 py-4 text-xs md:text-sm font-bold rounded uppercase tracking-widest transition-all ${guideTab === 'rules' ? 'bg-white/10 text-white shadow-inner' : 'text-white/30 hover:text-white/80'}`}>修行秘聞</button>
+                <button onClick={() => setGuideTab('realms')} className={`flex-1 py-4 text-xs md:text-sm font-bold rounded uppercase tracking-widest transition-all ${guideTab === 'realms' ? 'bg-emerald-900/30 text-emerald-400 shadow-inner' : 'text-emerald-500/30 hover:text-emerald-400/80'}`}>天道經緯 (境界表)</button>
               </div>
 
-              {guideTab === 'rules' ? (
-                <div className="space-y-4 text-sm leading-relaxed animate-pop-in">
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-emerald-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-emerald-400 text-base flex items-center gap-2 font-black"><Play size={18}/> 核心玩法 (專注即戰力)</h3>
-                     <p className="text-white/70 font-bold">這是一款結合「番茄鐘」的修仙RPG。你現實的「專注時間」就是戰力。點擊運轉周天去讀書/工作，結束後結算傷害與收益。支援離線運算，切換視窗不影響進度。</p>
-                   </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-cyan-400 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-cyan-400 text-base flex items-center gap-2 font-black"><Shield size={18}/> 境界與死劫 (破關條件)</h3>
-                     <p className="text-white/70 font-bold">平時遭遇隨機「道中妖獸」。當修為達 <span className="text-cyan-300">100%</span> 時，引發該境界的「守關死劫 (Boss)」。唯有擊殺 Boss 才能突破境界。若在死劫中身亡，修為跌落，死劫將消散需重新歷練。</p>
-                   </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Skull size={18}/> 戰鬥與死亡懲罰</h3>
-                     <p className="text-white/70 font-bold">若專注時長太短導致無法擊殺妖獸，妖獸將發動反撲。氣血歸零若無護盾/復活，將<span className="text-rose-400">損失 20% 當前修為並清空連擊</span>。請在洞府隨時「煉製回春丹」保持健康。</p>
-                   </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-400 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><RefreshCw size={18}/> 凡俗根基 (SP與散功)</h3>
-                     <p className="text-white/70 font-bold">升級境界是獲取 SP (技能點) 的<span className="text-yellow-300">唯一途徑</span>。若點錯技能卡關，請使用「散功重修」。這會讓你跌落一個境界並退還所有 SP，但生涯數據與道侶將永久保留。</p>
-                   </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-pink-400 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-pink-400 text-base flex items-center gap-2 font-black"><Heart size={18}/> 道侶與羈絆 (同行增益)</h3>
-                     <p className="text-white/70 font-bold">境界提升可結識紅顏。手動點擊「邀其同行」後，道侶會為你護法。羈絆全看「相伴載數（專注分鐘數）」，陪伴越久，給予的被動增益越強大。</p>
-                   </section>
-                </div>
-              ) : (
-                <div className="space-y-4 text-sm leading-relaxed animate-pop-in">
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-purple-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-purple-400 text-base flex items-center gap-2 font-black"><Activity size={18}/> 屬性溢出與劍陣 (流派構築)</h3>
-                     <p className="text-white/70 font-bold">閃避率超過 75% 轉化為「連擊上限」；爆擊率超過 95% 以 3 倍轉化為「爆傷」。此外，裝備 2 把以上名劍觸發共鳴：每多一把全戰力 <span className="text-emerald-400">+20%</span> (集齊10把可達 +200%)。</p>
-                   </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><AlertTriangle size={18}/> 高階博弈 (妖獸蓄力與反噬)</h3>
-                     <p className="text-white/70 font-bold">【築基期】起，長時長專注會導致妖獸「同步蓄力」，反撲傷害倍增。【結丹期】起，強行收功將依「已流逝時間」產生氣機牽引，撐得越久才放棄，反噬越致命。</p>
-                   </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-cyan-400 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-cyan-400 text-base flex items-center gap-2 font-black"><History size={18}/> 時長戰略 (15m vs 60m)</h3>
-                     <p className="text-white/70 font-bold">道侶羈絆看「相伴時間」，不論短修或長關皆不浪費。但 <span className="text-amber-400">60m 具備 4 倍的掉寶率與奇遇機率</span>，是後期拼神寶與過死劫的唯一解。</p>
-                   </section>
-<section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Compass size={18}/> 連鎖突變與投資學</h3>
-                     <p className="text-white/70 font-bold mb-2">前期靈石極缺，請優先升級「基礎戰力/氣血」與「陣法」，性價比最高。當你開始抽卡，若該階級圖鑑已滿，每次抽中將有 <span className="text-amber-400">20% 機率引發「突變」</span>躍升至下一階級！</p>
-                     {/* ✨ 新增：稀有度排序指引 */}
-                     <div className="bg-black/40 p-3 rounded-lg border border-white/5 mt-2">
-                       <span className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">萬寶樓品階排序：</span>
-                       <span className="text-xs font-mono font-bold flex flex-wrap gap-1.5">
-                         <span className="text-slate-400">凡品</span> ➔ <span className="text-green-400">靈品</span> ➔ <span className="text-blue-400">法寶</span> ➔ <span className="text-purple-400">古寶</span> ➔ <span className="text-orange-400">通天靈寶</span> ➔ <span className="text-red-500">玄天之寶</span> ➔ <span className="text-yellow-400">造化至寶</span>
-                       </span>
-                     </div>
-                   </section>
-                   <section className="bg-white/5 p-5 rounded-xl border-l-4 border-amber-500 flex flex-col gap-2 shadow-inner">
-                     <h3 className="text-amber-500 text-base flex items-center gap-2 font-black"><Award size={18}/> 名號白嫖法 (免費尋寶)</h3>
-                     <p className="text-white/70 font-bold">請時常點開「名號頭銜」。達成各項成就解鎖名號，不僅能裝備強大被動，每次解鎖還會贈送【免費保底尋寶 1 次】，這是前期無課獲取古寶的最佳途徑。</p>
-                   </section>
-                </div>
-              )}
+              <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-6">
+                {guideTab === 'rules' ? (
+                  <div className="space-y-4 text-sm leading-relaxed animate-pop-in">
+                     {/* 原本的 Rules */}
+                     <section className="bg-white/5 p-5 rounded-xl border-l-4 border-emerald-500 flex flex-col gap-2 shadow-inner">
+                       <h3 className="text-emerald-400 text-base flex items-center gap-2 font-black"><Play size={18}/> 核心玩法 (專注即戰力)</h3>
+                       <p className="text-white/70 font-bold">這是一款結合「番茄鐘」的修仙RPG。你現實的「專注時間」就是戰力。點擊運轉周天去讀書/工作，結束後結算傷害與收益。支援離線運算，切換視窗不影響進度。</p>
+                     </section>
+                     <section className="bg-white/5 p-5 rounded-xl border-l-4 border-cyan-400 flex flex-col gap-2 shadow-inner">
+                       <h3 className="text-cyan-400 text-base flex items-center gap-2 font-black"><Shield size={18}/> 境界與死劫 (破關條件)</h3>
+                       <p className="text-white/70 font-bold">平時遭遇隨機「道中妖獸」。當修為達 <span className="text-cyan-300">100%</span> 時，引發該境界的「守關死劫 (Boss)」。唯有擊殺 Boss 才能突破境界。若在死劫中身亡，修為跌落，死劫將消散需重新歷練。</p>
+                     </section>
+                     <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-500 flex flex-col gap-2 shadow-inner">
+                       <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><Skull size={18}/> 戰鬥與死亡懲罰</h3>
+                       <p className="text-white/70 font-bold">若專注時長太短導致無法擊殺妖獸，妖獸將發動反撲。氣血歸零若無護盾/復活，將<span className="text-rose-400">損失 20% 當前修為並清空連擊</span>。請在洞府隨時「煉製回春丹」保持健康。</p>
+                     </section>
+                     <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-400 flex flex-col gap-2 shadow-inner">
+                       <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><RefreshCw size={18}/> 凡俗根基 (SP與散功)</h3>
+                       <p className="text-white/70 font-bold">升級境界是獲取 SP (技能點) 的<span className="text-yellow-300">唯一途徑</span>。若點錯技能卡關，請使用「散功重修」。這會讓你跌落一個境界並退還所有 SP，但生涯數據與道侶將永久保留。</p>
+                     </section>
+                     <section className="bg-white/5 p-5 rounded-xl border-l-4 border-pink-400 flex flex-col gap-2 shadow-inner">
+                       <h3 className="text-pink-400 text-base flex items-center gap-2 font-black"><Heart size={18}/> 道侶與羈絆 (同行增益)</h3>
+                       <p className="text-white/70 font-bold">境界提升可結識紅顏。手動點擊「邀其同行」後，道侶會為你護法。羈絆全看「相伴載數（專注分鐘數）」，陪伴越久，給予的被動增益越強大。</p>
+                     </section>
+
+                     {/* 原本的 Tips 接續在下方 */}
+                     <section className="bg-white/5 p-5 rounded-xl border-l-4 border-purple-500 flex flex-col gap-2 shadow-inner mt-6">
+                       <h3 className="text-purple-400 text-base flex items-center gap-2 font-black"><Activity size={18}/> 屬性溢出與劍陣 (流派構築)</h3>
+                       <p className="text-white/70 font-bold">閃避率超過 75% 轉化為「連擊上限」；爆擊率超過 95% 以 3 倍轉化為「爆傷」。此外，裝備 2 把以上名劍觸發共鳴：每多一把全戰力 <span className="text-emerald-400">+20%</span> (集齊10把可達 +200%)。</p>
+                     </section>
+                     <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-500 flex flex-col gap-2 shadow-inner">
+                       <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><AlertTriangle size={18}/> 高階博弈 (妖獸蓄力與反噬)</h3>
+                       <p className="text-white/70 font-bold">【築基期】起，長時長專注會導致妖獸「同步蓄力」，反撲傷害倍增。【結丹期】起，強行收功將依「已流逝時間」產生氣機牽引，撐得越久才放棄，反噬越致命。</p>
+                     </section>
+                     <section className="bg-white/5 p-5 rounded-xl border-l-4 border-cyan-400 flex flex-col gap-2 shadow-inner">
+                       <h3 className="text-cyan-400 text-base flex items-center gap-2 font-black"><History size={18}/> 時長戰略 (15m vs 60m)</h3>
+                       <p className="text-white/70 font-bold">道侶羈絆看「相伴時間」，不論短修或長關皆不浪費。但 <span className="text-amber-400">60m 具備 4 倍的掉寶率與奇遇機率</span>，是後期拼神寶與過死劫的唯一解。</p>
+                     </section>
+                     <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-500 flex flex-col gap-2 shadow-inner">
+                       <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Compass size={18}/> 連鎖突變與投資學</h3>
+                       <p className="text-white/70 font-bold mb-2">前期靈石極缺，請優先升級「基礎戰力/氣血」與「陣法」，性價比最高。當你開始抽卡，若該階級圖鑑已滿，每次抽中將有 <span className="text-amber-400">20% 機率引發「突變」</span>躍升至下一階級！</p>
+                       <div className="bg-black/40 p-3 rounded-lg border border-white/5 mt-2">
+                         <span className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">萬寶樓品階排序：</span>
+                         <span className="text-xs font-mono font-bold flex flex-wrap gap-1.5">
+                           <span className="text-slate-400">凡品</span> ➔ <span className="text-green-400">靈品</span> ➔ <span className="text-blue-400">法寶</span> ➔ <span className="text-purple-400">古寶</span> ➔ <span className="text-orange-400">通天靈寶</span> ➔ <span className="text-red-500">玄天之寶</span> ➔ <span className="text-yellow-400">造化至寶</span>
+                         </span>
+                       </div>
+                     </section>
+                     <section className="bg-white/5 p-5 rounded-xl border-l-4 border-amber-500 flex flex-col gap-2 shadow-inner">
+                       <h3 className="text-amber-500 text-base flex items-center gap-2 font-black"><Award size={18}/> 名號白嫖法 (免費尋寶)</h3>
+                       <p className="text-white/70 font-bold">請時常點開「名號頭銜」。達成各項成就解鎖名號，不僅能裝備強大被動，每次解鎖還會贈送【免費保底尋寶 1 次】，這是前期無課獲取古寶的最佳途徑。</p>
+                     </section>
+                  </div>
+                ) : (
+                  <div className="w-full bg-[#0a0a0a]/80 rounded-xl border border-white/5 shadow-2xl animate-pop-in">
+                    <div className="overflow-x-auto custom-scrollbar">
+                      <table className="w-full text-left border-collapse min-w-[600px]">
+                          <thead>
+                            <tr className="text-xs text-white/30 uppercase tracking-widest border-b border-white/10 bg-black/50">
+                              <th className="py-5 px-6 font-mono w-28">位階範圍</th>
+                              <th className="py-5 px-6 w-36">境界名號</th>
+                              <th className="py-5 px-6">神識導讀</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {GUIDE_REALMS.map((r, i) => (
+                              <tr key={i} className={`border-b border-white/5 transition-colors hover:bg-white/5`}>
+                                <td className="py-5 px-6 font-mono text-xs text-white/40">{r.range}</td>
+                                <td className={`py-5 px-6 font-black text-sm text-white/90`}>{r.name}</td>
+                                <td className="py-5 px-6 text-xs text-white/50 leading-relaxed italic font-bold">{r.desc}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
