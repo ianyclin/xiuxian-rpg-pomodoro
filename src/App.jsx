@@ -1879,7 +1879,8 @@ const combatPrediction = useMemo(() => {
       showToast('break', msg, [`🧘‍♂️ 恢復了 ${formatNumber(heal)} 氣血`]);
     }
   };
-// END PATCH [4. 結算主動觸發與靈獸參戰]
+// START PATCH [修正萬寶樓尋寶靈獸掉落邏輯]
+  const handleGacha = () => {
     // ⚔️ 判斷機緣優先級：1. 每日機緣 (優先) -> 2. 稱號功勳 (次之)
     const useDaily = (player.dailyGacha || 0) > 0;
     const useAward = !useDaily && (player.awardGacha || 0) > 0;
@@ -1888,7 +1889,7 @@ const combatPrediction = useMemo(() => {
     // 若無免費次數且靈石不足，則無法開陣
     if (!isFree && player.coins < gachaCost) return;
     
-    // 🎲 天道演算：稀有度判定 (保留你原本的 luckVal 算法)
+    // 🎲 天道演算：稀有度判定
     const roll = Math.random(); 
     let targetRarity = 'COMMON';
     let accum = 0;
@@ -1906,8 +1907,9 @@ const combatPrediction = useMemo(() => {
       targetRarity = 'RARE';
     }
     
-    // 🌀 連鎖突變機制 (保留原本的大一統掉落邏輯)
-const result = resolveDropWithMutation(targetRarity, player.artifacts || [], player.secretBooks || {}, player.pets || {}, gachaCost);
+    // 🌀 連鎖突變機制 
+    const result = resolveDropWithMutation(targetRarity, player.artifacts || [], player.secretBooks || {}, player.pets || {}, gachaCost);
+
     setPlayer(p => {
         let nextCoins = (isFree ? p.coins : p.coins - gachaCost) + result.coins;
         
@@ -1917,12 +1919,15 @@ const result = resolveDropWithMutation(targetRarity, player.artifacts || [], pla
         
         let nextArts = p.artifacts || [];
         let nextBooks = { ...p.secretBooks };
+        let nextPets = { ...(p.pets || {}) }; // ✨ 新增：讀取靈獸池
 
         if (result.drop) {
             if (result.drop.poolType === 'art') {
                 nextArts = [...nextArts, result.drop.id];
-            } else {
+            } else if (result.drop.poolType === 'book') {
                 nextBooks[result.drop.id] = 1;
+            } else if (result.drop.poolType === 'pet') {
+                nextPets[result.drop.id] = { lvl: 1, exp: 0 }; // ✨ 新增：靈寵正確寫入
             }
         }
 
@@ -1932,21 +1937,25 @@ const result = resolveDropWithMutation(targetRarity, player.artifacts || [], pla
           dailyGacha: nextDaily, 
           awardGacha: nextAward, 
           artifacts: nextArts, 
-          secretBooks: nextBooks 
+          secretBooks: nextBooks,
+          pets: nextPets // ✨ 新增：回存靈獸池
         };
     });
 
-    // 🎊 顯化異象 (保留原本的慶祝與日誌邏輯)
+    // 🎊 顯化異象與日誌
     if (result.drop) {
+        const dropTypeName = result.drop.poolType === 'art' ? '法寶' : result.drop.poolType === 'book' ? '功法' : '靈寵';
         setCelebration({ 
           name: result.drop.name, 
           quote: '機緣已至，重寶出世！', 
-drops: [`【${RARITY[result.finalRarity].name}級】${result.drop.poolType === 'art' ? '法寶' : '功法'}`]        });
-        addLog(`[萬寶樓] ${result.log ? result.log + ' ' : ''}獲得【${RARITY[result.finalRarity].name}】${result.drop.poolType === 'art' ? '法寶' : '功法'}「${result.drop.name}」！`);
+          drops: [`【${RARITY[result.finalRarity].name}級】${dropTypeName}`] 
+        });
+        addLog(`[萬寶樓] ${result.log ? result.log + ' ' : ''}獲得【${RARITY[result.finalRarity].name}】${dropTypeName}「${result.drop.name}」！`);
     } else {
         addLog(`[萬寶樓] ${result.log}`);
     }
   };
+// END PATCH [修正萬寶樓尋寶靈獸掉落邏輯]
 
   const handleUpgradeSecret = (id) => {
     const lvl = player.secretBooks[id] || 0;
