@@ -2273,14 +2273,21 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 pb-8">
                 
-                {/* --- 基礎倍率區 --- */}
+// START PATCH [屬性極限原始數值擴充 v2]
+// 替換目標：App 組件中，屬性極限面板 (showStatsReport) 內的 {/* --- 基礎倍率區 --- */} 完整區塊
+
+                {/* --- 根基與倍率區 --- */}
                 <div className="space-y-2">
-                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><ChevronsUp size={14}/> 基礎倍率 (MULTIPLIERS)</h3>
+                  <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><ChevronsUp size={14}/> 根基與倍率 (BASE & MULTIPLIERS)</h3>
+                  {renderStatRow('原始戰力', 'base_atk', formatNumber(player.baseCombat), null, 'text-rose-200')}
                   {renderStatRow('總戰力加成', 'atk', `x${getMultiplier('atk').toFixed(2)}`, null, 'text-rose-400')}
+                  {renderStatRow('原始氣血上限', 'base_hp', formatNumber(player.baseMaxVitality), null, 'text-emerald-200')}
                   {renderStatRow('氣血上限加成', 'hp', `x${getMultiplier('hp').toFixed(2)}`, null, 'text-emerald-400')}
                   {renderStatRow('靈氣獲取倍率', 'qi', `x${getMultiplier('qi').toFixed(2)}`, null, 'text-cyan-400')}
                   {renderStatRow('靈石掉落倍率', 'stone', `x${getMultiplier('stone').toFixed(2)}`, null, 'text-yellow-400')}
                 </div>
+
+// END PATCH [屬性極限原始數值擴充 v2]
                 
                 {/* --- 戰鬥極限區 --- */}
                 <div className="space-y-2">
@@ -2364,9 +2371,16 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                     {currentRealmData.name}
                   </h2>
                   
-                  <div className="flex items-center gap-2 mt-1">
-                     <span className="text-[10px] text-white/50 uppercase tracking-widest">綜合靈壓</span>
-                     <span className="text-sm font-mono font-black text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.8)] flex items-center gap-1.5"><Activity size={12}/> {formatNumber(comprehensiveCP)}</span>
+<div className="flex flex-wrap items-center gap-3 mt-1">
+                     <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-white/50 uppercase tracking-widest">戰力</span>
+                        <span className="text-sm font-mono font-black text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.8)] flex items-center gap-1"><Sword size={12}/> {formatNumber(currentCombatPower)}</span>
+                     </div>
+                     <span className="text-white/20 text-[10px]">|</span>
+                     <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-white/50 uppercase tracking-widest">綜合靈壓</span>
+                        <span className="text-sm font-mono font-black text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.8)] flex items-center gap-1"><Activity size={12}/> {formatNumber(comprehensiveCP)}</span>
+                     </div>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 mt-3">
