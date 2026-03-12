@@ -819,7 +819,7 @@ export default function App() {
 
     if (isBossReady || isFinal) {
         const bData = BOSS_POOL[Math.min(nTier - 1, BOSS_POOL.length - 1)];
-        mName = `${bData.name} [死劫/瓶頸]`;
+        mName = `${bData.name} [死劫]`;
         sAtkName = bData.s;
         bAtkName = bData.b;
         mQuote = bData.q; 
@@ -2352,10 +2352,27 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                <button onClick={() => setShowTitles(false)} className="p-4 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white"><X size={24}/></button>
             </div>
             
-            <div className="flex justify-between md:justify-start gap-4 md:gap-12 mb-6 bg-black/40 p-4 rounded-xl border border-white/5 flex-shrink-0 overflow-x-auto">
-               <div className="flex flex-col"><span className="text-[10px] text-white/40 uppercase tracking-widest">累計專注</span><span className="text-white font-mono">{formatNumber(player.lifetimeStats?.focusCount || 0)} 次</span></div>
-               <div className="flex flex-col"><span className="text-[10px] text-white/40 uppercase tracking-widest">擊殺妖獸</span><span className="text-rose-400 font-mono">{formatNumber(player.lifetimeStats?.kills || 0)} 隻</span></div>
-               <div className="flex flex-col"><span className="text-[10px] text-white/40 uppercase tracking-widest">累計靈石</span><span className="text-yellow-400 font-mono">{formatNumber(player.lifetimeStats?.totalCoins || 0)}</span></div>
+<div className="flex justify-start gap-6 md:gap-12 mb-6 bg-black/40 p-4 rounded-xl border border-white/5 flex-shrink-0 overflow-x-auto custom-scrollbar">
+               <div className="flex flex-col">
+                   <span className="text-[10px] text-white/40 uppercase tracking-widest whitespace-nowrap">累計專注</span>
+                   <span className="text-white font-mono whitespace-nowrap">{formatNumber(player.lifetimeStats?.focusCount || 0)} 次</span>
+               </div>
+               <div className="flex flex-col">
+                   <span className="text-[10px] text-white/40 uppercase tracking-widest whitespace-nowrap">擊殺妖獸</span>
+                   <span className="text-rose-400 font-mono whitespace-nowrap">{formatNumber(player.lifetimeStats?.kills || 0)} 隻</span>
+               </div>
+               <div className="flex flex-col">
+                   <span className="text-[10px] text-white/40 uppercase tracking-widest whitespace-nowrap">累計靈石</span>
+                   <span className="text-yellow-400 font-mono whitespace-nowrap">{formatNumber(player.lifetimeStats?.totalCoins || 0)}</span>
+               </div>
+               <div className="flex flex-col">
+                   <span className="text-[10px] text-white/40 uppercase tracking-widest whitespace-nowrap">收集法寶</span>
+                   <span className="text-cyan-400 font-mono whitespace-nowrap">{(player.artifacts || []).length} / {ARTIFACT_POOL.length}</span>
+               </div>
+               <div className="flex flex-col">
+                   <span className="text-[10px] text-white/40 uppercase tracking-widest whitespace-nowrap">領悟祕籍</span>
+                   <span className="text-emerald-400 font-mono whitespace-nowrap">{Object.keys(player.secretBooks || {}).filter(k => player.secretBooks[k] > 0).length} / {SECRET_BOOKS.length}</span>
+               </div>
             </div>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
@@ -2731,8 +2748,9 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
         
         {mode === 'focus' ? (
           <div className={isActive ? 'hidden' : 'block'}>
-            <div className={`flex justify-center items-center gap-3 mb-2 text-sm md:text-base tracking-[0.6em] font-black uppercase transition-colors ${monster.name.includes('死劫') || monster.name.includes('劫') ? 'text-rose-500 animate-pulse' : 'text-rose-400'}`}>
-              <Compass size={18}/> {monster.name}
+<div className={`flex justify-center items-center flex-wrap gap-x-2 gap-y-1 mb-2 px-2 text-sm md:text-base tracking-widest sm:tracking-[0.3em] font-black uppercase transition-colors text-center leading-normal ${monster.name.includes('死劫') || monster.name.includes('劫') ? 'text-rose-500 animate-pulse' : 'text-rose-400'}`}>
+              <Compass size={18} className="flex-shrink-0"/> 
+              <span>{monster.name.replace(' [死劫/瓶頸]', ' [死劫]')}</span>
             </div>
 
             <div className="text-xs md:text-sm text-rose-200/70 italic font-bold mb-4 tracking-widest drop-shadow-md px-4 leading-relaxed">
