@@ -436,6 +436,51 @@ const SECRET_BOOKS = [
   { id: 's_20', rarity: 'MYTHIC', name: '化劫大法', desc: '天道護主。滿級賦予 1 層護盾，復活+2%/級', val: { streak_shield: 0.20, revive: 0.02 } }
 ];
 
+const PET_POOL = [
+  {
+    id: 'p_mouse', rarity: 'UNCOMMON', name: '雙瞳鼠', desc: '對天地靈氣極度敏感，能輕易嗅出靈脈與寶物所在。',
+    baseCost: 10000, costMult: 1.5,
+    val: { stone: 0.15, qi: 0.15 }, growth: { stone: 0.05, qi: 0.05 },
+    triggerName: '尋寶天賦', triggerDesc: '結算時，額外挖掘出鉅額靈石。',
+    triggerBase: 0.30, triggerGrowth: 0.05, effectBase: 1.0, effectGrowth: 0.2
+  },
+  {
+    id: 'p_spider', rarity: 'RARE', name: '血玉蜘蛛', desc: '能吐出堅韌無比的白網，可刀槍不入、水火不侵。',
+    baseCost: 50000, costMult: 1.8,
+    val: { hp: 0.10, def: 0.05 }, growth: { hp: 0.05, def: 0.03 },
+    triggerName: '血玉堅網', triggerDesc: '若未能擊殺妖獸，強制發動蛛網，完美抵擋反撲傷害。',
+    triggerBase: 0.20, triggerGrowth: 0.05, effectBase: 1.0, effectGrowth: 0.0
+  },
+  {
+    id: 'p_leopard', rarity: 'EPIC', name: '豹鱗獸', desc: '身披金鱗，迅捷如雷，能施展雷遁之術的強大異獸。',
+    baseCost: 200000, costMult: 2.0,
+    val: { evade: 0.05, crit: 0.05 }, growth: { evade: 0.02, crit: 0.02 },
+    triggerName: '雷迅瞬殺', triggerDesc: '化作雷光追擊，造成鉅額的額外真實雷傷。',
+    triggerBase: 0.25, triggerGrowth: 0.05, effectBase: 0.5, effectGrowth: 0.1
+  },
+  {
+    id: 'p_soul', rarity: 'LEGENDARY', name: '啼魂獸', desc: '專食陰魂厲鬼的刑獸，能吸食精魄反哺主人。',
+    baseCost: 1000000, costMult: 2.2,
+    val: { sense_def: 0.15, revive: 0.05 }, growth: { sense_def: 0.05, revive: 0.02 },
+    triggerName: '刑獸噬魂', triggerDesc: '擊殺妖獸時吞噬精魂，大幅恢復氣血並掠奪額外修為。',
+    triggerBase: 0.20, triggerGrowth: 0.05, effectBase: 0.30, effectGrowth: 0.05
+  },
+  {
+    id: 'p_centipede', rarity: 'MYTHIC', name: '六翼霜蚣', desc: '上古奇蟲，吐息間冰封空間法則，極致的牽制。',
+    baseCost: 5000000, costMult: 2.5,
+    val: { streak_cap: 0.30, streak_eff: 0.20 }, growth: { streak_cap: 0.20, streak_eff: 0.10 },
+    triggerName: '絕對冰封', triggerDesc: '凍結時間！本次結算的連擊倍率乘區強制成倍放大。',
+    triggerBase: 0.15, triggerGrowth: 0.05, effectBase: 2.0, effectGrowth: 0.3
+  },
+  {
+    id: 'p_beetle', rarity: 'DIVINE', name: '噬金蟲王', desc: '無物不噬，水火不侵！群聚甚至能吞噬大乘真仙！',
+    baseCost: 20000000, costMult: 3.0,
+    val: { atk: 0.30, crit_dmg: 0.50 }, growth: { atk: 0.15, crit_dmg: 0.30 },
+    triggerName: '無物不噬', triggerDesc: '無視防禦！直接啃食死劫的【最大氣血】作為真實傷害。',
+    triggerBase: 0.10, triggerGrowth: 0.05, effectBase: 0.20, effectGrowth: 0.05
+  }
+];
+
 const BASIC_SKILLS = [
   { id: 'b_qi', name: '長春功', desc: '基礎靈氣獲取提升 +10%/級', val: { qi: 0.1 }, maxLvl: 20 },
   { id: 'b_atk', name: '青元劍訣', desc: '基礎戰鬥力提升 +10%/級', val: { atk: 0.1 }, maxLvl: 20 },
@@ -922,6 +967,7 @@ useEffect(() => {
   }, [focusDuration, targetEndTime, isActive, mode]);
 // END PATCH [離線閉關與時空定序]
   const [activeTab, setActiveTab] = useState('log');
+  const [treasureTab, setTreasureTab] = useState('arts'); // ✨ 新增：藏寶閣次標籤
   const [showRealmGuide, setShowRealmGuide] = useState(false);
   const [showStatsReport, setShowStatsReport] = useState(false);
   const [activeStat, setActiveStat] = useState(null); // 紀錄當前選中的屬性
@@ -1010,6 +1056,14 @@ useEffect(() => {
                     mult += buffVal / 100; 
                 }
             }
+        }
+    }  
+    // ✨ 靈寵被動屬性加成
+    if (player.activePet && player.pets?.[player.activePet]) {
+        const pet = PET_POOL.find(p => p.id === player.activePet);
+        const lvl = player.pets[player.activePet].lvl;
+        if (pet && pet.val?.[type]) {
+            mult += pet.val[type] + (lvl - 1) * pet.growth[type];
         }
     }
     return mult;
@@ -1293,64 +1347,54 @@ const combatPrediction = useMemo(() => {
     addLog(`【調息結束】道友提前結束吐納，未獲取靈氣滋養。`);
   };
 
-  const getUnownedPool = (rarityTarget, currentArts, currentBooks) => {
+  const getUnownedPool = (rarityTarget, currentArts, currentBooks, currentPets) => {
     const unownedArts = ARTIFACT_POOL.filter(a => a.rarity === rarityTarget && !currentArts.includes(a.id)).map(a => ({...a, poolType: 'art'}));
     const unownedBooks = SECRET_BOOKS.filter(b => b.rarity === rarityTarget && !currentBooks[b.id]).map(b => ({...b, poolType: 'book'}));
-    return [...unownedArts, ...unownedBooks];
+    const unownedPets = PET_POOL.filter(p => p.rarity === rarityTarget && !currentPets[p.id]).map(p => ({...p, poolType: 'pet'}));
+    return [...unownedArts, ...unownedBooks, ...unownedPets];
   };
 
-const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
+  const resolveDropWithMutation = (initialRarity, arts, books, pets, baseCost) => {
       let originalIdx = RARITIES_ORDER.indexOf(initialRarity);
       let finalDrop = null;
       let compensationCoins = 0;
       let mutationLog = '';
       let currentTargetRarity = initialRarity;
 
-      // 【階段一：順應天道，向下兼容】 (從當前階級開始，一路往下找)
       for (let i = originalIdx; i >= 0; i--) {
           let r = RARITIES_ORDER[i];
-          let pool = getUnownedPool(r, arts, books);
+          let pool = getUnownedPool(r, arts, books, pets);
           if (pool.length > 0) {
               finalDrop = pool[Math.floor(Math.random() * pool.length)];
               currentTargetRarity = r;
-              // 如果是向下找到的，給予提示
-              if (i < originalIdx) {
-                  mutationLog += `【${RARITY[initialRarity].name}】圖鑑已滿，靈力向下逸散，尋得【${RARITY[r].name}】。`;
-              }
+              if (i < originalIdx) mutationLog += `【${RARITY[initialRarity].name}】圖鑑已滿，靈力逸散，尋得【${RARITY[r].name}】。`;
               break;
           }
       }
 
-      // 【階段二：量變引起質變，向上連鎖突變】 (如果向下的低階全滿了，強行往上找，直到抽滿)
       if (!finalDrop) {
           for (let i = originalIdx + 1; i < RARITIES_ORDER.length; i++) {
               let r = RARITIES_ORDER[i];
-              let pool = getUnownedPool(r, arts, books);
+              let pool = getUnownedPool(r, arts, books, pets);
               if (pool.length > 0) {
                   finalDrop = pool[Math.floor(Math.random() * pool.length)];
                   currentTargetRarity = r;
-                  mutationLog += `【機緣爆發】低階寶物已盡，氣運牽引，連鎖突變為【${RARITY[r].name}】！`;
+                  mutationLog += `【機緣爆發】氣運牽引，連鎖突變為【${RARITY[r].name}】！`;
                   break;
               }
           }
       }
 
-      // 【階段三：萬法歸一，靈石補償】 (如果連最高階都滿了，代表全圖鑑 100% 畢業)
       if (!finalDrop) {
-          // 以「初始判定」的稀有度計算天價補償 (越稀有的保底，補償越恐怖)
           let compValue = Math.floor((baseCost * 1.5) / RARITY[initialRarity].weight);
           compensationCoins = compValue;
           mutationLog += `【天道盡頭】此界寶物已盡入你手，機緣化作 ${formatNumber(compValue)} 靈石！`;
       }
 
-      return { 
-          drop: finalDrop, 
-          coins: compensationCoins, 
-          log: mutationLog, 
-          finalRarity: currentTargetRarity 
-      };
+      return { drop: finalDrop, coins: compensationCoins, log: mutationLog, finalRarity: currentTargetRarity };
   };
 
+// START PATCH [4. 結算主動觸發與靈獸參戰]
   const handleComplete = (usedPill = false) => {
     if (sessionLockRef.current) return; 
     sessionLockRef.current = true;  
@@ -1386,17 +1430,67 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
 
       const isCrit = Math.random() < critRate;
       const damageBase = Math.floor(currentCombatPower * (focusDuration / 1500));
-      const actualDamage = isCrit ? Math.floor(damageBase * critDmg) : damageBase;
+      let actualDamage = isCrit ? Math.floor(damageBase * critDmg) : damageBase; // ⚠️ 注意：改為 let
       
       if (isCrit) { setIsCritStrike(true); setTimeout(() => setIsCritStrike(false), 600); }
 
-      const newHp = Math.max(0, monster.hp - actualDamage);
       const timeRatio = focusDuration / 1500;
       const passiveQi = Math.floor(50 * Math.pow(1.18, player.realmIndex + 1) * getMultiplier('qi') * timeRatio);
       const passiveCoin = Math.floor(50 * Math.pow(1.15, player.realmIndex + 1) * getMultiplier('stone') * luckVal * timeRatio);
 
-      let nextQi = player.qi + passiveQi;
-      let nextCoins = player.coins + passiveCoin;
+      // ✨ 【萬獸覺醒：靈獸結算與神通觸發】
+      let petLog = '';
+      let petBlockCounter = false;
+      let petDamage = 0;
+      let damageMultiplier = 1.0;
+      let petExtraCoins = 0;
+      let petHeal = 0;
+      let petExtraQi = 0;
+
+      let nextPets = { ...(player.pets || {}) };
+      if (player.activePet && nextPets[player.activePet]) {
+          const petData = PET_POOL.find(p => p.id === player.activePet);
+          const petInfo = nextPets[player.activePet];
+          const lvl = petInfo.lvl || 1;
+
+          // 🐾 注入歲月歷練 (真實專注才給經驗)
+          if (!isUsingPill && lvl < 10) {
+              petInfo.exp = (petInfo.exp || 0) + Math.floor(focusDuration / 60);
+          }
+
+          // 🐾 神通觸發判定
+          const triggerRate = petData.triggerBase + (lvl - 1) * petData.triggerGrowth;
+          if (Math.random() < triggerRate) {
+              const eff = petData.effectBase + (lvl - 1) * petData.effectGrowth;
+              
+              if (petData.id === 'p_mouse') {
+                  petExtraCoins = Math.floor(passiveCoin * eff);
+                  petLog += ` 🐾 【${petData.name}】發動「尋寶天賦」，額外尋得 ${formatNumber(petExtraCoins)} 靈石！`;
+              } else if (petData.id === 'p_spider') {
+                  petBlockCounter = true;
+              } else if (petData.id === 'p_leopard') {
+                  petDamage = Math.floor(actualDamage * eff);
+                  petLog += ` 🐾 【${petData.name}】化作雷光發動「雷迅瞬殺」，造成 ${formatNumber(petDamage)} 額外雷傷！`;
+              } else if (petData.id === 'p_centipede') {
+                  damageMultiplier = eff;
+                  petLog += ` 🐾 【${petData.name}】吐出「絕對冰封」，本次傷害暴增 ${eff.toFixed(1)} 倍！`;
+              } else if (petData.id === 'p_beetle') {
+                  petDamage = Math.floor(monster.maxHp * eff);
+                  petLog += ` 🐾 【${petData.name}】群湧而出「無物不噬」，直接啃食妖獸 ${formatNumber(petDamage)} 氣血！`;
+              } else if (petData.id === 'p_soul') {
+                  petHeal = Math.floor(maxVitality * eff);
+                  petExtraQi = Math.floor(passiveQi * 1.5); // 掠奪額外修為
+                  // 補血與修為要在確認擊殺後才生效，這邊先打標記
+              }
+          }
+      }
+
+      // 結算最終傷害
+      actualDamage = Math.floor(actualDamage * damageMultiplier) + petDamage;
+      const newHp = Math.max(0, monster.hp - actualDamage);
+
+      let nextQi = player.qi + passiveQi + petExtraQi;
+      let nextCoins = player.coins + passiveCoin + petExtraCoins;
       let nextVitality = player.vitality;
       let nextRealm = player.realmIndex;
       let nextQiToNext = player.qiToNext;
@@ -1411,7 +1505,9 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
       let nextShields = maxStreakShields; 
       let isDeadFromCounter = false;
 
-      if (!isUsingPill) nextLifetime.totalCoins += passiveCoin;
+      if (!isUsingPill) {
+          nextLifetime.totalCoins += passiveCoin + petExtraCoins;
+      }
       
       if (isCrit && Math.random() < 0.30) {
         const lifesteal = Math.floor(maxVitality * (getMultiplier('lifesteal') - 1));
@@ -1472,6 +1568,13 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
             nextLifetime.totalCoins += killCoin;
         }
 
+        // 🐾 啼魂獸結算判定
+        if (petHeal > 0) {
+            nextVitality = Math.min(maxVitality, nextVitality + petHeal);
+            killLog += ` 🐾 【啼魂獸】發動「刑獸噬魂」，吞噬精魄恢復 ${formatNumber(petHeal)} 氣血，並掠奪大量修為！`;
+            collectedDrops.push(`🐾 啼魂獸：恢復 ${formatNumber(petHeal)} 氣血`);
+        }
+
         const basePillRate = 0.10 * (focusDuration / 3600); 
         const finalPillRate = basePillRate * luckVal; 
 
@@ -1494,7 +1597,8 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
                 }
             }
 
-            const result = resolveDropWithMutation(targetRarity, newArtifacts, newSecretBooks, gachaCost);
+            // ✨ 擊殺掉落：帶入 nextPets
+            const result = resolveDropWithMutation(targetRarity, newArtifacts, newSecretBooks, nextPets, gachaCost);
             
             nextCoins += result.coins;
             if (!isUsingPill) nextLifetime.totalCoins += result.coins;
@@ -1506,10 +1610,14 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
                     newArtifacts.push(drop.id);
                     killLog += ` 🎁 斬獲【${RARITY[result.finalRarity].name}】法寶「${drop.name}」！`;
                     collectedDrops.push(`🎁 ${RARITY[result.finalRarity].name}法寶：${drop.name}`);
-                } else {
+                } else if (drop.poolType === 'book') {
                     newSecretBooks[drop.id] = 1;
                     killLog += ` 📜 獲得【${RARITY[result.finalRarity].name}】功法「${drop.name}」！`;
                     collectedDrops.push(`📜 ${RARITY[result.finalRarity].name}功法：${drop.name}`);
+                } else if (drop.poolType === 'pet') {
+                    nextPets[drop.id] = { lvl: 1, exp: 0 };
+                    killLog += ` 🐾 降伏【${RARITY[result.finalRarity].name}】靈寵「${drop.name}」！`;
+                    collectedDrops.push(`🐾 ${RARITY[result.finalRarity].name}靈寵：${drop.name}`);
                 }
             }
             if (result.coins > 0) {
@@ -1523,9 +1631,8 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
             if (isFinalBoss && !player.hasAscended) {
                 try { update(ref(database, 'globalStats'), { totalAscensions: increment(1) }); } catch(e) {}
                 nextHasAscended = true;
-                // ✨ 強化日誌：獨立顯示飛升，不跟戰鬥數據擠在一起
                 addLog(`🌌 【破空飛升】恭賀道友位列仙班，成就真仙之位！`); 
-                killLog = ` 🌌 渡劫成功！` + killLog; // 🛠️ 修正：拔除重複對白，改為純粹的擊殺判定
+                killLog = ` 🌌 渡劫成功！` + killLog;
                 
                 const quoteMsg = FEEDBACK_TEXTS.boss[Math.floor(Math.random() * FEEDBACK_TEXTS.boss.length)];
                 setCelebration({ name: '飛升仙界！成就真仙！', quote: quoteMsg, drops: collectedDrops });
@@ -1535,13 +1642,11 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
                 nextQiToNext = Math.floor(nextQiToNext * 1.35);
                 if (!isUsingPill) nextHistory = [...nextHistory, { name: REALMS[nextRealm].name, time: nextTotalFocusTime }];
                 
-                // ✨ 天道修補：讓突破日誌獨立顯現，增加儀式感
                 addLog(`☄️ 【境界突破】恭喜道友成功斬滅死劫，晉升至「${REALMS[nextRealm].name}」！`);
 
                 const newCompanion = COMPANIONS.find(c => c.unlockIdx === nextRealm);
                 if (newCompanion) {
                     collectedDrops.unshift(`🌸 結識紅緣：【${newCompanion.name}】`);
-                    // 🛡️ 完整保留您原本的結緣文案！
                     addLog(`🏆 【仙緣】突破之際，你與【${newCompanion.name}】意外結識，可前往「道侶紅顏」邀其同行。`);
                 }
                 
@@ -1551,10 +1656,9 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
                     quote: newCompanion ? `「${newCompanion.quotes[0][Math.floor(Math.random() * newCompanion.quotes[0].length)]}」` : quoteMsg, 
                     drops: collectedDrops 
                 });
-                killLog = ` 💀 斬滅死劫！` + killLog; // 🛠️ 修正：拔除重複對白，改為純粹的擊殺判定
+                killLog = ` 💀 斬滅死劫！` + killLog;
             }
         } else {
-
             killLog = `⚔️ 【擊殺】奪得修為 ${formatNumber(killQi)}！` + killLog;
             if (nextQi >= nextQiToNext) {
                 killLog += ` ⚡ 修為圓滿！死劫即將降臨，準備突破！`;
@@ -1564,15 +1668,16 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
         }
         
         setMonster(generateMonsterState(nextRealm, nextQi, nextQiToNext));
-} else {
+      } else {
         const isBigAttack = Math.random() < 0.20; 
         const atkName = isBigAttack ? monster.bAtkName : monster.sAtkName;
         let nextMonsterHp = newHp; 
         
-        if (Math.random() < evadeRate) {
-            killLog = `💨 妖獸反撲！你身形如鬼魅，完美閃避【${atkName}】！`;
+        // 🐾 蜘蛛擋刀判定加入
+        if (Math.random() < evadeRate || petBlockCounter) {
+            killLog = petBlockCounter ? `🐾 妖獸反撲！【血玉蜘蛛】吐出堅網，完美抵擋了【${atkName}】！` : `💨 妖獸反撲！你身形如鬼魅，完美閃避【${atkName}】！`;
             const msg = FEEDBACK_TEXTS.focus[Math.floor(Math.random() * FEEDBACK_TEXTS.focus.length)];
-            collectedDrops.push(`💨 完美閃避妖獸反撲`);
+            collectedDrops.push(petBlockCounter ? `🐾 蜘蛛堅網抵擋傷害` : `💨 完美閃避妖獸反撲`);
             showToast('focus', msg, collectedDrops);
         } else {
             setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
@@ -1595,7 +1700,6 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
             nextVitality -= actualDamage;
             let scaleLog = enemyTimeScale > 1.1 ? ` (同步蓄力 ${(enemyTimeScale).toFixed(1)}倍)` : '';
             
-            // ✨ 天道修補：嚴格的死亡順序判定
             if (nextVitality <= 0) {
                 if (nextShields > 0) {
                     nextShields -= 1;
@@ -1610,7 +1714,6 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
                     showToast('danger', '妖獸反撲造成致命傷！', [`✨ 觸發涅槃重生`]);
                 } else {
                     nextVitality = Math.floor(maxVitality * 0.5);
-                    // 💀 死亡重罰：扣除 20% 當前總修為 (包含剛獲得的)
                     nextQi = Math.floor(nextQi * 0.8); 
                     nextStreak = 0;
                     nextShields = 0;
@@ -1640,10 +1743,8 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
         }
       }
 
-      // ... 奇遇判定 (保留不變)
       let fortuneLog = '';
       if (!isDeadFromCounter && Math.random() < (0.10 * luckVal * timeRatio)) {
-        // ... (中間的奇遇 fRoll 邏輯完全保持原樣，不要動它) ...
         const fRoll = Math.random() * 100;
         if (fRoll < 25) {
             const extraQi = Math.floor(passiveQi * 2);
@@ -1687,7 +1788,9 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
                     break;
                 }
             }
-            const result = resolveDropWithMutation(targetRarity, newArtifacts, newSecretBooks, gachaCost);
+            
+            // ✨ 奇遇掉落：帶入 nextPets
+            const result = resolveDropWithMutation(targetRarity, newArtifacts, newSecretBooks, nextPets, gachaCost);
             nextCoins += result.coins;
             if (!isUsingPill) nextLifetime.totalCoins += result.coins;
             fortuneLog += result.log;
@@ -1697,10 +1800,14 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
                     newArtifacts.push(drop.id);
                     fortuneLog += ` 🏺 【異寶出世】霞光萬丈，喜獲【${RARITY[result.finalRarity].name}】法寶「${drop.name}」！`;
                     collectedDrops.push(`🏺 ${RARITY[result.finalRarity].name}法寶：${drop.name}`);
-                } else {
+                } else if (drop.poolType === 'book') {
                     newSecretBooks[drop.id] = 1;
                     fortuneLog += ` 📜 【殘卷現世】機緣巧合，領悟【${RARITY[result.finalRarity].name}】功法「${drop.name}」！`;
                     collectedDrops.push(`📜 ${RARITY[result.finalRarity].name}功法：${drop.name}`);
+                } else if (drop.poolType === 'pet') {
+                    nextPets[drop.id] = { lvl: 1, exp: 0 };
+                    fortuneLog += ` 🐾 【靈獸認主】天降祥瑞，獲得【${RARITY[result.finalRarity].name}】靈寵「${drop.name}」！`;
+                    collectedDrops.push(`🐾 ${RARITY[result.finalRarity].name}靈寵：${drop.name}`);
                 }
             }
             if (result.coins > 0) {
@@ -1709,12 +1816,10 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
         }
       }
 
-      // ✨ 天道修補：嚴格的靈氣化晶判定 (必須在死亡判定之後)
-      // 拔除了 !monster.isBoss 的豁免權。只要打完，修為超過上限，一律化晶！
       let bottleneckLog = '';
       if (nextQi > nextQiToNext) {
           const overflow = nextQi - nextQiToNext;
-          nextQi = nextQiToNext; // 🔒 丹田鎖死，確保不會出現 1450 / 612 這種荒謬現象
+          nextQi = nextQiToNext; 
           
           const crystalizedCoins = Math.floor(overflow * 0.3); 
           const finalCoins = Math.max(1, crystalizedCoins); 
@@ -1727,10 +1832,8 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
       }
 
       const dmgLog = isCrit ? `🔥 【爆擊】造成 ${formatNumber(actualDamage)} 傷害。` : `[運功] 造成 ${formatNumber(actualDamage)} 傷害。`;
-      addLog(`${dmgLog} ${killLog || `獲修為 ${formatNumber(passiveQi)}。`}${fortuneLog}${compLog}${bottleneckLog}`);
+      addLog(`${dmgLog} ${killLog || `獲修為 ${formatNumber(passiveQi)}。`}${petLog}${fortuneLog}${compLog}${bottleneckLog}`);
       
-      // ... 後續的 setPlayer 保持不變 ...
-
       setPlayer(p => ({
           ...p,
           realmIndex: nextRealm,
@@ -1750,7 +1853,8 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
           companionKills: nextCompanionKills,
           history: nextHistory,
           hasAscended: nextHasAscended,
-          lifetimeStats: nextLifetime
+          lifetimeStats: nextLifetime,
+          pets: nextPets // ✨ 萬獸覺醒：寫入靈獸歷練進度與新寵物
       }));
 
       setMode('break'); 
@@ -1775,8 +1879,7 @@ const resolveDropWithMutation = (initialRarity, arts, books, baseCost) => {
       showToast('break', msg, [`🧘‍♂️ 恢復了 ${formatNumber(heal)} 氣血`]);
     }
   };
-
-const handleGacha = () => {
+// END PATCH [4. 結算主動觸發與靈獸參戰]
     // ⚔️ 判斷機緣優先級：1. 每日機緣 (優先) -> 2. 稱號功勳 (次之)
     const useDaily = (player.dailyGacha || 0) > 0;
     const useAward = !useDaily && (player.awardGacha || 0) > 0;
@@ -1804,8 +1907,7 @@ const handleGacha = () => {
     }
     
     // 🌀 連鎖突變機制 (保留原本的大一統掉落邏輯)
-    const result = resolveDropWithMutation(targetRarity, player.artifacts || [], player.secretBooks || {}, gachaCost);
-
+const result = resolveDropWithMutation(targetRarity, player.artifacts || [], player.secretBooks || {}, player.pets || {}, gachaCost);
     setPlayer(p => {
         let nextCoins = (isFree ? p.coins : p.coins - gachaCost) + result.coins;
         
