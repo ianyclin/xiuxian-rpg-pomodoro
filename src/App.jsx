@@ -1853,8 +1853,23 @@ if (result.drop) {
           collectedDrops.push(`💎 靈氣化晶：${formatNumber(finalCoins)} 靈石`);
       }
 
+// START PATCH [19.1 戰報段落化重構]
+      // 1. 定義基礎傷害訊息
       const dmgLog = isCrit ? `🔥 【爆擊】造成 ${formatNumber(actualDamage)} 傷害。` : `[運功] 造成 ${formatNumber(actualDamage)} 傷害。`;
-      addLog(`${dmgLog} ${killLog || `獲修為 ${formatNumber(passiveQi)}。`}${petLog}${fortuneLog}${compLog}${bottleneckLog}`);
+      
+      // 2. 將所有戰鬥段落放入陣列，並清理前後空格
+      const logSections = [
+          dmgLog,
+          killLog ? killLog.trim() : `獲修為 ${formatNumber(passiveQi)}。`, // 若沒擊殺則顯示獲取修為
+          petLog ? petLog.trim() : "",
+          fortuneLog ? fortuneLog.trim() : "",
+          compLog ? compLog.trim() : "",
+          bottleneckLog ? bottleneckLog.trim() : ""
+      ].filter(section => section.length > 0); // 篩選出有內容的段落
+
+      // 3. 使用 \n (物理換行) 拼接並發送到日誌
+      addLog(logSections.join('\n'));
+// END PATCH [19.1 戰報段落化重構]
       
       setPlayer(p => ({
           ...p,
