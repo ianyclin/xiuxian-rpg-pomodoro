@@ -2111,27 +2111,72 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
   };
 // END PATCH [5. 靈獸 UI 狀態與升級邏輯]
 
+// START PATCH [8. 識海投影縱軸與邏輯重構]
   const InsightsChart = () => {
     const data = player.history || [];
     if (data.length < 2) return <div className="h-full flex items-center justify-center text-white/10 uppercase tracking-widest font-bold text-xs">識海未成，尚無投影</div>;
+    
     const maxT = Math.max(1, ...data.map(d => d.time || 0));
+    const maxIdx = Math.max(1, data.length - 1);
+
+    // X軸為時間 (0% -> 100%)，Y軸為境界進度 (100% -> 0%，從下到上)
     const points = data.map((d, i) => {
-      const x = (i / (data.length - 1)) * 100;
-      const y = 100 - ((d.time || 0) / maxT) * 100;
+      const x = ((d.time || 0) / maxT) * 100;
+      const y = 100 - (i / maxIdx) * 100;
       return `${isNaN(x) ? 0 : x},${isNaN(y) ? 0 : y}`;
     }).join(' ');
-   
+
+    // 提取大境界作為 Y 軸的刻度標籤
+    const majorMilestones = data.map((d, i) => {
+      if (d.name === '一介凡人' || d.name === '渡劫' || d.name.includes('初期')) {
+         const y = 100 - (i / maxIdx) * 100;
+         const cleanName = d.name.includes('初期') ? d.name.replace('初期', '境') : d.name;
+         return { name: cleanName, y };
+      }
+      return null;
+    }).filter(Boolean);
+
     return (
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
-        <polyline fill="none" stroke="rgba(16, 185, 129, 0.4)" strokeWidth="1.5" points={points} />
-        {data.map((d, i) => {
-          const cx = (i / (data.length - 1)) * 100;
-          const cy = 100 - ((d.time || 0) / maxT) * 100;
-          return <circle key={i} cx={isNaN(cx) ? 0 : cx} cy={isNaN(cy) ? 0 : cy} r="1.5" fill="#fff" className="animate-pulse" />;
-        })}
-      </svg>
+      <>
+        {/* Y 軸大境界標籤與水平虛線 */}
+        {majorMilestones.map((m, i) => (
+          <div key={`y-${i}`} className="absolute w-full flex items-center pointer-events-none" style={{ top: `${m.y}%`, transform: 'translateY(-50%)', left: 0 }}>
+            <div className="absolute right-full mr-2 text-[10px] md:text-xs text-emerald-400 font-bold tracking-widest whitespace-nowrap drop-shadow-md">
+              {m.name}
+            </div>
+            <div className="w-full border-b border-dashed border-white/10" />
+          </div>
+        ))}
+
+        {/* 成長曲線與節點繪製 */}
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full overflow-visible">
+          <polyline fill="none" stroke="rgba(16, 185, 129, 0.6)" strokeWidth="1.5" points={points} className="drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+          {data.map((d, i) => {
+            const x = ((d.time || 0) / maxT) * 100;
+            const y = 100 - (i / maxIdx) * 100;
+            const isMajor = d.name === '一介凡人' || d.name === '渡劫' || d.name.includes('初期');
+            return (
+              <circle 
+                key={i} 
+                cx={isNaN(x) ? 0 : x} 
+                cy={isNaN(y) ? 0 : y} 
+                r={isMajor ? "2" : "1.2"} 
+                fill={isMajor ? "#34d399" : "#ffffff"} 
+                className={isMajor ? "animate-pulse shadow-[0_0_5px_#34d399]" : "opacity-30"} 
+              />
+            );
+          })}
+        </svg>
+
+        {/* X 軸時間刻度 */}
+        <div className="absolute top-full w-full flex justify-between text-[10px] text-white/40 font-mono mt-2 pt-1">
+           <span>0m (開局)</span>
+           <span className="text-right tracking-widest">總耗時 {formatNumber(Math.floor(maxT / 60))}m</span>
+        </div>
+      </>
     );
   };
+// END PATCH [8. 識海投影縱軸與邏輯重構]
 
   return (
     <div className={`min-h-screen text-slate-300 font-mono p-4 flex flex-col items-center overflow-x-hidden relative transition-colors duration-300 ${isActive ? 'justify-center py-0' : 'pt-10'}
