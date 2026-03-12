@@ -2960,7 +2960,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                 </div>
               </div>
             )}
-// START PATCH [7. 藏寶閣雙軌切換]
+
             {activeTab === 'artifacts' && (
               <div className="flex flex-col animate-pop-in pb-10">
                 <div className="flex gap-2 bg-black/60 p-1 rounded-lg border border-white/5 flex-shrink-0 mb-8 w-full max-w-sm mx-auto shadow-inner">
@@ -3066,7 +3066,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                 )}
               </div>
             )}
-// END PATCH [7. 藏寶閣雙軌切換]
+
             {activeTab === 'insights' && (
               <div className="h-[500px] md:h-[600px] animate-pop-in bg-black/60 rounded-2xl border border-white/20 shadow-inner p-6 md:p-12 flex flex-col">
                 <div className="flex justify-between items-center mb-10 opacity-70 text-xs font-black uppercase tracking-[0.4em] text-white"><span className="flex items-center gap-3"><Activity size={16}/> 識海投影 (修煉進程)</span><span>累計時間: {formatNumber(Math.floor((player.totalFocusTime || 0)/60))}m</span></div>
