@@ -940,6 +940,7 @@ useEffect(() => {
   const [isCritStrike, setIsCritStrike] = useState(false); 
   const [isKilling, setIsKilling] = useState(false); 
   const [isHealing, setIsHealing] = useState(false); 
+  const [isGachaPulling, setIsGachaPulling] = useState(false); // ✨ 新增：尋寶懸念狀態
   
   useEffect(() => {
     if (!isActive && activeRealmRef.current) {
@@ -2338,28 +2339,43 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
         </div>
       )}
 
+
       {celebration && (
-        <div className="fixed inset-0 z-[800] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-12 cursor-pointer font-bold animate-pop-in" onClick={() => setCelebration(null)}>
-          <Crown size={80} className="text-yellow-500/80 mb-6 animate-bounce" />
-          <h2 className="text-3xl md:text-5xl font-black text-white mb-2 uppercase tracking-widest text-center leading-tight">
+        <div className={`fixed inset-0 z-[800] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-12 cursor-pointer font-bold animate-pop-in ${['LEGENDARY', 'MYTHIC', 'DIVINE'].includes(celebration.rarity) ? 'animate-shake' : ''}`} onClick={() => setCelebration(null)}>
+          
+          {/* 特效背光 (高階專屬) */}
+          {['LEGENDARY', 'MYTHIC', 'DIVINE'].includes(celebration.rarity) && (
+             <div className={`absolute inset-0 bg-gradient-to-t from-transparent ${celebration.rarity === 'DIVINE' ? 'via-yellow-500/20' : celebration.rarity === 'MYTHIC' ? 'via-red-500/20' : 'via-orange-500/20'} to-transparent animate-pulse pointer-events-none`}></div>
+          )}
+
+          {celebration.isMutation ? (
+            <Zap size={100} className="text-amber-400 mb-6 animate-ping drop-shadow-[0_0_40px_rgba(251,191,36,1)] relative z-10" />
+          ) : (
+            <Crown size={80} className={`${celebration.rarity ? RARITY[celebration.rarity].color : 'text-yellow-500/80'} mb-6 animate-bounce drop-shadow-[0_0_20px_currentColor] relative z-10`} />
+          )}
+          
+          <h2 className={`text-3xl md:text-5xl font-black mb-2 uppercase tracking-widest text-center leading-tight relative z-10 ${celebration.isMutation ? 'text-amber-300 drop-shadow-[0_0_20px_rgba(252,211,77,0.8)]' : 'text-white'}`}>
             {celebration.name.includes('成就真仙') ? '渡劫成功' : celebration.name.includes('法寶') || celebration.name.includes('功法') ? '機緣出世' : '突破瓶頸'}
           </h2>
-          <p className="text-xl md:text-2xl text-emerald-400 font-light tracking-widest mb-8">【{celebration.name}】</p>
+          
+          <p className={`text-xl md:text-2xl font-light tracking-widest mb-8 relative z-10 ${celebration.rarity ? RARITY[celebration.rarity].color : 'text-emerald-400'} drop-shadow-md`}>
+            【{celebration.name}】
+          </p>
           
           {celebration.quote && (
-             <p className="text-lg md:text-xl text-white/80 italic font-bold max-w-2xl text-center mb-8 leading-relaxed">「{celebration.quote}」</p>
+             <p className="text-lg md:text-xl text-white/80 italic font-bold max-w-2xl text-center mb-8 leading-relaxed relative z-10">「{celebration.quote}」</p>
           )}
           
           {celebration.drops && celebration.drops.length > 0 && (
-             <div className="flex flex-col items-center gap-3 mt-4 bg-black/40 p-6 rounded-2xl border border-yellow-500/30 shadow-[0_0_30px_rgba(234,179,8,0.2)]">
-                <span className="text-xs text-yellow-500/70 uppercase tracking-[0.5em] mb-2 font-black">- 天道恩賜 -</span>
+             <div className="flex flex-col items-center gap-3 mt-4 bg-black/60 p-6 rounded-2xl border border-white/20 shadow-2xl relative z-10">
+                <span className="text-xs text-white/40 uppercase tracking-[0.5em] mb-2 font-black">- 天道恩賜 -</span>
                 {celebration.drops.map((d, i) => (
-                   <span key={i} className="text-lg md:text-xl text-yellow-400 font-black tracking-widest drop-shadow-md">{d}</span>
+                   <span key={i} className={`text-lg md:text-xl font-black tracking-widest drop-shadow-md ${celebration.rarity ? RARITY[celebration.rarity].color : 'text-yellow-400'}`}>{d}</span>
                 ))}
              </div>
           )}
           
-          <div className="mt-14 text-sm font-black text-white/30 animate-pulse tracking-widest uppercase">點擊虛空任意處繼續</div>
+          <div className="mt-14 text-sm font-black text-white/30 animate-pulse tracking-widest uppercase relative z-10">點擊虛空任意處繼續</div>
         </div>
       )}
 
@@ -2727,13 +2743,17 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                      {Object.entries(RARITY).map(([k, r]) => (<div key={k} className="flex flex-col items-center min-w-[80px] opacity-80"><span className={`text-xs font-black uppercase ${r.color} drop-shadow-md`}>{r.name}</span><span className="text-sm font-mono mt-2 text-white">{(r.weight*100).toFixed(1)}%</span></div>))}
                   </div>
                   
-                  {/* ✨ 雙軌制：按鈕判定更新 */}
+{/* ✨ 雙軌制：按鈕判定更新 */}
                   <button 
                     onClick={handleGacha} 
-                    disabled={((player.dailyGacha || 0) + (player.awardGacha || 0)) <= 0 && player.coins < gachaCost} 
-                    className="px-8 md:px-20 py-6 md:py-8 bg-white/15 hover:bg-white text-white hover:text-black font-black rounded-2xl shadow-2xl transition-all whitespace-nowrap border border-white/30 disabled:opacity-30 flex items-center justify-center gap-4 mx-auto text-base md:text-lg"
+                    disabled={isGachaPulling || (((player.dailyGacha || 0) + (player.awardGacha || 0)) <= 0 && player.coins < gachaCost)} 
+                    className={`px-8 md:px-20 py-6 md:py-8 font-black rounded-2xl shadow-2xl transition-all whitespace-nowrap border flex items-center justify-center gap-4 mx-auto text-base md:text-lg ${isGachaPulling ? 'bg-amber-900/80 text-amber-200 border-amber-500/80 animate-pulse scale-105' : 'bg-white/15 hover:bg-white text-white hover:text-black border-white/30 disabled:opacity-30'}`}
                   >
-                    <Sparkles size={24}/> {((player.dailyGacha || 0) + (player.awardGacha || 0)) > 0 ? '免費保底尋寶' : `尋寶 (${formatNumber(gachaCost)} 靈石)`}
+                    {isGachaPulling ? (
+                        <><RefreshCw className="animate-spin" size={24}/> 天機推演中...</>
+                    ) : (
+                        <><Sparkles size={24}/> {((player.dailyGacha || 0) + (player.awardGacha || 0)) > 0 ? '免費保底尋寶' : `尋寶 (${formatNumber(gachaCost)} 靈石)`}</>
+                    )}
                   </button>
                 </div>
               </div>
