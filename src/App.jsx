@@ -1608,8 +1608,7 @@ const handleComplete = (usedPill = false) => {
             collectedDrops.push(`🐾 啼魂獸：恢復 ${formatNumber(petHeal)} 氣血`);
         }
 
-        const basePillRate = 0.10 * (focusDuration / 3600); 
-        const finalPillRate = basePillRate * luckVal; 
+const finalPillRate = 0.10 * (focusDuration / 3600);
 
         if (Math.random() < finalPillRate) {
             nextPills += 1;
