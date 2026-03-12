@@ -3036,7 +3036,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                   <div className={`p-8 rounded-2xl border min-h-[16rem] flex flex-col justify-between group transition-all ${player.epiphanyPills > 0 ? 'bg-orange-950/40 border-orange-500/40 shadow-xl shadow-orange-900/20' : 'bg-white/10 border-white/20'}`}>
                     <div>
                       <h3 className={`font-black text-xl md:text-2xl tracking-tighter uppercase flex items-center gap-3 whitespace-nowrap ${player.epiphanyPills > 0 ? 'text-orange-400' : 'text-white'}`}>
-                        <Pill size={24} className="flex-shrink-0"/> 頓悟丹 {player.epiphanyPills > 0 ? `${player.epiphanyPills}枚` : '0枚'}
+                        <Pill size={24} className="flex-shrink-0"/> 頓悟丹 {player.epiphanyPills > 0 ? `${player.epiphanyPills} 枚` : '0 枚'}
                       </h3>
                       <p className={`text-sm mt-3 italic tracking-widest leading-relaxed ${player.epiphanyPills > 0 ? 'text-white/70' : 'text-white/60'}`}>
                         點按可直接發動一次 25m 的蓄力攻擊。
