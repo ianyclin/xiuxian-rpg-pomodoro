@@ -12,6 +12,7 @@ import { getDatabase, ref, onValue, update, increment } from 'firebase/database'
 const firebaseConfig = {
   apiKey: "AIzaSyDamtpmaAYF0NSIGWbvcSzQ9EW3QkDI8-w",
   authDomain: "xiuxian-rpg-pomodoro.firebaseapp.com",
+  databaseURL: "https://xiuxian-rpg-pomodoro-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "xiuxian-rpg-pomodoro",
   storageBucket: "xiuxian-rpg-pomodoro.firebasestorage.app",
   messagingSenderId: "14248923269",
