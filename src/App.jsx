@@ -2084,7 +2084,6 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
       };
 
 // START PATCH [5. 靈獸 UI 狀態與升級邏輯]
-  const [treasureTab, setTreasureTab] = useState('arts');
   
   // 屬性名稱轉譯器
   const getStatName = (k) => ({stone:'靈石掉落',qi:'修為獲取',hp:'氣血上限',def:'全域減傷',evade:'閃避率',crit:'爆擊率',sense_def:'神識減傷',revive:'復活率',streak_cap:'連擊上限',streak_eff:'連擊效率',atk:'總戰力',crit_dmg:'爆擊傷害'}[k] || k);
