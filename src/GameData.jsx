@@ -240,7 +240,7 @@ export const CHANGELOG_DATA = [
     changes: [
       "實裝【妖獸反撲】：專注結束未擊殺妖獸，將面臨致命反擊（20% 觸發大招）。",
       "實裝【涅槃重生】：氣血上限歸零時的最後保命手段，新增「高階替身符」與「三轉重元功」。",
-      "修復【法寶護主】：連擊護盾現可強制鎖血 10% 擋下妖獸致死打擊。"
+      "修復【法寶護主】：護盾現可強制鎖血 10% 擋下妖獸致死打擊。"
     ]
   },
   {
@@ -441,7 +441,7 @@ export const ARTIFACT_POOL = [
   { id: 'a_e02', rarity: 'EPIC', name: '風雷翅 🦅', desc: '雷鵬之翼煉製古寶 (連擊效率 +50%，閃避率 +12%)', val: { streak_eff: 0.50, evade: 0.12 } },
   { id: 'a_e03', rarity: 'EPIC', name: '紫羅極火 🎆', desc: '極寒之焰 (戰力 +40%，爆擊傷害 +60%)', val: { atk: 0.40, crit_dmg: 0.60 } },
   { id: 'a_e04', rarity: 'EPIC', name: '嗜血幡 🚩', desc: '吸血魔器 (戰力 +30%，吸血率 +10%)', val: { atk: 0.30, lifesteal: 0.10 } },
-  { id: 'a_e05', rarity: 'EPIC', name: '狼首玉如意 🐺', desc: '召喚銀狼古寶 (氣血上限 +40%，連擊護盾 +1)', val: { hp: 0.40, streak_shield: 1.0 } },
+  { id: 'a_e05', rarity: 'EPIC', name: '狼首玉如意 🐺', desc: '召喚銀狼古寶 (氣血上限 +40%，護盾 +1)', val: { hp: 0.40, streak_shield: 1.0 } },
   { id: 'a_e06', rarity: 'EPIC', name: '五色珠 🌈', desc: '五行相生 (修為獲取 +30%，靈石掉落 +30%)', val: { qi: 0.30, stone: 0.30 } },
   { id: 'a_e07', rarity: 'EPIC', name: '銅錢古寶 🪙', desc: '落寶金錢 (氣運保底 +0.4，靈石掉落 +50%)', val: { luck_floor: 0.40, stone: 0.50 } },
   { id: 'a_e08', rarity: 'EPIC', name: '魔髓鑽 💎', desc: '破防極致 (爆擊傷害 +80%，無視防禦)', val: { crit_dmg: 0.80 } },
@@ -453,7 +453,7 @@ export const ARTIFACT_POOL = [
   // --- LEGENDARY (通天靈寶：靈界級別的頂尖寶物) ---
   { id: 'a_l01', rarity: 'LEGENDARY', name: '八靈尺 📏', desc: '空間封鎖靈寶 (連擊上限 +80%，閃避率 +18%)', val: { streak_cap: 0.80, evade: 0.18 } },
   { id: 'a_l02', rarity: 'LEGENDARY', name: '青竹蜂雲劍 🎋', desc: '本命劍陣核心 (戰力 +80%，連擊效率 +80%)', val: { atk: 0.80, streak_eff: 0.80 }, tags: ['sword'] },
-  { id: 'a_l03', rarity: 'LEGENDARY', name: '大衍神君傀儡 🤖', desc: '元嬰後期戰力 (氣血上限 +120%，連擊護盾 +2)', val: { hp: 1.20, streak_shield: 2.0 } }, 
+  { id: 'a_l03', rarity: 'LEGENDARY', name: '大衍神君傀儡 🤖', desc: '元嬰後期戰力 (氣血上限 +120%，護盾 +2)', val: { hp: 1.20, streak_shield: 2.0 } }, 
   { id: 'a_l04', rarity: 'LEGENDARY', name: '黑風旗 🏴', desc: '空間法則靈寶 (閃避率 +20%，防禦減傷 +40%)', val: { evade: 0.20, def: 0.40 } },
   { id: 'a_l05', rarity: 'LEGENDARY', name: '三焰扇 🪭', desc: '仿製靈寶 (戰力 +90%，爆擊傷害 +100%)', val: { atk: 0.90, crit_dmg: 1.00 } },
   { id: 'a_l06', rarity: 'LEGENDARY', name: '萬妖幡 👹', desc: '萬妖聽令 (氣血上限 +100%，吸血率 +15%)', val: { hp: 1.00, lifesteal: 0.15 } },
@@ -466,7 +466,7 @@ export const ARTIFACT_POOL = [
   { id: 'a_m02', rarity: 'MYTHIC', name: '元磁神山 ⛰️', desc: '五行重力場 (戰力 +150%，防禦減傷 +150%)', val: { atk: 1.50, def: 1.50 } },
   { id: 'a_m03', rarity: 'MYTHIC', name: '玄天化道匣 🕋', desc: '玄天之寶 (戰力 +180%，氣運保底 +0.8)', val: { atk: 1.80, luck_floor: 0.8 } },
   { id: 'a_m04', rarity: 'MYTHIC', name: '玄天如意刃 💫', desc: '空間切割 (連擊上限 +150%，爆擊傷害 +150%)', val: { streak_cap: 1.50, crit_dmg: 1.50 }, tags: ['sword'] },
-  { id: 'a_m05', rarity: 'MYTHIC', name: '萬靈血璽 💮', desc: '仙界謫仙之寶 (戰力 +250%，復活機率 +15%，連擊護盾 +3)', val: { atk: 2.50, revive: 0.15, streak_shield: 3.0 } },
+  { id: 'a_m05', rarity: 'MYTHIC', name: '萬靈血璽 💮', desc: '仙界謫仙之寶 (戰力 +250%，復活機率 +15%，護盾 +3)', val: { atk: 2.50, revive: 0.15, streak_shield: 3.0 } },
 
   // --- DIVINE (造化至寶：超越法則的存在) ---
   { id: 'a_d01', rarity: 'DIVINE', name: '掌天瓶 🍶', desc: '奪天地造化催熟靈草 (修為獲取 +500%，靈石掉落 +300%)', val: { qi: 5.00, stone: 3.00 } },
@@ -494,7 +494,7 @@ export const SECRET_BOOKS = [
   { id: 's_17', rarity: 'UNCOMMON', name: '🌙 玄陰經', desc: '捨棄防禦。爆擊率 +5%，防禦減傷 -3%/級', val: { crit: 0.05, def: -0.03 } },
   { id: 's_18', rarity: 'RARE', name: '🩸 血靈大法', desc: '魔道吸血。吸血率 +3%，爆擊傷害 +20%/級', val: { lifesteal: 0.03, crit_dmg: 0.20 } },
   { id: 's_19', rarity: 'EPIC', name: '🧱 托天魔功', desc: '肉身成聖。防禦減傷 +12%，氣血上限 +10%/級', val: { def: 0.12, hp: 0.10 } },
-  { id: 's_20', rarity: 'MYTHIC', name: '🧿 化劫大法', desc: '天道護主。滿級賦予 1 層連擊護盾，復活機率 +2%/級', val: { streak_shield: 0.20, revive: 0.02 } }
+  { id: 's_20', rarity: 'MYTHIC', name: '🧿 化劫大法', desc: '天道護主。滿級賦予 1 層護盾，復活機率 +2%/級', val: { streak_shield: 0.20, revive: 0.02 } }
 ];
 
 export const PET_POOL = [
