@@ -478,26 +478,26 @@ export const ARTIFACT_POOL = [
 ];
 
 export const SECRET_BOOKS = [
-  { id: 's_01', rarity: 'UNCOMMON', name: '羅煙步', desc: '閃避靈壓。閃避率 +8%/級', val: { evade: 0.08 } },
-  { id: 's_02', rarity: 'RARE', name: '血靈鑽', desc: '爆擊加成。爆擊傷害 +40%/級', val: { crit_dmg: 0.40 } },
-  { id: 's_03', rarity: 'RARE', name: '大衍決', desc: '神識預判。連擊效率 +15%，反噬減傷 +15%/級', val: { streak_eff: 0.15, sense_def: 0.15 } },
-  { id: 's_04', rarity: 'EPIC', name: '大庚劍陣', desc: '無堅不摧。戰力 +30%，連擊上限 +30%/級', val: { atk: 0.30, streak_cap: 0.30 } },
-  { id: 's_14', rarity: 'EPIC', name: '三轉重元功', desc: '散功重修，法力精純。復活機率 +3%/級', val: { revive: 0.03 } },
-  { id: 's_05', rarity: 'LEGENDARY', name: '元磁神光', desc: '克制五行。戰力 +20%，防禦減傷 +20%/級', val: { atk: 0.20, def: 0.20 } },
-  { id: 's_06', rarity: 'MYTHIC', name: '梵聖真魔功', desc: '法相金身。戰力 +50%，防禦減傷 +10%/級', val: { atk: 0.50, def: 0.10 } },
-  { id: 's_07', rarity: 'RARE', name: '辟邪神雷', desc: '至陽之雷。爆擊率 +10%，爆擊傷害 +30%/級', val: { crit: 0.10, crit_dmg: 0.30 } },
-  { id: 's_08', rarity: 'EPIC', name: '搜魂術', desc: '抽取記憶。修為獲取 +20%/級', val: { qi: 0.20 } },
-  { id: 's_09', rarity: 'UNCOMMON', name: '枯木逢春訣', desc: '生生不息。打坐回血 +5%/級', val: { heal_bonus: 0.05 } },
-  { id: 's_10', rarity: 'LEGENDARY', name: '驚蟄十二變', desc: '變身真靈。氣血上限 +35%，吸血率 +2%/級', val: { hp: 0.35, lifesteal: 0.02 } },
-  { id: 's_11', rarity: 'DIVINE', name: '涅槃金身', desc: '不死不滅。復活機率 +8%/級', val: { revive: 0.08 } },
-  { id: 's_12', rarity: 'RARE', name: '百脈煉寶訣', desc: '肉身融寶。洞府成本 -5%/級', val: { forge_discount: 0.05 } },
-  { id: 's_13', rarity: 'EPIC', name: '明清靈目', desc: '看破虛妄。氣運保底 +0.1/級', val: { luck_floor: 0.10 } },
-  { id: 's_15', rarity: 'EPIC', name: '劍影分光術', desc: '極限劍修。戰力 +15%，連擊效率 +15%/級', val: { atk: 0.15, streak_eff: 0.15 } },
-  { id: 's_16', rarity: 'LEGENDARY', name: '疾風九變', desc: '極致身法。閃避率 +6%，連擊上限 +20%/級', val: { evade: 0.06, streak_cap: 0.20 } },
-  { id: 's_17', rarity: 'UNCOMMON', name: '玄陰經', desc: '捨棄防禦。爆擊率 +5%，防禦減傷 -3%/級', val: { crit: 0.05, def: -0.03 } },
-  { id: 's_18', rarity: 'RARE', name: '血靈大法', desc: '魔道吸血。吸血率 +3%，爆擊傷害 +20%/級', val: { lifesteal: 0.03, crit_dmg: 0.20 } },
-  { id: 's_19', rarity: 'EPIC', name: '托天魔功', desc: '肉身成聖。防禦減傷 +12%，氣血上限 +10%/級', val: { def: 0.12, hp: 0.10 } },
-  { id: 's_20', rarity: 'MYTHIC', name: '化劫大法', desc: '天道護主。滿級賦予 1 層連擊護盾，復活機率 +2%/級', val: { streak_shield: 0.20, revive: 0.02 } }
+  { id: 's_01', rarity: 'UNCOMMON', name: '💨 羅煙步', desc: '閃避靈壓。閃避率 +8%/級', val: { evade: 0.08 } },
+  { id: 's_02', rarity: 'RARE', name: '⚡ 血靈鑽', desc: '爆擊加成。爆擊傷害 +40%/級', val: { crit_dmg: 0.40 } },
+  { id: 's_03', rarity: 'RARE', name: '🧠 大衍決', desc: '神識預判。連擊效率 +15%，反噬減傷 +15%/級', val: { streak_eff: 0.15, sense_def: 0.15 } },
+  { id: 's_04', rarity: 'EPIC', name: '⚔️ 大庚劍陣', desc: '無堅不摧。戰力 +30%，連擊上限 +30%/級', val: { atk: 0.30, streak_cap: 0.30 } },
+  { id: 's_14', rarity: 'EPIC', name: '🌀 三轉重元功', desc: '散功重修，法力精純。復活機率 +3%/級', val: { revive: 0.03 } },
+  { id: 's_05', rarity: 'LEGENDARY', name: '⚖️ 元磁神光', desc: '克制五行。戰力 +20%，防禦減傷 +20%/級', val: { atk: 0.20, def: 0.20 } },
+  { id: 's_06', rarity: 'MYTHIC', name: '👹 梵聖真魔功', desc: '法相金身。戰力 +50%，防禦減傷 +10%/級', val: { atk: 0.50, def: 0.10 } },
+  { id: 's_07', rarity: 'RARE', name: '🌩️ 辟邪神雷', desc: '至陽之雷。爆擊率 +10%，爆擊傷害 +30%/級', val: { crit: 0.10, crit_dmg: 0.30 } },
+  { id: 's_08', rarity: 'EPIC', name: '👁️ 搜魂術', desc: '抽取記憶。修為獲取 +20%/級', val: { qi: 0.20 } },
+  { id: 's_09', rarity: 'UNCOMMON', name: '🌿 枯木逢春訣', desc: '生生不息。打坐回血 +5%/級', val: { heal_bonus: 0.05 } },
+  { id: 's_10', rarity: 'LEGENDARY', name: '🐲 驚蟄十二變', desc: '變身真靈。氣血上限 +35%，吸血率 +2%/級', val: { hp: 0.35, lifesteal: 0.02 } },
+  { id: 's_11', rarity: 'DIVINE', name: '🕉️ 涅槃金身', desc: '不死不滅。復活機率 +8%/級', val: { revive: 0.08 } },
+  { id: 's_12', rarity: 'RARE', name: '⚒️ 百脈煉寶訣', desc: '肉身融寶。洞府成本 -5%/級', val: { forge_discount: 0.05 } },
+  { id: 's_13', rarity: 'EPIC', name: '✨ 明清靈目', desc: '看破虛妄。氣運保底 +0.1/級', val: { luck_floor: 0.10 } },
+  { id: 's_15', rarity: 'EPIC', name: '🗡️ 劍影分光術', desc: '極限劍修。戰力 +15%，連擊效率 +15%/級', val: { atk: 0.15, streak_eff: 0.15 } },
+  { id: 's_16', rarity: 'LEGENDARY', name: '🪁 疾風九變', desc: '極致身法。閃避率 +6%，連擊上限 +20%/級', val: { evade: 0.06, streak_cap: 0.20 } },
+  { id: 's_17', rarity: 'UNCOMMON', name: '🌙 玄陰經', desc: '捨棄防禦。爆擊率 +5%，防禦減傷 -3%/級', val: { crit: 0.05, def: -0.03 } },
+  { id: 's_18', rarity: 'RARE', name: '🩸 血靈大法', desc: '魔道吸血。吸血率 +3%，爆擊傷害 +20%/級', val: { lifesteal: 0.03, crit_dmg: 0.20 } },
+  { id: 's_19', rarity: 'EPIC', name: '🧱 托天魔功', desc: '肉身成聖。防禦減傷 +12%，氣血上限 +10%/級', val: { def: 0.12, hp: 0.10 } },
+  { id: 's_20', rarity: 'MYTHIC', name: '🧿 化劫大法', desc: '天道護主。滿級賦予 1 層連擊護盾，復活機率 +2%/級', val: { streak_shield: 0.20, revive: 0.02 } }
 ];
 
 export const PET_POOL = [
@@ -546,10 +546,34 @@ export const PET_POOL = [
 ];
 
 export const BASIC_SKILLS = [
-  { id: 'b_qi', name: '長春功', desc: '修為獲取 +10%/級', val: { qi: 0.1 }, maxLvl: 20 },
-  { id: 'b_atk', name: '青元劍訣', desc: '戰力 +10%/級', val: { atk: 0.1 }, maxLvl: 20 },
-  { id: 'b_hp', name: '明王訣', desc: '氣血上限 +10%/級', val: { hp: 0.1 }, maxLvl: 20 },
-  { id: 'b_stone', name: '天眼術', desc: '靈石掉落 +15%/級', val: { stone: 0.15 }, maxLvl: 20 },
+  { 
+    id: 'b_qi', 
+    name: '🧘 長春功', 
+    desc: '修為獲取 +10%/級', 
+    val: { qi: 0.1 }, 
+    maxLvl: 20 
+  },
+  { 
+    id: 'b_atk', 
+    name: '⚔️ 青元劍訣', 
+    desc: '戰力 +10%/級', 
+    val: { atk: 0.1 }, 
+    maxLvl: 20 
+  },
+  { 
+    id: 'b_hp', 
+    name: '🧱 明王訣', 
+    desc: '氣血上限 +10%/級', 
+    val: { hp: 0.1 }, 
+    maxLvl: 20 
+  },
+  { 
+    id: 'b_stone', 
+    name: '🪙 天眼術', 
+    desc: '靈石掉落 +15%/級', 
+    val: { stone: 0.15 }, 
+    maxLvl: 20 
+  },
 ];
 
 export const RARITY_BASE_COST = { COMMON: 1000, UNCOMMON: 5000, RARE: 25000, EPIC: 100000, LEGENDARY: 500000, MYTHIC: 2500000, DIVINE: 10000000 };
