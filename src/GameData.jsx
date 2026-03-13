@@ -369,9 +369,6 @@ export const GUIDE_REALMS = [
   { name: '渡劫期', desc: '引動九九重雷劫，成則羽化登仙，敗則化為劫灰。', range: 'Tier 34' }
 ];
 
-// ==========================================
-// 萬寶錄 擴編 (全 Emoji 顯化 + 屬性詞彙標準化)
-// ==========================================
 export const ARTIFACT_POOL = [
   // --- COMMON (凡品：凡人兵刃、低階殘次法器) ---
   { id: 'a_c01', rarity: 'COMMON', name: '鐵木盾 🛡️', desc: '低階法器 (防禦減傷 +5%)', val: { def: 0.05 } },
@@ -546,34 +543,10 @@ export const PET_POOL = [
 ];
 
 export const BASIC_SKILLS = [
-  { 
-    id: 'b_qi', 
-    name: '🧘 長春功', 
-    desc: '修為獲取 +10%/級', 
-    val: { qi: 0.1 }, 
-    maxLvl: 20 
-  },
-  { 
-    id: 'b_atk', 
-    name: '⚔️ 青元劍訣', 
-    desc: '戰力 +10%/級', 
-    val: { atk: 0.1 }, 
-    maxLvl: 20 
-  },
-  { 
-    id: 'b_hp', 
-    name: '🧱 明王訣', 
-    desc: '氣血上限 +10%/級', 
-    val: { hp: 0.1 }, 
-    maxLvl: 20 
-  },
-  { 
-    id: 'b_stone', 
-    name: '🪙 天眼術', 
-    desc: '靈石掉落 +15%/級', 
-    val: { stone: 0.15 }, 
-    maxLvl: 20 
-  },
+  { id: 'b_qi', name: '🧘 長春功', desc: '修為獲取 +10%/級', val: { qi: 0.1 }, maxLvl: 20 },
+  { id: 'b_atk', name: '⚔️ 青元劍訣', desc: '戰力 +10%/級', val: { atk: 0.1 }, maxLvl: 20 },
+  { id: 'b_hp', name: '🧱 明王訣', desc: '氣血上限 +10%/級', val: { hp: 0.1 }, maxLvl: 20 },
+  { id: 'b_stone', name: '🪙 天眼術', desc: '靈石掉落 +15%/級', val: { stone: 0.15 }, maxLvl: 20 },
 ];
 
 export const RARITY_BASE_COST = { COMMON: 1000, UNCOMMON: 5000, RARE: 25000, EPIC: 100000, LEGENDARY: 500000, MYTHIC: 2500000, DIVINE: 10000000 };
@@ -593,7 +566,7 @@ export const TITLE_DATA = [
   { id: 't_art_3', cat: 'artifact', req: 75, tier: 3, name: '多寶天尊', desc: '「玄天之寶、造化至寶盡入你手，此界天道法則已被你徹底顛覆。」', buffDesc: '連擊上限 +150%，氣運保底 +0.8', val: { streak_cap: 1.50, luck_floor: 0.80 } },
   { id: 't_sec_1', cat: 'secret', req: 4, tier: 1, name: '博覽群書', desc: '「藏經閣內的玉簡被你翻了個遍，對各派功法皆有涉獵。」', buffDesc: '反噬減傷 +10%', val: { sense_def: 0.10 } },
   { id: 't_sec_2', cat: 'secret', req: 9, tier: 2, name: '法體雙修', desc: '「功法龐雜卻互不衝突，靈力與肉身皆臻至化境，實力遠超同階修士。」', buffDesc: '氣血上限 +20%，反噬減傷 +15%', val: { hp: 0.20, sense_def: 0.15 } },
-  { id: 't_sec_3', cat: 'secret', req: 13, tier: 3, name: '萬法歸一', desc: '「天下萬般神仙妙法，在你眼中皆如掌上觀紋，直指大道本源。」', buffDesc: '氣血上限 +50%，防禦減傷 +30%，反噬減傷 +30%', val: { hp: 0.50, def: 0.30, sense_def: 0.30 } },
+  { id: 't_sec_3', cat: 'secret', req: 13, tier: 3, name: '萬法歸一', desc: '「天下萬般神仙妙法，在你眼中皆如掌上觀紋，直指大道本源。」', buffDesc: '氣血上限 +50%，反噬減傷 +30%，防禦減傷 +30%', val: { hp: 0.50, sense_def: 0.30, def: 0.30 } },
   { id: 't_max_1', cat: 'max', req: 1, tier: 1, name: '爐火純青', desc: '「將一門功法推演至極致，便足以在修仙界立足。」', buffDesc: '連擊效率 +15%', val: { streak_eff: 0.15 } },
   { id: 't_max_2', cat: 'max', req: 4, tier: 2, name: '大衍傳人', desc: '「將數門頂級功法推演至極限，即便是大衍神君在世，也要讚你一聲奇才。」', buffDesc: '連擊效率 +40%，戰力 +20%', val: { streak_eff: 0.40, atk: 0.20 } },
   { id: 't_max_3', cat: 'max', req: 10, tier: 3, name: '開宗立派', desc: '「你對大道的理解已超越創造這些功法的前人，隨手一指便可為一界之尊。」', buffDesc: '連擊效率 +100%，戰力/氣血上限/靈石掉落/修為獲取 +30%', val: { streak_eff: 1.00, atk: 0.30, hp: 0.30, stone: 0.30, qi: 0.30 } }
