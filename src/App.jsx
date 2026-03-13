@@ -1164,11 +1164,11 @@ if (result.drop) {
         } else if (fRoll < 98) {
             if (Math.random() < 0.5) {
                 nextBaseCombat += 5;
-                fortuneLog = ` ⚡ 【天雷淬體】肉身脫胎換骨，永久基礎戰力 +5！`;
-                collectedDrops.push(`⚡ 淬體：基礎戰力 +5`);
+                fortuneLog = ` ⚡ 【天雷淬體】肉身脫胎換骨，戰力 +5！`;
+                collectedDrops.push(`⚡ 淬體：戰力 +5`);
             } else {
                 nextBaseMaxVitality += 5;
-                fortuneLog = ` ⚡ 【天雷淬體】經脈拓寬，永久氣血上限 +5！`;
+                fortuneLog = ` ⚡ 【天雷淬體】經脈拓寬，氣血上限 +5！`;
                 collectedDrops.push(`⚡ 淬體：氣血上限 +5`);
             }
         } else {
@@ -1500,8 +1500,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
 // START PATCH [5. 靈獸 UI 狀態與升級邏輯]
   
   // 屬性名稱轉譯器
-  const getStatName = (k) => ({stone:'靈石掉落',qi:'修為獲取',hp:'氣血上限',def:'全域減傷',evade:'閃避率',crit:'爆擊率',sense_def:'神識減傷',revive:'復活率',streak_cap:'連擊上限',streak_eff:'連擊效率',atk:'總戰力',crit_dmg:'爆擊傷害'}[k] || k);
-
+const getStatName = (k) => ({stone:'靈石掉落',qi:'修為獲取',hp:'氣血上限',def:'防禦減傷',evade:'閃避率',crit:'爆擊率',sense_def:'反噬減傷',revive:'復活機率',streak_cap:'連擊上限',streak_eff:'連擊效率',atk:'戰力',crit_dmg:'爆擊傷害'}[k] || k);
   const handleUpgradePet = (id) => {
     const pet = PET_POOL.find(p => p.id === id);
     const petInfo = player.pets[id];
@@ -1847,7 +1846,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                      {/* 原本的 Tips 接續在下方 */}
                      <section className="bg-white/5 p-5 rounded-xl border-l-4 border-purple-500 flex flex-col gap-2 shadow-inner mt-6">
                        <h3 className="text-purple-400 text-base flex items-center gap-2 font-black"><Activity size={18}/> 屬性溢出與劍陣 (流派構築)</h3>
-                       <p className="text-white/70 font-bold">閃避率超過 75% 轉化為「連擊上限」；爆擊率超過 95% 以 3 倍轉化為「爆傷」。此外，裝備 2 把以上名劍觸發共鳴：每多一把全戰力 <span className="text-emerald-400">+20%</span> (集齊10把可達 +200%)。</p>
+                       <p className="text-white/70 font-bold">閃避率超過 75% 轉化為「連擊上限」；爆擊率超過 95% 以 3 倍轉化為「爆擊傷害」。此外，裝備 2 把以上名劍觸發共鳴：每多一把戰力 <span className="text-emerald-400">+20%</span> (集齊10把可達 +200%)。</p>
                      </section>
                      <section className="bg-white/5 p-5 rounded-xl border-l-4 border-rose-500 flex flex-col gap-2 shadow-inner">
                        <h3 className="text-rose-400 text-base flex items-center gap-2 font-black"><AlertTriangle size={18}/> 高階博弈 (妖獸蓄力與反噬)</h3>
@@ -1859,7 +1858,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                      </section>
                      <section className="bg-white/5 p-5 rounded-xl border-l-4 border-yellow-500 flex flex-col gap-2 shadow-inner">
                        <h3 className="text-yellow-400 text-base flex items-center gap-2 font-black"><Compass size={18}/> 連鎖突變與投資學</h3>
-                       <p className="text-white/70 font-bold mb-2">前期靈石極缺，請優先升級「基礎戰力/氣血」與「陣法」，性價比最高。當你開始抽卡，若該階級圖鑑已滿，每次抽中將有 <span className="text-amber-400">20% 機率引發「突變」</span>躍升至下一階級！</p>
+                       <p className="text-white/70 font-bold mb-2">前期靈石極缺，請優先升級「戰力/氣血」與「陣法」，性價比最高。當你開始抽卡，若該階級圖鑑已滿，每次抽中將有 <span className="text-amber-400">20% 機率引發「突變」</span>躍升至下一階級！</p>
                        <div className="bg-black/40 p-3 rounded-lg border border-white/5 mt-2">
                          <span className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">萬寶樓品階排序：</span>
                          <span className="text-xs font-mono font-bold flex flex-wrap gap-1.5">
@@ -1917,17 +1916,17 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                 <div className="space-y-2">
                   <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><ChevronsUp size={14}/> 根基與倍率 (BASE & MULTIPLIERS)</h3>
                   {renderStatRow('原始戰力', 'base_atk', formatNumber(player.baseCombat), null, 'text-rose-200')}
-                  {renderStatRow('總戰力加成', 'atk', `x${getMultiplier('atk').toFixed(2)}`, null, 'text-rose-400')}
+                  {renderStatRow('戰力加成', 'atk', `x${getMultiplier('atk').toFixed(2)}`, null, 'text-rose-400')}
                   {renderStatRow('原始氣血上限', 'base_hp', formatNumber(player.baseMaxVitality), null, 'text-emerald-200')}
                   {renderStatRow('氣血上限加成', 'hp', `x${getMultiplier('hp').toFixed(2)}`, null, 'text-emerald-400')}
-                  {renderStatRow('靈氣獲取倍率', 'qi', `x${getMultiplier('qi').toFixed(2)}`, null, 'text-cyan-400')}
+                  {renderStatRow('修為獲取倍率', 'qi', `x${getMultiplier('qi').toFixed(2)}`, null, 'text-cyan-400')}
                   {renderStatRow('靈石掉落倍率', 'stone', `x${getMultiplier('stone').toFixed(2)}`, null, 'text-yellow-400')}
                 </div>
                 
                 {/* --- 戰鬥極限區 --- */}
                 <div className="space-y-2">
                   <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><Flame size={14}/> 戰鬥極限 (COMBAT CAPS)</h3>
-                  {renderStatRow('爆擊率', 'crit', `${(critRate * 100).toFixed(1)}%`, '(溢出>95% 轉爆傷)', 'text-purple-300')}
+                  {renderStatRow('爆擊率', 'crit', `${(critRate * 100).toFixed(1)}%`, '(溢出>95% 轉爆擊傷害)', 'text-purple-300')}
                   {renderStatRow('爆擊傷害', 'crit_dmg', `${(critDmg * 100).toFixed(0)}%`, '(極限 2000%)', 'text-purple-500')}
                   {renderStatRow('連擊增傷上限', 'streak_cap', `+${((streakCap - 0.5) * 100).toFixed(0)}%`, '(極限 +800%)', 'text-orange-300')}
                   {renderStatRow('連擊效率倍率', 'streak_eff', `x${streakEff.toFixed(2)}`, null, 'text-orange-500')}
@@ -1936,10 +1935,10 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                 {/* --- 生存防禦區 --- */}
                 <div className="space-y-2">
                   <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><Shield size={14}/> 生存防禦 (DEFENSE)</h3>
-                  {renderStatRow('閃避免傷率', 'evade', `${(evadeRate * 100).toFixed(1)}%`, '(溢出>75% 轉連擊)', 'text-teal-300')}
-                  {renderStatRow('涅槃復活率', 'revive', `${(reviveRate * 100).toFixed(1)}%`, '(極限 65%)', 'text-teal-500')}
-                  {renderStatRow('反噬承傷比例', 'def', `${dmgTakenPct.toFixed(1)}%`, '(由顛倒五行與防禦力計算)', 'text-blue-300')}
-                  {renderStatRow('神識感應減傷', 'sense_def', `${((Math.min(0.9, getMultiplier('sense_def') - 1)) * 100).toFixed(1)}%`, '(無視空間鎖定，極限 90%)', 'text-blue-500')}
+                  {renderStatRow('閃避率', 'evade', `${(evadeRate * 100).toFixed(1)}%`, '(溢出>75% 轉連擊)', 'text-teal-300')}
+                  {renderStatRow('復活機率', 'revive', `${(reviveRate * 100).toFixed(1)}%`, '(極限 65%)', 'text-teal-500')}
+                  {renderStatRow('防禦減傷比例', 'def', `${dmgTakenPct.toFixed(1)}%`, '(由顛倒五行與防禦力計算)', 'text-blue-300')}
+                  {renderStatRow('反噬減傷', 'sense_def', `${((Math.min(0.9, getMultiplier('sense_def') - 1)) * 100).toFixed(1)}%`, '(無視空間鎖定，極限 90%)', 'text-blue-500')}
                 </div>
 
                 {/* --- 機緣經濟區 --- */}
@@ -1947,8 +1946,8 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                   <h3 className="text-xs text-white/50 uppercase border-b border-white/10 pb-2 mb-4 font-mono tracking-widest flex items-center gap-2"><Compass size={14}/> 機緣經濟 (ECONOMY)</h3>
                   {renderStatRow('氣運保底倍率', 'luck_floor', `x${getMultiplier('luck_floor').toFixed(2)}`, '(乘算奇遇與抽獎)', 'text-amber-300')}
                   {renderStatRow('洞府成本折扣', 'forge_discount', `${(forgeDiscount * 100).toFixed(0)}%`, '(極限降至 10%)', 'text-amber-500')}
-                  {renderStatRow('真靈吸血比例', 'lifesteal', `${((getMultiplier('lifesteal') - 1) * 100).toFixed(1)}%`, '(爆擊時 30% 機率觸發)', 'text-pink-400')}
-                  {renderStatRow('休息回血比例', 'heal_bonus', `${(healPct * 100).toFixed(1)}%`, '(極限 80%)', 'text-emerald-300')}
+                  {renderStatRow('吸血率', 'lifesteal', `${((getMultiplier('lifesteal') - 1) * 100).toFixed(1)}%`, '(爆擊時 30% 機率觸發)', 'text-pink-400')}
+                  {renderStatRow('打坐回血', 'heal_bonus', `${(healPct * 100).toFixed(1)}%`, '(極限 80%)', 'text-emerald-300')}
                 </div>
 
               </div>
@@ -2091,7 +2090,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
             <div className="space-y-3 relative z-10">
                 <div className="flex justify-between text-xs uppercase font-black opacity-60 tracking-widest text-white">
-                    <span className="flex items-center gap-2">氣血真元</span>
+                    <span className="flex items-center gap-2">氣血</span>
                     <span>{formatNumber(player.vitality)} / {formatNumber(maxVitality)}</span>
                 </div>
                 <div className={`h-2.5 bg-black/60 rounded-full overflow-hidden shadow-inner transition-all duration-300 ${isHealing ? 'shadow-[0_0_15px_rgba(16,185,129,0.8)]' : ''}`}>
@@ -2345,11 +2344,11 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                     </button>
                   </div>
                   <div className="p-8 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 min-h-[16rem] flex flex-col justify-between group shadow-xl shadow-emerald-900/20">
-                    <div><h3 className="text-emerald-400 font-black text-xl md:text-2xl tracking-tighter uppercase flex items-center gap-3 whitespace-nowrap"><Pill size={24} className="flex-shrink-0"/> 煉製回春丹</h3><p className="text-white/70 text-sm mt-3 italic tracking-widest leading-relaxed">恢復 50% 最大氣血。</p></div>
+                    <div><h3 className="text-emerald-400 font-black text-xl md:text-2xl tracking-tighter uppercase flex items-center gap-3 whitespace-nowrap"><Pill size={24} className="flex-shrink-0"/> 煉製回春丹</h3><p className="text-white/70 text-sm mt-3 italic tracking-widest leading-relaxed">恢復 50% 氣血。</p></div>
                     <button onClick={handleHeal} disabled={player.coins < healCost || player.vitality >= maxVitality} className="w-full py-5 bg-emerald-900/80 hover:bg-emerald-600 text-emerald-100 rounded-xl font-black uppercase text-sm transition-all disabled:opacity-40 border border-emerald-500/50 mt-6 whitespace-nowrap">{player.vitality >= maxVitality ? '氣血已滿' : `煉丹 (${formatNumber(healCost)} 靈石)`}</button>
                   </div>
                   <div className="p-8 rounded-2xl bg-white/10 border border-white/20 min-h-[16rem] flex flex-col justify-between group">
-                      <div><h3 className="text-white font-black text-xl md:text-2xl tracking-tighter uppercase whitespace-nowrap">凝練劍光</h3><p className="text-white/60 text-sm mt-3 italic tracking-widest">基礎戰力 +100。<br/>(花費指數提升，無極限)</p></div>
+                      <div><h3 className="text-white font-black text-xl md:text-2xl tracking-tighter uppercase whitespace-nowrap">凝練劍光</h3><p className="text-white/60 text-sm mt-3 italic tracking-widest">戰力 +100。<br/>(花費指數提升，無極限)</p></div>
                       <button onClick={() => { if(player.coins >= upgCostAtk) setPlayer(p => ({ ...p, coins: p.coins - upgCostAtk, baseCombat: p.baseCombat + 100 })) }} disabled={player.coins < upgCostAtk} className="w-full py-5 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl font-black uppercase text-sm tracking-widest shadow-xl transition-all disabled:opacity-30 mt-6 whitespace-nowrap">祭煉 ({formatNumber(upgCostAtk)} 靈石)</button>
                   </div>
                   <div className="p-8 rounded-2xl bg-white/10 border border-white/20 min-h-[16rem] flex flex-col justify-between group">
@@ -2362,7 +2361,7 @@ const renderStatRow = (title, type, displayValue, subtext, colorClass) => {
                    <h3 className="text-white/60 text-sm font-black uppercase border-b border-white/20 pb-4">陣法樞紐 (無上限)</h3>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                       <div className="bg-white/10 p-8 rounded-2xl border border-white/20 min-h-[14rem] flex flex-col justify-between shadow-inner"><div className="flex justify-between text-base text-white font-bold drop-shadow-md">聚靈大陣 <span className="opacity-60 font-mono">Lv.{player.arrays?.qi||0}</span></div><p className="text-sm opacity-70 italic mt-2">靈氣獲取提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayQiCost) setPlayer(p => ({ ...p, coins: p.coins - arrayQiCost, arrays: {...p.arrays, qi: (p.arrays?.qi||0)+1} })) }} disabled={player.coins < arrayQiCost} className="w-full py-4 mt-6 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">升級 ({formatNumber(arrayQiCost)} 靈石)</button></div>
-                      <div className="bg-white/10 p-8 rounded-2xl border border-white/20 min-h-[14rem] flex flex-col justify-between shadow-inner"><div className="flex justify-between text-base text-white font-bold drop-shadow-md">顛倒五行陣 <span className="opacity-60 font-mono">Lv.{player.arrays?.def||0}</span></div><p className="text-sm opacity-70 italic text-white mt-2">全域減傷提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-4 mt-6 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">升級 ({formatNumber(arrayDefCost)} 靈石)</button></div>
+                      <div className="bg-white/10 p-8 rounded-2xl border border-white/20 min-h-[14rem] flex flex-col justify-between shadow-inner"><div className="flex justify-between text-base text-white font-bold drop-shadow-md">顛倒五行陣 <span className="opacity-60 font-mono">Lv.{player.arrays?.def||0}</span></div><p className="text-sm opacity-70 italic text-white mt-2">防禦減傷提升 +5%/級</p><button onClick={() => { if(player.coins >= arrayDefCost) setPlayer(p => ({ ...p, coins: p.coins - arrayDefCost, arrays: {...p.arrays, def: (p.arrays?.def||0)+1} })) }} disabled={player.coins < arrayDefCost} className="w-full py-4 mt-6 bg-white/15 hover:bg-white text-white hover:text-black rounded-xl text-sm font-black border border-white/20 transition-all disabled:opacity-30">升級 ({formatNumber(arrayDefCost)} 靈石)</button></div>
                    </div>
                 </div>
 <div className="bg-gradient-to-br from-white/10 to-transparent p-8 md:p-14 rounded-2xl border border-white/20 text-center relative overflow-hidden mt-8">
