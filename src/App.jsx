@@ -802,7 +802,7 @@ const handleComplete = (usedPill = false) => {
       if (focusEndAudioRef.current) focusEndAudioRef.current.play().catch(() => {});
       setIsAttacking(true); setTimeout(() => setIsAttacking(false), 500);
 
-      try { update(ref(database, 'globalStats'), { totalFocusCount: increment(1) }); } catch (e) {}
+update(ref(database, 'globalStats'), { totalFocusCount: increment(1) }).catch(e => {}); // ✨ Firebase 非同步容錯
       
       let nextPills = player.epiphanyPills || 0;
       let nextLastPillTime = player.lastPillTime;
@@ -1024,20 +1024,24 @@ if (result.drop) {
 
         if (isBossDefeated) {
             if (isFinalBoss && !player.hasAscended) {
-                try { update(ref(database, 'globalStats'), { totalAscensions: increment(1) }); } catch(e) {}
-                nextHasAscended = true;
+update(ref(database, 'globalStats'), { totalAscensions: increment(1) }).catch(e => {}); // ✨ Firebase 非同步容錯
+              nextHasAscended = true;
                 addLog(`🌌 【破空飛升】恭賀道友位列仙班，成就真仙之位！`); 
                 killLog = ` 🌌 渡劫成功！` + killLog;
                 
                 const quoteMsg = FEEDBACK_TEXTS.boss[Math.floor(Math.random() * FEEDBACK_TEXTS.boss.length)];
                 setCelebration({ name: '飛升仙界！成就真仙！', quote: quoteMsg, drops: collectedDrops });
-            } else if (nextRealm < REALMS.length - 1) {
+} else if (nextRealm < REALMS.length - 1) {
                 nextRealm++;
                 nextQi -= nextQiToNext;
                 nextQiToNext = Math.floor(nextQiToNext * 1.35);
+                
+                // ✨ 突破死劫的「肉身重塑」 (Breakthrough Healing)
+                nextVitality = maxVitality; 
+                
                 if (!isUsingPill) nextHistory = [...nextHistory, { name: REALMS[nextRealm].name, time: nextTotalFocusTime }];
                 
-                addLog(`☄️ 【境界突破】恭喜道友成功斬滅死劫，晉升至「${REALMS[nextRealm].name}」！`);
+                addLog(`☄️ 【境界突破】晉升至「${REALMS[nextRealm].name}」！洗髓易經，氣血全滿！`);
 
                 const newCompanion = COMPANIONS.find(c => c.unlockIdx === nextRealm);
                 if (newCompanion) {
@@ -1387,6 +1391,25 @@ const toggleTimer = () => {
       setIsActive(true); 
       setTargetEndTime(endTime);
       addLog(mode === 'focus' ? `[運轉] 靈力蓄積中...` : `[調息] 閉目凝神，運功療傷。`); 
+      
+      // ✨ 破除 iOS 靜音結界 (Audio Priming Hack)
+      // 趁玩家手動點擊的瞬間，用 0 音量觸發播放並暫停，騙過 iOS 隱私權限
+      if (focusEndAudioRef.current) {
+          focusEndAudioRef.current.volume = 0;
+          focusEndAudioRef.current.play().then(() => {
+              focusEndAudioRef.current.pause();
+              focusEndAudioRef.current.currentTime = 0;
+              focusEndAudioRef.current.volume = 1; // 恢復正常音量留待結算時使用
+          }).catch(()=>{});
+      }
+      if (breakEndAudioRef.current) {
+          breakEndAudioRef.current.volume = 0;
+          breakEndAudioRef.current.play().then(() => {
+              breakEndAudioRef.current.pause();
+              breakEndAudioRef.current.currentTime = 0;
+              breakEndAudioRef.current.volume = 1;
+          }).catch(()=>{});
+      }
     } 
   };
 
