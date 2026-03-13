@@ -1360,13 +1360,13 @@ if (result.drop) {
         };
     });
 
-    // 🎊 顯化異象與日誌
+// 🎊 顯化異象與日誌
     if (result.drop) {
         const dropTypeName = result.drop.poolType === 'art' ? '法寶' : result.drop.poolType === 'book' ? '功法' : '靈寵';
         setCelebration({ 
           name: result.drop.name, 
           quote: '機緣已至，重寶出世！', 
-          drops: [`【${RARITY[result.finalRarity].name}級】${dropTypeName}`] 
+          drops: [`【${RARITY[result.finalRarity].name}】${dropTypeName}`] 
         });
         addLog(`[萬寶樓] ${result.log ? result.log + ' ' : ''}獲得【${RARITY[result.finalRarity].name}】${dropTypeName}「${result.drop.name}」！`);
     } else {
