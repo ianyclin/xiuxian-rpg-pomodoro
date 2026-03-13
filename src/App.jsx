@@ -644,8 +644,8 @@ const combatPrediction = useMemo(() => {
     }
     
     if (Math.random() < evadeRate) { 
-      showToast('focus', '💨 【羅煙閃避】成功閃避反噬！連擊不墜！');
-      addLog(`💨 【羅煙閃避】成功閃避反噬！連擊不墜！`); 
+      showToast('focus', '💨 【羅煙閃避】成功閃避反噬！連擊層數未斷！');
+      addLog(`💨 【羅煙閃避】成功閃避反噬！連擊層數未斷！`); 
     } else {
       setIsCollapsing(true); setTimeout(() => setIsCollapsing(false), 1000);
       
@@ -702,16 +702,16 @@ const combatPrediction = useMemo(() => {
               });
               
               nextStreak = 0;
-              addLog(`💀 【身死道消】反噬過重，氣血歸零，損失 20% 修為與連擊！`); 
-              showToast('danger', '💀 【身死道消】反噬過重！', [`損失 20% 修為與連擊數`]);
+              addLog(`💀 【身死道消】反噬過重，氣血歸零，損失 20% 修為並連擊歸零！`); 
+              showToast('danger', '💀 【身死道消】反噬過重！', [`損失 20% 修為並連擊歸零`]);
           }
       } else { 
           addLog(logMsg);
           if (nextStreak > 0) {
               if (nextShields > 0) {
                   nextShields -= 1;
-                  addLog(`🛡️ 【法寶護主】消耗 1 層護盾抵擋反噬，連擊未中斷！`);
-                  showToast('danger', '【強行收功】靈力反噬！', [`承受 ${formatNumber(penalty)} 傷害`, `🛡️ 護盾抵擋，連擊未斷`]);
+                  addLog(`🛡️ 【法寶護主】消耗 1 層護盾抵擋反噬，連擊層數未斷！`);
+                  showToast('danger', '【強行收功】靈力反噬！', [`承受 ${formatNumber(penalty)} 傷害`, `🛡️ 護盾抵擋，連擊層數未斷`]);
               } else {
                   nextStreak = 0;
                   addLog(`📉 靈壓潰散，連擊歸零。`);
@@ -1119,7 +1119,7 @@ if (result.drop) {
                         killLog = `💀 施展【${atkName}】${scaleLog}造成 ${formatNumber(actualDamage)} 傷害！氣血歸零！📉 【境界跌落】修為受損，死劫消散！需重新歷練。`;
                     } else {
                         nextMonsterHp = monster.maxHp; 
-                        killLog = `💀 施展【${atkName}】${scaleLog}造成 ${formatNumber(actualDamage)} 傷害！氣血歸零，損失 20% 修為與連擊！(妖獸趁機恢復了氣血)`;
+                        killLog = `💀 施展【${atkName}】${scaleLog}造成 ${formatNumber(actualDamage)} 傷害！氣血歸零，損失 20% 修為並連擊歸零！(妖獸趁機恢復了氣血)`;
                     }
                     showToast('danger', '💀 境界不穩，靈力崩潰！', [`承受致命反撲，損失 20% 修為`]);
                 }
