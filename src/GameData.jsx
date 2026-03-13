@@ -316,7 +316,7 @@ export const GUIDE_REALMS = [
 // ==========================================
 // 萬寶錄 擴編 (全 Emoji 顯化 + 屬性詞彙標準化)
 // ==========================================
-export export const ARTIFACT_POOL = [
+export const ARTIFACT_POOL = [
   // --- COMMON (凡品：凡人兵刃、低階殘次法器) ---
   { id: 'a_c01', rarity: 'COMMON', name: '鐵木盾 🛡️', desc: '低階法器 (防禦減傷 +5%)', val: { def: 0.05 } },
   { id: 'a_c02', rarity: 'COMMON', name: '青銅戈 🔱', desc: '凡俗兵刃 (戰力 +5%)', val: { atk: 0.05 } },
