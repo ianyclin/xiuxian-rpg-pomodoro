@@ -219,6 +219,62 @@ export const CHANGELOG_DATA = [
       "實裝【禪定模式】：一旦開始運轉周天，所有與當前專注無關的境界、法寶、狀態將全數隱藏。",
       "優化【視覺置中】：螢幕將只剩下最純粹的計時器與陣眼，幫助道友心無旁騖地衝擊瓶頸。"
     ]
+  },
+  {
+    version: "v2.0.0",
+    date: "2026-02-15",
+    title: "紅顏道侶與玉簡傳功",
+    desc: "天地異變，仙途不再孤單；神識突破空間限制。",
+    changes: [
+      "新增【仙途伴侶】：結識原著 8 位紅顏知己，同行雙修獲得專屬增益。",
+      "新增【玉簡傳功】：支援跨裝置進度匯出與匯入 (Base64 防呆加密)。",
+      "優化【顛倒五行陣】：升級曲線平滑化 (1.35x)，文本描述精準化。",
+      "介面【仙影朦朧】：未解鎖道侶與法寶統一隱藏視覺，保留神祕感。"
+    ]
+  },
+  {
+    version: "v1.8.0",
+    date: "2026-01-20",
+    title: "妖獸反撲與生死大劫",
+    desc: "天道無情，修仙之路步步殺機。",
+    changes: [
+      "實裝【妖獸反撲】：專注結束未擊殺妖獸，將面臨致命反擊（20% 觸發大招）。",
+      "實裝【涅槃重生】：氣血上限歸零時的最後保命手段，新增「高階替身符」與「三轉重元功」。",
+      "修復【法寶護主】：連擊護盾現可強制鎖血 10% 擋下妖獸致死打擊。"
+    ]
+  },
+  {
+    version: "v1.5.0",
+    date: "2025-12-10",
+    title: "屬性極限與轉化法則",
+    desc: "修煉無止境，溢出之真元將化為更強的殺招。",
+    changes: [
+      "實裝【屬性溢出轉化】：閃避率溢出 (>75%) 轉連擊上限，爆擊率溢出 (>95%) 轉爆擊傷害。",
+      "新增【屬性極限報告】：可於選單查看所有底層乘區與極限數值。",
+      "實裝【劍陣共鳴】：裝備 2 把以上飛劍類法寶，獲得額外戰力與連擊加成。"
+    ]
+  },
+  {
+    version: "v1.2.0",
+    date: "2025-11-05",
+    title: "萬寶樓與機緣祕籍",
+    desc: "上古遺寶現世，氣運加身者得之。",
+    changes: [
+      "新增【萬寶樓抽獎】：消耗靈石掉落累積之財富，抽取凡品至造化至寶。",
+      "新增【功法祕籍】：14 種原著經典功法，消耗 SP 進行參悟升級。",
+      "新增【隨機氣運】：結算時有 10% 基礎機率觸發天降機緣與 7 大奇遇。"
+    ]
+  },
+  {
+    version: "v1.0.0",
+    date: "2025-09-01",
+    title: "天道初開 (Core System)",
+    desc: "凡人修仙專注法器正式運轉。",
+    changes: [
+      "核心【番茄鐘專注】機制上線，支援離線運算。",
+      "實裝【境界突破】系統，從一介凡人至九九重劫。",
+      "實裝【洞府淬煉】基礎升級與打坐調息恢復氣血上限功能。"
+    ]
   }
 ];
 
@@ -424,24 +480,24 @@ export const ARTIFACT_POOL = [
 export const SECRET_BOOKS = [
   { id: 's_01', rarity: 'UNCOMMON', name: '羅煙步', desc: '閃避靈壓。閃避率 +8%/級', val: { evade: 0.08 } },
   { id: 's_02', rarity: 'RARE', name: '血靈鑽', desc: '爆擊加成。爆擊傷害 +40%/級', val: { crit_dmg: 0.40 } },
-  { id: 's_03', rarity: 'RARE', name: '大衍決', desc: '神識預判。效率+15%，反噬基礎減傷+15%/級', val: { streak_eff: 0.15, sense_def: 0.15 } },
-  { id: 's_04', rarity: 'EPIC', name: '大庚劍陣', desc: '無堅不摧。戰力+30%，連擊上限+30%/級', val: { atk: 0.30, streak_cap: 0.30 } },
+  { id: 's_03', rarity: 'RARE', name: '大衍決', desc: '神識預判。連擊效率 +15%，反噬減傷 +15%/級', val: { streak_eff: 0.15, sense_def: 0.15 } },
+  { id: 's_04', rarity: 'EPIC', name: '大庚劍陣', desc: '無堅不摧。戰力 +30%，連擊上限 +30%/級', val: { atk: 0.30, streak_cap: 0.30 } },
   { id: 's_14', rarity: 'EPIC', name: '三轉重元功', desc: '散功重修，法力精純。復活機率 +3%/級', val: { revive: 0.03 } },
-  { id: 's_05', rarity: 'LEGENDARY', name: '元磁神光', desc: '克制五行。戰力與減傷 +20%/級', val: { atk: 0.20, def: 0.20 } },
-  { id: 's_06', rarity: 'MYTHIC', name: '梵聖真魔功', desc: '法相金身。戰力+50%，減傷+10%/級', val: { atk: 0.50, def: 0.10 } },
-  { id: 's_07', rarity: 'RARE', name: '辟邪神雷', desc: '至陽之雷。爆擊率+10%，爆傷+30%/級', val: { crit: 0.10, crit_dmg: 0.30 } },
-  { id: 's_08', rarity: 'EPIC', name: '搜魂術', desc: '抽取記憶。擊殺靈氣 +20%/級', val: { qi: 0.20 } },
-  { id: 's_09', rarity: 'UNCOMMON', name: '枯木逢春訣', desc: '生生不息。休息回血比例 +5%/級', val: { heal_bonus: 0.05 } },
-  { id: 's_10', rarity: 'LEGENDARY', name: '驚蟄十二變', desc: '變身真靈。氣血+35%，真靈吸血+2%/級', val: { hp: 0.35, lifesteal: 0.02 } },
+  { id: 's_05', rarity: 'LEGENDARY', name: '元磁神光', desc: '克制五行。戰力 +20%，防禦減傷 +20%/級', val: { atk: 0.20, def: 0.20 } },
+  { id: 's_06', rarity: 'MYTHIC', name: '梵聖真魔功', desc: '法相金身。戰力 +50%，防禦減傷 +10%/級', val: { atk: 0.50, def: 0.10 } },
+  { id: 's_07', rarity: 'RARE', name: '辟邪神雷', desc: '至陽之雷。爆擊率 +10%，爆擊傷害 +30%/級', val: { crit: 0.10, crit_dmg: 0.30 } },
+  { id: 's_08', rarity: 'EPIC', name: '搜魂術', desc: '抽取記憶。修為獲取 +20%/級', val: { qi: 0.20 } },
+  { id: 's_09', rarity: 'UNCOMMON', name: '枯木逢春訣', desc: '生生不息。打坐回血 +5%/級', val: { heal_bonus: 0.05 } },
+  { id: 's_10', rarity: 'LEGENDARY', name: '驚蟄十二變', desc: '變身真靈。氣血上限 +35%，吸血率 +2%/級', val: { hp: 0.35, lifesteal: 0.02 } },
   { id: 's_11', rarity: 'DIVINE', name: '涅槃金身', desc: '不死不滅。復活機率 +8%/級', val: { revive: 0.08 } },
   { id: 's_12', rarity: 'RARE', name: '百脈煉寶訣', desc: '肉身融寶。洞府成本 -5%/級', val: { forge_discount: 0.05 } },
   { id: 's_13', rarity: 'EPIC', name: '明清靈目', desc: '看破虛妄。氣運保底 +0.1/級', val: { luck_floor: 0.10 } },
-  { id: 's_15', rarity: 'EPIC', name: '劍影分光術', desc: '極限劍修。戰力+15%，連擊效率+15%/級', val: { atk: 0.15, streak_eff: 0.15 } },
-  { id: 's_16', rarity: 'LEGENDARY', name: '疾風九變', desc: '極致身法。閃避率+6%，連擊上限+20%/級', val: { evade: 0.06, streak_cap: 0.20 } },
-  { id: 's_17', rarity: 'UNCOMMON', name: '玄陰經', desc: '捨棄防禦。爆擊率+5%，防禦-3%/級', val: { crit: 0.05, def: -0.03 } },
-  { id: 's_18', rarity: 'RARE', name: '血靈大法', desc: '魔道吸血。吸血+3%，爆傷+20%/級', val: { lifesteal: 0.03, crit_dmg: 0.20 } },
-  { id: 's_19', rarity: 'EPIC', name: '托天魔功', desc: '肉身成聖。防禦+12%，氣血+10%/級', val: { def: 0.12, hp: 0.10 } },
-  { id: 's_20', rarity: 'MYTHIC', name: '化劫大法', desc: '天道護主。滿級賦予 1 層護盾，復活+2%/級', val: { streak_shield: 0.20, revive: 0.02 } }
+  { id: 's_15', rarity: 'EPIC', name: '劍影分光術', desc: '極限劍修。戰力 +15%，連擊效率 +15%/級', val: { atk: 0.15, streak_eff: 0.15 } },
+  { id: 's_16', rarity: 'LEGENDARY', name: '疾風九變', desc: '極致身法。閃避率 +6%，連擊上限 +20%/級', val: { evade: 0.06, streak_cap: 0.20 } },
+  { id: 's_17', rarity: 'UNCOMMON', name: '玄陰經', desc: '捨棄防禦。爆擊率 +5%，防禦減傷 -3%/級', val: { crit: 0.05, def: -0.03 } },
+  { id: 's_18', rarity: 'RARE', name: '血靈大法', desc: '魔道吸血。吸血率 +3%，爆擊傷害 +20%/級', val: { lifesteal: 0.03, crit_dmg: 0.20 } },
+  { id: 's_19', rarity: 'EPIC', name: '托天魔功', desc: '肉身成聖。防禦減傷 +12%，氣血上限 +10%/級', val: { def: 0.12, hp: 0.10 } },
+  { id: 's_20', rarity: 'MYTHIC', name: '化劫大法', desc: '天道護主。滿級賦予 1 層連擊護盾，復活機率 +2%/級', val: { streak_shield: 0.20, revive: 0.02 } }
 ];
 
 export const PET_POOL = [
@@ -490,39 +546,39 @@ export const PET_POOL = [
 ];
 
 export const BASIC_SKILLS = [
-  { id: 'b_qi', name: '長春功', desc: '基礎靈氣獲取提升 +10%/級', val: { qi: 0.1 }, maxLvl: 20 },
-  { id: 'b_atk', name: '青元劍訣', desc: '基礎戰鬥力提升 +10%/級', val: { atk: 0.1 }, maxLvl: 20 },
-  { id: 'b_hp', name: '明王訣', desc: '基礎氣血上限提升 +10%/級', val: { hp: 0.1 }, maxLvl: 20 },
-  { id: 'b_stone', name: '天眼術', desc: '任務靈石收益提升 +15%/級', val: { stone: 0.15 }, maxLvl: 20 },
+  { id: 'b_qi', name: '長春功', desc: '修為獲取 +10%/級', val: { qi: 0.1 }, maxLvl: 20 },
+  { id: 'b_atk', name: '青元劍訣', desc: '戰力 +10%/級', val: { atk: 0.1 }, maxLvl: 20 },
+  { id: 'b_hp', name: '明王訣', desc: '氣血上限 +10%/級', val: { hp: 0.1 }, maxLvl: 20 },
+  { id: 'b_stone', name: '天眼術', desc: '靈石掉落 +15%/級', val: { stone: 0.15 }, maxLvl: 20 },
 ];
 
 export const RARITY_BASE_COST = { COMMON: 1000, UNCOMMON: 5000, RARE: 25000, EPIC: 100000, LEGENDARY: 500000, MYTHIC: 2500000, DIVINE: 10000000 };
 
 export const TITLE_DATA = [
-  { id: 't_kill_1', cat: 'kill', req: 50, tier: 1, name: '同階無敵', desc: '「死在閣下手下的同階修士，已不在少數。」', buffDesc: '總戰力加成 +10%', val: { atk: 0.10 } },
-  { id: 't_kill_2', cat: 'kill', req: 200, tier: 2, name: '厲飛雨', desc: '「殺人放火厲飛雨，萬人敬仰韓天尊。道友，借個名號用用。」', buffDesc: '爆擊率 +10%，真靈吸血 +5%', val: { crit: 0.10, lifesteal: 0.05 } },
-  { id: 't_kill_3', cat: 'kill', req: 1000, tier: 3, name: '修羅煞星', desc: '「百萬屍山血海中踏出的殺道。所過之處，即便是八級化形大妖也要退避三舍。」', buffDesc: '總戰力加成 +30%，爆擊傷害 +200%', val: { atk: 0.30, crit_dmg: 2.00 } },
-  { id: 't_focus_1', cat: 'focus', req: 50, tier: 1, name: '向道之心', desc: '「資質平庸的偽靈根又如何？唯有堅如磐石的向道之心，方能走到最後。」', buffDesc: '靈氣獲取倍率 +15%', val: { qi: 0.15 } },
-  { id: 't_focus_2', cat: 'focus', req: 200, tier: 2, name: '苦修之士', desc: '「閉關動輒數十載，世間繁華不過過眼雲煙。」', buffDesc: '靈氣獲取倍率 +30%，休息回血 +10%', val: { qi: 0.30, heal_bonus: 0.10 } },
-  { id: 't_focus_3', cat: 'focus', req: 500, tier: 3, name: '歲月仙尊', desc: '「紅顏白骨，故人皆逝。你獨坐洞府，笑看滄海桑田，已與天地同壽。」', buffDesc: '靈氣獲取倍率 +80%，閃避免傷 +10%', val: { qi: 0.80, evade: 0.10 } },
-  { id: 't_coin_1', cat: 'coin', req: 1000000, tier: 1, name: '身家豐厚', desc: '「在低階散修眼中，你已經是個不折不扣的大土豪了。」', buffDesc: '靈石掉落倍率 +15%', val: { stone: 0.15 } },
-  { id: 't_coin_2', cat: 'coin', req: 10000000, tier: 2, name: '天南巨富', desc: '「靈石成山。這等身家，哪怕在天南修仙界也足以橫著走了。」', buffDesc: '靈石掉落倍率 +40%', val: { stone: 0.40 } },
-  { id: 't_coin_3', cat: 'coin', req: 500000000, tier: 3, name: '財可通神', desc: '「連靈界大乘期老怪看到你的儲物袋，也會忍不住生出殺人奪寶的心思。」', buffDesc: '靈石倍率 +150%，氣運保底 +0.5', val: { stone: 1.50, luck_floor: 0.50 } },
+  { id: 't_kill_1', cat: 'kill', req: 50, tier: 1, name: '同階無敵', desc: '「死在閣下手下的同階修士，已不在少數。」', buffDesc: '戰力 +10%', val: { atk: 0.10 } },
+  { id: 't_kill_2', cat: 'kill', req: 200, tier: 2, name: '厲飛雨', desc: '「殺人放火厲飛雨，萬人敬仰韓天尊。道友，借個名號用用。」', buffDesc: '爆擊率 +10%，吸血率 +5%', val: { crit: 0.10, lifesteal: 0.05 } },
+  { id: 't_kill_3', cat: 'kill', req: 1000, tier: 3, name: '修羅煞星', desc: '「百萬屍山血海中踏出的殺道。所過之處，即便是八級化形大妖也要退避三舍。」', buffDesc: '戰力 +30%，爆擊傷害 +200%', val: { atk: 0.30, crit_dmg: 2.00 } },
+  { id: 't_focus_1', cat: 'focus', req: 50, tier: 1, name: '向道之心', desc: '「資質平庸的偽靈根又如何？唯有堅如磐石的向道之心，方能走到最後。」', buffDesc: '修為獲取 +15%', val: { qi: 0.15 } },
+  { id: 't_focus_2', cat: 'focus', req: 200, tier: 2, name: '苦修之士', desc: '「閉關動輒數十載，世間繁華不過過眼雲煙。」', buffDesc: '修為獲取 +30%，打坐回血 +10%', val: { qi: 0.30, heal_bonus: 0.10 } },
+  { id: 't_focus_3', cat: 'focus', req: 500, tier: 3, name: '歲月仙尊', desc: '「紅顏白骨，故人皆逝。你獨坐洞府，笑看滄海桑田，已與天地同壽。」', buffDesc: '修為獲取 +80%，閃避率 +10%', val: { qi: 0.80, evade: 0.10 } },
+  { id: 't_coin_1', cat: 'coin', req: 1000000, tier: 1, name: '身家豐厚', desc: '「在低階散修眼中，你已經是個不折不扣的大土豪了。」', buffDesc: '靈石掉落 +15%', val: { stone: 0.15 } },
+  { id: 't_coin_2', cat: 'coin', req: 10000000, tier: 2, name: '天南巨富', desc: '「靈石成山。這等身家，哪怕在天南修仙界也足以橫著走了。」', buffDesc: '靈石掉落 +40%', val: { stone: 0.40 } },
+  { id: 't_coin_3', cat: 'coin', req: 500000000, tier: 3, name: '財可通神', desc: '「連靈界大乘期老怪看到你的儲物袋，也會忍不住生出殺人奪寶的心思。」', buffDesc: '靈石掉落 +150%，氣運保底 +0.5', val: { stone: 1.50, luck_floor: 0.50 } },
   { id: 't_art_1', cat: 'artifact', req: 15, tier: 1, name: '身懷異寶', desc: '「財不露白，道友還是盡早將這些寶物收進儲物袋為妙。」', buffDesc: '氣運保底 +0.15', val: { luck_floor: 0.15 } },
   { id: 't_art_2', cat: 'artifact', req: 40, tier: 2, name: '一身是寶', desc: '「『不可能！你區區一介散修，身家怎會比老夫還要豐厚！』」', buffDesc: '連擊上限 +50%，氣運保底 +0.3', val: { streak_cap: 0.50, luck_floor: 0.30 } },
   { id: 't_art_3', cat: 'artifact', req: 75, tier: 3, name: '多寶天尊', desc: '「玄天之寶、造化至寶盡入你手，此界天道法則已被你徹底顛覆。」', buffDesc: '連擊上限 +150%，氣運保底 +0.8', val: { streak_cap: 1.50, luck_floor: 0.80 } },
-  { id: 't_sec_1', cat: 'secret', req: 4, tier: 1, name: '博覽群書', desc: '「藏經閣內的玉簡被你翻了個遍，對各派功法皆有涉獵。」', buffDesc: '反噬基礎減傷 +10%', val: { sense_def: 0.10 } },
-  { id: 't_sec_2', cat: 'secret', req: 9, tier: 2, name: '法體雙修', desc: '「功法龐雜卻互不衝突，靈力與肉身皆臻至化境，實力遠超同階修士。」', buffDesc: '氣血上限加成 +20%，神識減傷 +15%', val: { hp: 0.20, sense_def: 0.15 } },
-  { id: 't_sec_3', cat: 'secret', req: 13, tier: 3, name: '萬法歸一', desc: '「天下萬般神仙妙法，在你眼中皆如掌上觀紋，直指大道本源。」', buffDesc: '氣血上限 +50%，反噬與神識減傷皆 +30%', val: { hp: 0.50, sense_def: 0.30, def: 0.30 } },
-  { id: 't_max_1', cat: 'max', req: 1, tier: 1, name: '爐火純青', desc: '「將一門功法推演至極致，便足以在修仙界立足。」', buffDesc: '連擊效率倍率 +15%', val: { streak_eff: 0.15 } },
-  { id: 't_max_2', cat: 'max', req: 4, tier: 2, name: '大衍傳人', desc: '「將數門頂級功法推演至極限，即便是大衍神君在世，也要讚你一聲奇才。」', buffDesc: '連擊效率倍率 +40%，總戰力 +20%', val: { streak_eff: 0.40, atk: 0.20 } },
-  { id: 't_max_3', cat: 'max', req: 10, tier: 3, name: '開宗立派', desc: '「你對大道的理解已超越創造這些功法的前人，隨手一指便可為一界之尊。」', buffDesc: '連擊效率 +100%，戰力/氣血/靈石/靈氣全域 +30%', val: { streak_eff: 1.00, atk: 0.30, hp: 0.30, stone: 0.30, qi: 0.30 } }
+  { id: 't_sec_1', cat: 'secret', req: 4, tier: 1, name: '博覽群書', desc: '「藏經閣內的玉簡被你翻了個遍，對各派功法皆有涉獵。」', buffDesc: '反噬減傷 +10%', val: { sense_def: 0.10 } },
+  { id: 't_sec_2', cat: 'secret', req: 9, tier: 2, name: '法體雙修', desc: '「功法龐雜卻互不衝突，靈力與肉身皆臻至化境，實力遠超同階修士。」', buffDesc: '氣血上限 +20%，反噬減傷 +15%', val: { hp: 0.20, sense_def: 0.15 } },
+  { id: 't_sec_3', cat: 'secret', req: 13, tier: 3, name: '萬法歸一', desc: '「天下萬般神仙妙法，在你眼中皆如掌上觀紋，直指大道本源。」', buffDesc: '氣血上限 +50%，防禦減傷 +30%，反噬減傷 +30%', val: { hp: 0.50, def: 0.30, sense_def: 0.30 } },
+  { id: 't_max_1', cat: 'max', req: 1, tier: 1, name: '爐火純青', desc: '「將一門功法推演至極致，便足以在修仙界立足。」', buffDesc: '連擊效率 +15%', val: { streak_eff: 0.15 } },
+  { id: 't_max_2', cat: 'max', req: 4, tier: 2, name: '大衍傳人', desc: '「將數門頂級功法推演至極限，即便是大衍神君在世，也要讚你一聲奇才。」', buffDesc: '連擊效率 +40%，戰力 +20%', val: { streak_eff: 0.40, atk: 0.20 } },
+  { id: 't_max_3', cat: 'max', req: 10, tier: 3, name: '開宗立派', desc: '「你對大道的理解已超越創造這些功法的前人，隨手一指便可為一界之尊。」', buffDesc: '連擊效率 +100%，戰力/氣血上限/靈石掉落/修為獲取 +30%', val: { streak_eff: 1.00, atk: 0.30, hp: 0.30, stone: 0.30, qi: 0.30 } }
 ];
 
 export const COMPANIONS = [
   { 
     id: 'c_chen', name: '陳巧倩', unlockIdx: 4, desc: '「韓師弟，你真的不明白我的心意嗎？」落雲宗師姐，對你一往情深，至死未嫁。', 
-    buffType: 'atk', buffName: '痴情劍意', buffDesc: '總戰力加成', tiers: [5, 10, 20, 30],
+    buffType: 'atk', buffName: '痴情劍意', buffDesc: '戰力', tiers: [5, 10, 20, 30],
     quotes: [
       ['韓師弟，你也來參加血色禁地試煉嗎？', '多謝師弟出手相救，巧倩感激不盡...'], 
       ['師弟，這是我熬製的靈湯，你且喝下。', '只要能默默為你護法，巧倩便心滿意足了。'], 
@@ -532,7 +588,7 @@ export const COMPANIONS = [
   },
   { 
     id: 'c_dong', name: '董萱兒', unlockIdx: 6, desc: '「師兄，你看看萱兒嘛。」紅拂仙子之女，天生媚骨，後轉修魔道。', 
-    buffType: 'evade', buffName: '幻媚之身', buffDesc: '閃避率提升', tiers: [2, 4, 8, 15],
+    buffType: 'evade', buffName: '幻媚之身', buffDesc: '閃避率', tiers: [2, 4, 8, 15],
     quotes: [
       ['這位同門好生面生，莫非就是韓師兄？', '哼，木頭一個，真是無趣極了。'], 
       ['師兄~ 你都修煉這麼久了，理理萱兒嘛！', '有我在，哪個不長眼的敢來打擾師兄？'], 
@@ -542,7 +598,7 @@ export const COMPANIONS = [
   },
   { 
     id: 'c_nangong', name: '南宮婉', unlockIdx: 9, desc: '「你這登徒子...」掩月宗長老，血色禁地結下不解之緣，唯一的正室妻子。', 
-    buffType: 'qi', buffName: '素女輪迴', buffDesc: '靈氣獲取倍率', tiers: [8, 15, 30, 50],
+    buffType: 'qi', buffName: '素女輪迴', buffDesc: '修為獲取', tiers: [8, 15, 30, 50],
     quotes: [
       ['你這登徒子，竟敢...罷了，此間之事不准外傳。', '區區煉氣期修士，也敢大言不慚。'], 
       ['這小子的功法倒是有些門道...', '別分心，好好守住陣眼，外圍交給我。'], 
@@ -552,7 +608,7 @@ export const COMPANIONS = [
   },
   { 
     id: 'c_yuan', name: '元瑤', unlockIdx: 12, desc: '「韓兄大恩，元瑤沒齒難忘。」為救師姐不惜修煉陰陽輪迴訣，重情重義。', 
-    buffType: 'hp', buffName: '陰陽秘術', buffDesc: '氣血上限加成', tiers: [5, 10, 20, 30],
+    buffType: 'hp', buffName: '陰陽秘術', buffDesc: '氣血上限', tiers: [5, 10, 20, 30],
     quotes: [
       ['青元子前輩的傳人？韓兄，小女子這廂有禮了。', '萍水相逢，多謝韓兄照應。'], 
       ['韓兄大恩，元瑤無以為報。', '有韓兄在，元瑤心裡踏實多了。'], 
@@ -562,7 +618,7 @@ export const COMPANIONS = [
   },
   { 
     id: 'c_ziling', name: '紫靈仙子', unlockIdx: 14, desc: '「韓兄，亂星海一別，別來無恙？」妙音門門主，亂星海第一美女，紅顏知己。', 
-    buffType: 'luck_floor', buffName: '妙音氣運', buffDesc: '氣運保底加成', tiers: [0.05, 0.10, 0.20, 0.30],
+    buffType: 'luck_floor', buffName: '妙音氣運', buffDesc: '氣運保底', tiers: [0.05, 0.10, 0.20, 0.30],
     quotes: [
       ['妙音門紫靈，見過前輩。', '這修仙界弱肉強食，紫靈深知其中險惡。'], 
       ['韓兄，你我聯手，這修仙界哪裡去不得？', '韓兄的心智與手段，紫靈實在佩服。'], 
@@ -572,7 +628,7 @@ export const COMPANIONS = [
   },
   { 
     id: 'c_yinyue', name: '銀月', unlockIdx: 17, desc: '「主人，銀月會一直陪著你。」靈界銀狼一族，化為器靈長伴左右，共患難。', 
-    buffType: 'crit_dmg', buffName: '天狼神擊', buffDesc: '爆擊傷害提升', tiers: [10, 20, 40, 60],
+    buffType: 'crit_dmg', buffName: '天狼神擊', buffDesc: '爆擊傷害', tiers: [10, 20, 40, 60],
     quotes: [
       ['主人，銀月傷勢已無大礙，願為主人效勞。', '主人若有差遣，銀月萬死不辭。'], 
       ['嘻嘻，主人的神通又變強了，銀月也跟著沾光呢。', '有銀月在，主人安心打坐便是。'], 
@@ -582,7 +638,7 @@ export const COMPANIONS = [
   },
   { 
     id: 'c_bingfeng', name: '冰鳳', unlockIdx: 21, desc: '「韓道友，你我聯手撕裂空間如何？」冰海之主，掌握空間法則的十級妖修。', 
-    buffType: 'streak_cap', buffName: '破空靈羽', buffDesc: '連擊增傷上限', tiers: [10, 20, 40, 60],
+    buffType: 'streak_cap', buffName: '破空靈羽', buffDesc: '連擊上限', tiers: [10, 20, 40, 60],
     quotes: [
       ['閣下就是韓立？聽說你手中握有虛天鼎。', '人族修士，別以為本宮會輕易屈服。'], 
       ['哼，別誤會，為你護法只是為了我們能早日飛升罷了。', '這點靈氣波動就大驚小怪，真是沒見過世面。'], 
@@ -592,7 +648,7 @@ export const COMPANIONS = [
   },
   { 
     id: 'c_baohua', name: '寶花始祖', unlockIdx: 25, desc: '「你區區一名人族大乘，竟敢直視本座？」魔界三大始祖之一，與你亦敵亦友。', 
-    buffType: 'def', buffName: '玄天聖樹', buffDesc: '護甲防禦加成', tiers: [5, 10, 20, 30],
+    buffType: 'def', buffName: '玄天聖樹', buffDesc: '防禦減傷', tiers: [5, 10, 20, 30],
     quotes: [
       ['人族修士，你身上竟有本座玄天聖樹的氣息？', '區區螻蟻，也敢直視本座？'], 
       ['能讓本座為你護法，你也算死而無憾了。', '你的法則之力，倒是勉強入得了本座的眼。'], 
